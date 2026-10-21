@@ -11,7 +11,11 @@ const entry = (userId: string, score: number, timeTaken: number, submittedAt = a
 
 describe("rankEntries", () => {
   it("orders by score, then speed", () => {
-    const ranked = rankEntries([entry("slow", 30, 900), entry("top", 35, 1200), entry("fast", 30, 600)]);
+    const ranked = rankEntries([
+      entry("slow", 30, 900),
+      entry("top", 35, 1200),
+      entry("fast", 30, 600),
+    ]);
     expect(ranked.map((r) => [r.userId, r.rank])).toEqual([
       ["top", 1],
       ["fast", 2],

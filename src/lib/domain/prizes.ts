@@ -23,5 +23,7 @@ export function prizePool(revenue: number, policy: PrizePolicy = DEFAULT_PRIZE_P
 
 /** Amount for each place, rounded down so the payout never exceeds the pool. */
 export function splitPool(pool: number, policy: PrizePolicy = DEFAULT_PRIZE_POLICY): number[] {
-  return policy.placeShares.map((share) => Math.floor((pool * share) / policy.roundTo) * policy.roundTo);
+  return policy.placeShares.map(
+    (share) => Math.floor((pool * share) / policy.roundTo) * policy.roundTo,
+  );
 }
