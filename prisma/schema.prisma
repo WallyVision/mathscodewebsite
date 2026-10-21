@@ -1,0 +1,371 @@
+// Data model for the GCE revision and testing platform.
+// Money is stored as whole XAF (FCFA) in Int columns: the currency has no minor unit.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Accounts ────────────────────────────────────────────────────────────────
+
+enum Role {
+  STUDENT
+  AUTHOR // writes notes, questions and solutions
+  ADMIN
+}
+
+enum Level {
+  O_LEVEL
+  A_LEVEL
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String?  @unique
+  phone        String?  @unique // E.164, e.g. +2376XXXXXXXX
+  passwordHash String
+  role         Role     @default(STUDENT)
+  level        Level
+  school       String?
+  region       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sessions      Session[]
+  attempts      TestAttempt[]
+  subscriptions Subscription[]
+  payments      Payment[]
+  unlocks       SolutionUnlock[]
+  prizes        PrizeAward[]
+}
+
+model Session {
+  // SHA-256 of the cookie token; the raw token is never stored.
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ─── Curriculum and content ──────────────────────────────────────────────────
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Subject {
+  id    String  @id @default(cuid())
+  level Level
+  slug  String // e.g. "mathematics", "physics"
+  name  String
+  // GCE Board subject code, when known
+  code  String?
+
+  topics      Topic[]
+  pastPapers  PastPaper[]
+  questions   Question[]
+  tests       Test[]
+  prizeAwards PrizeAward[]
+
+  @@unique([level, slug])
+}
+
+model Topic {
+  id        String @id @default(cuid())
+  subjectId String
+  slug      String
+  name      String
+  position  Int    @default(0)
+
+  subject   Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  notes     Note[]
+  questions Question[]
+
+  @@unique([subjectId, slug])
+}
+
+model Note {
+  id        String        @id @default(cuid())
+  topicId   String
+  slug      String
+  title     String
+  // Markdown with $...$ / $$...$$ LaTeX
+  body      String
+  status    ContentStatus @default(DRAFT)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([topicId, slug])
+}
+
+model PastPaper {
+  id          String        @id @default(cuid())
+  subjectId   String
+  year        Int
+  paperNumber Int // GCE paper number (1 = MCQ for most subjects)
+  title       String
+  status      ContentStatus @default(DRAFT)
+
+  subject   Subject          @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  questions Question[]
+  unlocks   SolutionUnlock[]
+
+  @@unique([subjectId, year, paperNumber])
+}
+
+enum QuestionSource {
+  PAST_PAPER
+  ORIGINAL
+}
+
+model Question {
+  id          String         @id @default(cuid())
+  subjectId   String
+  topicId     String?
+  pastPaperId String?
+  // Number of the question within its past paper
+  number      Int?
+  source      QuestionSource @default(ORIGINAL)
+  // Markdown with LaTeX
+  stem        String
+  // Worked solution (paid content). Markdown with LaTeX.
+  solution    String?
+  difficulty  Int            @default(2) // 1 = easy … 3 = hard
+  status      ContentStatus  @default(DRAFT)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  subject       Subject          @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  topic         Topic?           @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  pastPaper     PastPaper?       @relation(fields: [pastPaperId], references: [id], onDelete: SetNull)
+  options       QuestionOption[]
+  testQuestions TestQuestion[]
+  answers       AttemptAnswer[]
+  unlocks       SolutionUnlock[]
+
+  @@index([subjectId, status])
+  @@index([pastPaperId])
+}
+
+model QuestionOption {
+  id         String  @id @default(cuid())
+  questionId String
+  label      String // "A" | "B" | "C" | "D"
+  text       String
+  isCorrect  Boolean @default(false)
+
+  question Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answers  AttemptAnswer[]
+
+  @@unique([questionId, label])
+}
+
+// ─── Tests ───────────────────────────────────────────────────────────────────
+
+enum TestKind {
+  WEEKLY
+  MONTHLY
+}
+
+enum TestStatus {
+  DRAFT
+  SCHEDULED // visible, opens at opensAt
+  CLOSED // past closesAt, results pending review
+  RESULTS_PUBLISHED
+}
+
+model Test {
+  id                 String     @id @default(cuid())
+  subjectId          String
+  title              String
+  kind               TestKind
+  status             TestStatus @default(DRAFT)
+  opensAt            DateTime
+  closesAt           DateTime
+  durationMinutes    Int
+  resultsPublishedAt DateTime?
+  createdAt          DateTime   @default(now())
+
+  subject   Subject        @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  questions TestQuestion[]
+  attempts  TestAttempt[]
+  prizes    PrizeAward[]
+
+  @@index([status, opensAt])
+}
+
+model TestQuestion {
+  testId     String
+  questionId String
+  position   Int
+
+  test     Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Restrict)
+
+  @@id([testId, questionId])
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  EXPIRED // deadline passed before the student submitted; graded as-is
+  DISQUALIFIED
+}
+
+model TestAttempt {
+  id          String        @id @default(cuid())
+  testId      String
+  userId      String
+  status      AttemptStatus @default(IN_PROGRESS)
+  // Seed for this student's question and option order
+  seed        Int
+  startedAt   DateTime      @default(now())
+  deadlineAt  DateTime
+  submittedAt DateTime?
+  score       Int?
+  maxScore    Int?
+  // Seconds from start to submission, used to break ties
+  timeTaken   Int?
+  // Integrity signals recorded by the client
+  focusLosses Int           @default(0)
+
+  test    Test            @relation(fields: [testId], references: [id], onDelete: Cascade)
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers AttemptAnswer[]
+
+  // One attempt per student per test
+  @@unique([testId, userId])
+  @@index([userId])
+}
+
+model AttemptAnswer {
+  attemptId        String
+  questionId       String
+  selectedOptionId String?
+  answeredAt       DateTime @default(now())
+
+  attempt        TestAttempt     @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question       Question        @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  selectedOption QuestionOption? @relation(fields: [selectedOptionId], references: [id], onDelete: SetNull)
+
+  @@id([attemptId, questionId])
+}
+
+// ─── Billing ─────────────────────────────────────────────────────────────────
+
+enum PaymentStatus {
+  PENDING
+  SUCCESSFUL
+  FAILED
+}
+
+enum PaymentPurpose {
+  SUBSCRIPTION
+  QUESTION_SOLUTION
+  PAPER_SOLUTIONS
+}
+
+model Payment {
+  id                String         @id @default(cuid())
+  userId            String
+  purpose           PaymentPurpose
+  amount            Int // XAF
+  currency          String         @default("XAF")
+  provider          String // e.g. "campay", "notchpay"
+  providerReference String?        @unique
+  payerPhone        String?
+  status            PaymentStatus  @default(PENDING)
+  // What the payment buys: level for subscriptions, question/paper id for unlocks
+  metadata          Json
+  createdAt         DateTime       @default(now())
+  completedAt       DateTime?
+
+  user          User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  subscriptions Subscription[]
+  unlocks       SolutionUnlock[]
+
+  @@index([userId, createdAt])
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String
+  level     Level
+  startsAt  DateTime
+  endsAt    DateTime
+  paymentId String?
+  createdAt DateTime @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payment Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  @@index([userId, endsAt])
+}
+
+model SolutionUnlock {
+  id          String   @id @default(cuid())
+  userId      String
+  // Exactly one of questionId / pastPaperId is set
+  questionId  String?
+  pastPaperId String?
+  paymentId   String?
+  createdAt   DateTime @default(now())
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question  Question?  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  pastPaper PastPaper? @relation(fields: [pastPaperId], references: [id], onDelete: Cascade)
+  payment   Payment?   @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, questionId])
+  @@unique([userId, pastPaperId])
+}
+
+// ─── Prizes ──────────────────────────────────────────────────────────────────
+
+enum PrizeCategory {
+  TOP_SCORER
+  MOST_IMPROVED
+  CONSISTENCY
+}
+
+enum PrizeStatus {
+  PENDING_VERIFICATION
+  VERIFIED
+  PAID
+  DISQUALIFIED
+}
+
+model PrizeAward {
+  id        String        @id @default(cuid())
+  userId    String
+  subjectId String
+  // Monthly prizes reference a period ("2026-11"); per-test prizes also set testId
+  period    String
+  testId    String?
+  category  PrizeCategory
+  rank      Int
+  amount    Int // XAF
+  status    PrizeStatus   @default(PENDING_VERIFICATION)
+  paidAt    DateTime?
+  notes     String?
+  createdAt DateTime      @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Restrict)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  test    Test?   @relation(fields: [testId], references: [id], onDelete: SetNull)
+
+  @@unique([subjectId, period, category, rank])
+  @@index([userId])
+}
