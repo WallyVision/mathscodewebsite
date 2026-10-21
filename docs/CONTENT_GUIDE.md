@@ -84,5 +84,5 @@ Solutions are what students pay for, so they must teach, not just state the answ
 - Check every answer twice; a wrong answer key costs trust and can decide a prize.
 - Preview the page on a phone.
 - Content stays **Draft** until reviewed, then set to **Published**.
-- Questions planned for a test stay hidden from practice automatically until that test's
-  results are published.
+- Questions planned for a test stay hidden from practice automatically until that test
+  closes.

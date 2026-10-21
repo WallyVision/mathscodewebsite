@@ -9,14 +9,18 @@ import { canViewSolution } from "@/lib/domain/entitlements";
 import { levelFromSlug } from "@/lib/domain/levels";
 
 /**
- * Questions students may revise from: published, and not part of any test
- * whose results are still unpublished. This stops answers to an upcoming or
- * running test leaking through the practice bank.
+ * Questions students may revise from: published, and not part of a draft
+ * test or a test that has not closed yet. This stops answers to an upcoming
+ * or running test leaking through the practice bank.
  */
-export const practiceQuestionWhere: Prisma.QuestionWhereInput = {
-  status: "PUBLISHED",
-  testQuestions: { none: { test: { status: { not: "RESULTS_PUBLISHED" } } } },
-};
+export function practiceQuestionWhere(now: Date): Prisma.QuestionWhereInput {
+  return {
+    status: "PUBLISHED",
+    testQuestions: {
+      none: { test: { OR: [{ status: "DRAFT" }, { closesAt: { gt: now } }] } },
+    },
+  };
+}
 
 const questionSelect = {
   id: true,
@@ -87,7 +91,7 @@ async function toPracticeQuestions(
 
 export async function getTopicPracticeQuestions(topicId: string, level: Level, user: CurrentUser) {
   const rows = await db.question.findMany({
-    where: { ...practiceQuestionWhere, topicId },
+    where: { ...practiceQuestionWhere(new Date()), topicId },
     select: questionSelect,
     orderBy: { createdAt: "asc" },
   });
@@ -96,7 +100,7 @@ export async function getTopicPracticeQuestions(topicId: string, level: Level, u
 
 export async function getPaperQuestions(pastPaperId: string, level: Level, user: CurrentUser) {
   const rows = await db.question.findMany({
-    where: { ...practiceQuestionWhere, pastPaperId },
+    where: { ...practiceQuestionWhere(new Date()), pastPaperId },
     select: questionSelect,
     orderBy: [{ number: "asc" }, { createdAt: "asc" }],
   });

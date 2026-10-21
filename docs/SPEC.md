@@ -26,12 +26,12 @@ where they rank, and compete for cash prizes paid by Mobile Money.
 
 All prices in XAF (FCFA). Defined in `src/lib/domain/pricing.ts`.
 
-| Product                          | Price | Status   |
-| -------------------------------- | ----- | -------- |
-| O Level subscription (30 days)   | 1,500 | Decided  |
-| A Level subscription (30 days)   | 2,000 | Decided  |
-| Single question solution         | 100   | Proposed |
-| All solutions for one past paper | 500   | Decided  |
+| Product                          | Price | Status  |
+| -------------------------------- | ----- | ------- |
+| O Level subscription (30 days)   | 1,500 | Decided |
+| A Level subscription (30 days)   | 2,000 | Decided |
+| Single question solution         | 100   | Decided |
+| All solutions for one past paper | 500   | Decided |
 
 - A subscription covers **every subject at its level**.
 - Renewing early **extends** the current period; paid days are never lost.
@@ -70,8 +70,7 @@ Monthly ranking per subject is the sum of a student's test scores that month.
 
 ## Prizes
 
-Implemented in `src/lib/domain/prizes.ts`. The 15% pool share is decided; the minimum
-and the split are proposals.
+Implemented in `src/lib/domain/prizes.ts`. All values below are decided.
 
 - **Pool:** 15% of the month's subscription revenue for that level, with a minimum of
   10,000 FCFA so early months still have a meaningful prize.
@@ -93,7 +92,7 @@ and the split are proposals.
 | Single attempt, server-side timer     |     ✓     |       |
 | Per-student question and option order |     ✓     |       |
 | Answers hidden until window closes    |     ✓     |       |
-| Tab-switch / focus-loss counter       |     ✓     |       |
+| App-switch counter (reloads ignored)  |     ✓     |       |
 | Winner verification before payout     |     ✓     |       |
 | Large question bank, random selection |           |   ✓   |
 | One active session per account        |           |   ✓   |
@@ -111,9 +110,11 @@ and the split are proposals.
 1. **Foundation (done):** data model, accounts, domain rules, landing page, dashboard.
 2. **Content (done):** notes and past questions by subject and topic under `/learn`;
    answers free, solutions behind access checks; maths rendered with KaTeX. Questions in
-   a test stay out of the practice bank until that test's results are published.
-3. **Test engine:** start attempt, timed question screen, autosave, submit, results,
-   leaderboard.
+   a test stay out of the practice bank until that test closes.
+3. **Test engine (done):** `/tests` list, overview and rules, one timed attempt per
+   student, per-student question and option order, autosave with a local backup and
+   retry, automatic submission when time runs out, results with rank, leaderboard, and
+   a full answer review with solutions once the test closes.
 4. **Payments:** Mobile Money checkout through an aggregator (Campay or Notch Pay), signed
    webhooks, subscriptions and unlocks granted only on confirmed payment.
 5. **Admin:** authoring for notes, questions and solutions; test scheduling; results
@@ -123,7 +124,5 @@ and the split are proposals.
 
 ## Open decisions
 
-- Single-solution price (proposed 100 FCFA).
-- Prize pool minimum and split (proposed 10,000 FCFA; 50/30/20).
 - Payment aggregator: compare Campay and Notch Pay on fees, payout API and support.
-- Domain name (e.g. prep237.com or prep237.cm): check availability and register.
+- Register the domain **gceprep237.com** (chosen; not yet registered).

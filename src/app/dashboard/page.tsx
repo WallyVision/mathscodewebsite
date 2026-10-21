@@ -1,18 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { formatXaf, LEVEL_LABEL, SUBSCRIPTION_PRICE } from "@/lib/domain/pricing";
+import { formatDateTime } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Dashboard" };
-
-const dateFormat = new Intl.DateTimeFormat("en-GB", {
-  weekday: "short",
-  day: "numeric",
-  month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "Africa/Douala",
-});
 
 export default async function DashboardPage() {
   const user = await requireUser();
@@ -50,7 +43,7 @@ export default async function DashboardPage() {
         <h2 className="font-semibold">Subscription</h2>
         {subscription ? (
           <p className="mt-1 text-sm text-slate-600">
-            Active until {dateFormat.format(subscription.endsAt)}.
+            Active until {formatDateTime(subscription.endsAt)}.
           </p>
         ) : (
           <p className="mt-1 text-sm text-slate-600">
@@ -68,12 +61,14 @@ export default async function DashboardPage() {
         ) : (
           <ul className="divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white">
             {upcomingTests.map((test) => (
-              <li key={test.id} className="p-4">
-                <p className="font-medium">{test.title}</p>
-                <p className="text-sm text-slate-600">
-                  {test.subject.name} · {test.durationMinutes} min · opens{" "}
-                  {dateFormat.format(test.opensAt)}, closes {dateFormat.format(test.closesAt)}
-                </p>
+              <li key={test.id}>
+                <Link href={`/tests/${test.id}`} className="block p-4 hover:bg-slate-50">
+                  <p className="font-medium">{test.title}</p>
+                  <p className="text-sm text-slate-600">
+                    {test.subject.name} · {test.durationMinutes} min · opens{" "}
+                    {formatDateTime(test.opensAt)}, closes {formatDateTime(test.closesAt)}
+                  </p>
+                </Link>
               </li>
             ))}
           </ul>

@@ -34,7 +34,7 @@ export default async function SubjectPage({ params }: Props) {
         _count: {
           select: {
             notes: { where: { status: "PUBLISHED" } },
-            questions: { where: practiceQuestionWhere },
+            questions: { where: practiceQuestionWhere(new Date()) },
           },
         },
       },
