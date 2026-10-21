@@ -1,6 +1,6 @@
-# Product specification
+# Prep237: product specification
 
-Online revision and testing platform for **Cameroon GCE O Level and A Level** students.
+**Prep237**, "Revise. Compete. Win.", is an online revision and testing platform for **Cameroon GCE O Level and A Level** students.
 Students revise with notes and past questions, sit timed weekly and monthly tests, see
 where they rank, and compete for cash prizes paid by Mobile Money.
 
@@ -31,7 +31,7 @@ All prices in XAF (FCFA). Defined in `src/lib/domain/pricing.ts`.
 | O Level subscription (30 days)   | 1,500 | Decided  |
 | A Level subscription (30 days)   | 2,000 | Decided  |
 | Single question solution         | 100   | Proposed |
-| All solutions for one past paper | 500   | Proposed |
+| All solutions for one past paper | 500   | Decided  |
 
 - A subscription covers **every subject at its level**.
 - Renewing early **extends** the current period; paid days are never lost.
@@ -70,7 +70,8 @@ Monthly ranking per subject is the sum of a student's test scores that month.
 
 ## Prizes
 
-Implemented in `src/lib/domain/prizes.ts`. All values below are **proposals** to confirm.
+Implemented in `src/lib/domain/prizes.ts`. The 15% pool share is decided; the minimum
+and the split are proposals.
 
 - **Pool:** 15% of the month's subscription revenue for that level, with a minimum of
   10,000 FCFA so early months still have a meaningful prize.
@@ -108,8 +109,9 @@ Implemented in `src/lib/domain/prizes.ts`. All values below are **proposals** to
 ## Roadmap
 
 1. **Foundation (done):** data model, accounts, domain rules, landing page, dashboard.
-2. **Content:** browse notes and past questions by subject and topic; answers for free,
-   solutions behind access checks; KaTeX rendering.
+2. **Content (done):** notes and past questions by subject and topic under `/learn`;
+   answers free, solutions behind access checks; maths rendered with KaTeX. Questions in
+   a test stay out of the practice bank until that test's results are published.
 3. **Test engine:** start attempt, timed question screen, autosave, submit, results,
    leaderboard.
 4. **Payments:** Mobile Money checkout through an aggregator (Campay or Notch Pay), signed
@@ -121,7 +123,7 @@ Implemented in `src/lib/domain/prizes.ts`. All values below are **proposals** to
 
 ## Open decisions
 
-- Pay-per-solution prices (proposed 100 / 500 FCFA).
-- Prize pool share and minimum (proposed 15%, 10,000 FCFA).
+- Single-solution price (proposed 100 FCFA).
+- Prize pool minimum and split (proposed 10,000 FCFA; 50/30/20).
 - Payment aggregator: compare Campay and Notch Pay on fees, payout API and support.
-- Brand name and domain (`src/lib/site.ts` holds the placeholder "GCE Revision").
+- Domain name (e.g. prep237.com or prep237.cm): check availability and register.

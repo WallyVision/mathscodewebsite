@@ -1,4 +1,4 @@
-# GCE Revision Platform
+# Prep237
 
 Revision notes, past questions, worked solutions and weekly timed tests with prizes for
 Cameroon GCE O Level and A Level students.
@@ -54,6 +54,7 @@ src/
   app/                 Routes (pages, layouts, server actions)
     (auth)/            Login, registration, logout
     dashboard/         Student home
+    learn/             Notes, topics, practice questions and past papers
   components/          Shared UI
   lib/
     auth/              Password hashing, sessions, input validation
@@ -61,6 +62,7 @@ src/
     db.ts              Prisma client
     site.ts            Brand name and tagline
 docs/SPEC.md           Product specification
+docs/CONTENT_GUIDE.md  How to write notes, questions and solutions
 ```
 
 ### Design principles

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { logout } from "@/app/(auth)/actions";
 import { getCurrentUser } from "@/lib/auth/session";
 import { site } from "@/lib/site";
+import "katex/dist/katex.min.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -30,6 +31,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <div className="flex items-center gap-3 text-sm">
               {user ? (
                 <>
+                  <Link href="/learn" className="font-medium hover:text-brand-700">
+                    Revise
+                  </Link>
                   <Link href="/dashboard" className="font-medium hover:text-brand-700">
                     Dashboard
                   </Link>
