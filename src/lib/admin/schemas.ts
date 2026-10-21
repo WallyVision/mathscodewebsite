@@ -1,0 +1,135 @@
+import { z } from "zod";
+import { fromDoualaInput } from "@/lib/format";
+
+export { slugify } from "@/lib/slug";
+
+const LABELS = ["A", "B", "C", "D"] as const;
+
+const id = z.string().trim().min(1);
+const optionalId = z
+  .string()
+  .trim()
+  .transform((v) => (v === "" ? null : v));
+const status = z.enum(["DRAFT", "PUBLISHED"]);
+const markdown = (label: string, max = 20_000) =>
+  z.string().trim().min(1, `Enter the ${label}`).max(max, `The ${label} is too long`);
+const optionalInt = (min: number, max: number) =>
+  z
+    .string()
+    .trim()
+    .transform((v, ctx) => {
+      if (v === "") return null;
+      const n = Number(v);
+      if (!Number.isInteger(n) || n < min || n > max) {
+        ctx.addIssue({ code: "custom", message: `Enter a whole number from ${min} to ${max}` });
+        return z.NEVER;
+      }
+      return n;
+    });
+const int = (min: number, max: number) =>
+  z.coerce
+    .number({ error: "Enter a number" })
+    .int("Enter a whole number")
+    .min(min, `Must be at least ${min}`)
+    .max(max, `Must be at most ${max}`);
+
+export const slugSchema = z
+  .string()
+  .trim()
+  .min(1, "Enter a URL name")
+  .max(80)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers and single hyphens");
+
+export const questionSchema = z
+  .object({
+    subjectId: id,
+    topicId: optionalId,
+    pastPaperId: optionalId,
+    number: optionalInt(1, 200),
+    stem: markdown("question"),
+    optionA: markdown("option A", 2000),
+    optionB: markdown("option B", 2000),
+    optionC: markdown("option C", 2000),
+    optionD: markdown("option D", 2000),
+    correct: z.enum(LABELS, { error: "Choose the correct option" }),
+    solution: z
+      .string()
+      .trim()
+      .max(20_000)
+      .transform((v) => (v === "" ? null : v)),
+    difficulty: int(1, 3),
+    status,
+  })
+  .refine((q) => q.pastPaperId === null || q.number !== null, {
+    message: "Give the question number within the past paper",
+    path: ["number"],
+  })
+  .transform(({ optionA, optionB, optionC, optionD, ...rest }) => ({
+    ...rest,
+    options: [optionA, optionB, optionC, optionD].map((text, i) => ({
+      label: LABELS[i]!,
+      text,
+    })),
+  }));
+
+export const noteSchema = z.object({
+  topicId: id,
+  title: z.string().trim().min(2, "Enter a title").max(120),
+  slug: slugSchema,
+  body: markdown("note", 50_000),
+  status,
+});
+
+export const paperSchema = z.object({
+  subjectId: id,
+  year: int(1990, 2100),
+  paperNumber: int(1, 9),
+  title: z.string().trim().min(2, "Enter a title").max(120),
+  status,
+});
+
+const doualaDate = (label: string) =>
+  z.string().transform((v, ctx) => {
+    const date = fromDoualaInput(v);
+    if (!date) {
+      ctx.addIssue({ code: "custom", message: `Enter the ${label}` });
+      return z.NEVER;
+    }
+    return date;
+  });
+
+export const testSchema = z
+  .object({
+    subjectId: id,
+    title: z.string().trim().min(2, "Enter a title").max(120),
+    kind: z.enum(["WEEKLY", "MONTHLY"]),
+    status: z.enum(["DRAFT", "SCHEDULED"]),
+    opensAt: doualaDate("opening time"),
+    closesAt: doualaDate("closing time"),
+    durationMinutes: int(1, 300),
+    questionIds: z.array(id).max(200, "A test can have at most 200 questions"),
+  })
+  .refine((t) => t.closesAt > t.opensAt, {
+    message: "Closing time must be after opening time",
+    path: ["closesAt"],
+  })
+  .refine((t) => new Set(t.questionIds).size === t.questionIds.length, {
+    message: "A question was added twice",
+    path: ["questionIds"],
+  })
+  .refine((t) => t.status === "DRAFT" || t.questionIds.length > 0, {
+    message: "Add at least one question before scheduling",
+    path: ["questionIds"],
+  });
+
+export const grantSchema = z.object({
+  userId: id,
+  level: z.enum(["O_LEVEL", "A_LEVEL"]),
+  amount: int(0, 1_000_000),
+  reference: z.string().trim().min(2, "Enter how it was paid, e.g. MoMo ref or 'cash'").max(120),
+});
+
+export const roleSchema = z.object({
+  userId: id,
+  role: z.enum(["STUDENT", "AUTHOR", "ADMIN"]),
+});

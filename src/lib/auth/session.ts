@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { db } from "@/lib/db";
 
@@ -56,3 +56,18 @@ export async function requireUser(): Promise<CurrentUser> {
   if (!user) redirect("/login");
   return user;
 }
+
+export type Role = CurrentUser["role"];
+
+/**
+ * Requires a signed-in user with one of the given roles. Students who reach an
+ * admin URL get a 404 so the admin area is not advertised.
+ */
+export async function requireRole(roles: readonly Role[]): Promise<CurrentUser> {
+  const user = await requireUser();
+  if (!roles.includes(user.role)) notFound();
+  return user;
+}
+
+export const STAFF_ROLES = ["ADMIN", "AUTHOR"] as const satisfies readonly Role[];
+export const ADMIN_ONLY = ["ADMIN"] as const satisfies readonly Role[];

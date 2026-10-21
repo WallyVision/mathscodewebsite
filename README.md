@@ -32,16 +32,17 @@ npm run dev                   # http://localhost:3000
 
 ## Scripts
 
-| Command              | What it does                                    |
-| -------------------- | ----------------------------------------------- |
-| `npm run dev`        | Development server                              |
-| `npm run build`      | Production build                                |
-| `npm test`           | Unit tests                                      |
-| `npm run lint`       | ESLint                                          |
-| `npm run typecheck`  | TypeScript check                                |
-| `npm run format`     | Prettier                                        |
-| `npm run db:migrate` | Create and apply a migration after schema edits |
-| `npm run db:studio`  | Browse the database in a GUI                    |
+| Command                                   | What it does                                    |
+| ----------------------------------------- | ----------------------------------------------- |
+| `npm run dev`                             | Development server                              |
+| `npm run build`                           | Production build                                |
+| `npm test`                                | Unit tests                                      |
+| `npm run lint`                            | ESLint                                          |
+| `npm run typecheck`                       | TypeScript check                                |
+| `npm run format`                          | Prettier                                        |
+| `npm run db:migrate`                      | Create and apply a migration after schema edits |
+| `npm run db:studio`                       | Browse the database in a GUI                    |
+| `npm run admin:grant -- <phone or email>` | Make an existing account an admin               |
 
 ## Project layout
 
@@ -74,6 +75,26 @@ docs/CONTENT_GUIDE.md  How to write notes, questions and solutions
   trusted with correct answers before a test closes.
 - **Money is whole XAF in integer columns.** No floating-point amounts.
 - **Phone numbers are stored in E.164** (`+2376XXXXXXXX`).
+
+## Admin area
+
+Sign in and open **/admin** (an Admin link appears in the header for staff).
+
+| Role   | Can use                                                                |
+| ------ | ---------------------------------------------------------------------- |
+| Author | Questions, notes, past papers                                          |
+| Admin  | Everything above, plus tests, students, manual payments, roles, prizes |
+
+The first admin is created from the command line, after registering on the site:
+
+```bash
+npm run admin:grant -- 677123456
+```
+
+After that, admins change roles from **/admin/students**.
+
+Until Mobile Money checkout is connected, record payments received by hand on a
+student's page; it adds 30 days and counts towards prize income.
 
 ## Security notes
 

@@ -40,6 +40,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <Link href="/dashboard" className="font-medium hover:text-brand-700">
                     Dashboard
                   </Link>
+                  {user.role !== "STUDENT" && (
+                    <Link href="/admin" className="font-medium text-brand-700 hover:underline">
+                      Admin
+                    </Link>
+                  )}
                   <form action={logout}>
                     <button className="text-slate-600 hover:text-slate-900">Log out</button>
                   </form>

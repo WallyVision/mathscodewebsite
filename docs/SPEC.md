@@ -72,9 +72,12 @@ Monthly ranking per subject is the sum of a student's test scores that month.
 
 Implemented in `src/lib/domain/prizes.ts`. All values below are decided.
 
-- **Pool:** 15% of the month's subscription revenue for that level, with a minimum of
-  10,000 FCFA so early months still have a meaningful prize.
+- **Pool:** 15% of the month's subscription revenue for that level, shared equally between
+  the level's subjects. Each subject's pool is at least 10,000 FCFA, so early months still
+  have a meaningful prize (with 4 subjects, at least 40,000 FCFA a month in total).
 - **Split per subject:** 1st 50%, 2nd 30%, 3rd 20%, rounded down to 500 FCFA.
+- **Month:** calendar month in Cameroon time; a test counts in the month it closes.
+  Awards are created from `/admin/prizes` only after the month ends.
 - **Planned extra categories:** most improved, and most consistent (sat every test).
   These keep average students motivated, not only the top few.
 - **Eligibility:** active subscription, sat every test in the month, account details match
@@ -117,8 +120,10 @@ Implemented in `src/lib/domain/prizes.ts`. All values below are decided.
    a full answer review with solutions once the test closes.
 4. **Payments:** Mobile Money checkout through an aggregator (Campay or Notch Pay), signed
    webhooks, subscriptions and unlocks granted only on confirmed payment.
-5. **Admin:** authoring for notes, questions and solutions; test scheduling; results
-   review; prize verification and payout records.
+5. **Admin (done):** `/admin` for authors (questions, notes, past papers, with student
+   previews) and admins (test scheduling with a question picker, attempts review and
+   disqualification, students with manual payment recording and roles, monthly prize
+   standings, awards and payout tracking).
 6. **Growth:** SMS or WhatsApp reminders before tests, referral rewards, streaks,
    topic-level progress reports, schools plan.
 
