@@ -7,6 +7,12 @@ import { PrismaClient, type Level } from "@prisma/client";
 
 const db = new PrismaClient();
 
+/**
+ * Sample questions, notes, a specimen paper and a demo test are for development.
+ * On the live site run with SEED_SAMPLE_CONTENT=false to create only subjects and topics.
+ */
+const SAMPLE_CONTENT = process.env.SEED_SAMPLE_CONTENT !== "false";
+
 interface SampleQuestion {
   topic: string;
   stem: string;
@@ -187,6 +193,7 @@ async function seedSubject(seed: SubjectSeed) {
     topicIds.set(name, topic.id);
   }
 
+  if (!SAMPLE_CONTENT) return subject;
   if ((await db.question.count({ where: { subjectId: subject.id } })) > 0) return subject;
 
   for (const q of seed.questions) {
@@ -213,6 +220,11 @@ async function main() {
   for (const seed of curriculum) {
     const subject = await seedSubject(seed);
     console.log(`Seeded ${seed.level} ${subject.name}`);
+  }
+
+  if (!SAMPLE_CONTENT) {
+    console.log("Skipped sample content (SEED_SAMPLE_CONTENT=false)");
+    return;
   }
 
   const oMaths = await db.subject.findUniqueOrThrow({

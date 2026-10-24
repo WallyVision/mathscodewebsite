@@ -4,6 +4,7 @@ Revision notes, past questions, worked solutions and weekly timed tests with pri
 Cameroon GCE O Level and A Level students.
 
 Product rules, pricing and roadmap: **[docs/SPEC.md](docs/SPEC.md)**.
+Putting the site online: **[docs/DEPLOY.md](docs/DEPLOY.md)**.
 
 ## Tech stack
 
@@ -130,4 +131,8 @@ match the server's price, then grants access once (repeat checks are harmless).
   phone numbers are registered.
 - Security headers are set in `next.config.ts`.
 - CamPay notifications must carry a valid HS256 signature made with the webhook key.
-- **To do before launch:** login rate limiting, password reset by SMS or email.
+- Repeated attempts are limited per IP, account, phone number or user (login, sign-up,
+  payment prompts, password changes) with database counters, so limits hold across servers.
+- Password reset links are created by an admin, work once, expire after 24 hours and end
+  every session for the account. Changing a password also signs out other devices.
+- In production the server refuses to start if required settings are missing or malformed.

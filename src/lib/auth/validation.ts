@@ -13,7 +13,7 @@ const phone = z
     return normalized;
   });
 
-const password = z
+export const passwordSchema = z
   .string()
   .min(8, "Use at least 8 characters")
   .max(128, "Use at most 128 characters");
@@ -25,7 +25,7 @@ export const registerSchema = z.object({
     .union([z.literal(""), z.email("Enter a valid email address")])
     .transform((v) => (v === "" ? null : v.toLowerCase())),
   level: z.enum(["O_LEVEL", "A_LEVEL"], { error: "Choose your level" }),
-  password,
+  password: passwordSchema,
 });
 
 export const loginSchema = z.object({

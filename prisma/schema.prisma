@@ -42,6 +42,7 @@ model User {
   payments      Payment[]
   unlocks       SolutionUnlock[]
   prizes        PrizeAward[]
+  resetTokens   PasswordResetToken[]
 }
 
 model Session {
@@ -54,6 +55,28 @@ model Session {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model PasswordResetToken {
+  // SHA-256 of the token in the reset link; the raw token is never stored.
+  id          String    @id
+  userId      String
+  expiresAt   DateTime
+  usedAt      DateTime?
+  // Admin who created the link
+  createdById String?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Fixed-window counters for limiting repeated actions (logins, sign-ups, payment prompts).
+model RateLimit {
+  key         String   @id
+  windowStart DateTime
+  count       Int
 }
 
 // ─── Curriculum and content ──────────────────────────────────────────────────

@@ -14,7 +14,7 @@ import { ADMIN_ONLY, requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { formatXaf, LEVEL_LABEL, SUBSCRIPTION_PRICE } from "@/lib/domain/pricing";
 import { formatDateTime } from "@/lib/format";
-import { GrantForm, RoleForm } from "./student-forms";
+import { GrantForm, ResetLinkPanel, RoleForm } from "./student-forms";
 
 export const metadata: Metadata = { title: "Student" };
 
@@ -60,6 +60,14 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
         <section className="rounded-lg border border-slate-200 bg-white p-5">
           <h2 className="mb-4 font-semibold">Access</h2>
           <RoleForm key={user.role} userId={user.id} role={user.role} />
+          <div className="mt-6 border-t border-slate-200 pt-5">
+            <h3 className="mb-1 text-sm font-semibold">Forgotten password</h3>
+            <p className="mb-3 text-sm text-slate-600">
+              Check it is really the student (e.g. a call from their number), then send them a reset
+              link.
+            </p>
+            <ResetLinkPanel userId={user.id} />
+          </div>
         </section>
       </div>
 

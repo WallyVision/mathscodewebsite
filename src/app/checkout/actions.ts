@@ -7,6 +7,7 @@ import type { Product } from "@/lib/domain/checkout";
 import { isCameroonMobile, normalizeCameroonPhone } from "@/lib/domain/phone";
 import { refreshPayment, startCheckout } from "@/lib/payments/service";
 import { db } from "@/lib/db";
+import { consumeAll, LIMITS, retryMessage } from "@/lib/rate-limit";
 import { safeReturnPath } from "@/lib/domain/checkout";
 
 export interface CheckoutFormState {
@@ -48,6 +49,13 @@ export async function startCheckoutAction(
     pastPaperId: formData.get("pastPaperId") ?? undefined,
   });
   if (!parsed.success) return { message: MESSAGES.NOT_FOUND, phone: phoneInput };
+
+  const limited = await consumeAll([
+    [`checkout:user:${user.id}`, LIMITS.checkoutPerUser],
+    [`checkout:phone:${phone}`, LIMITS.checkoutPerPhone],
+  ]);
+  if (!limited.allowed)
+    return { message: retryMessage(limited.retryAfterSeconds), phone: phoneInput };
 
   const result = await startCheckout(user, parsed.data as Product, phone);
   if (!result.ok) {

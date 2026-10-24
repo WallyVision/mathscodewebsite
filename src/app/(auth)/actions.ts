@@ -7,6 +7,7 @@ import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { createSession, destroySession } from "@/lib/auth/session";
 import { loginSchema, parseIdentifier, registerSchema } from "@/lib/auth/validation";
 import { db } from "@/lib/db";
+import { clientIp, consume, consumeAll, LIMITS, reset, retryMessage } from "@/lib/rate-limit";
 
 export interface FormState {
   message?: string;
@@ -25,6 +26,9 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
     return { fieldErrors: z.flattenError(parsed.error).fieldErrors, values };
   }
   const { password, ...data } = parsed.data;
+
+  const limited = await consume(`register:ip:${await clientIp()}`, LIMITS.registerPerIp);
+  if (!limited.allowed) return { message: retryMessage(limited.retryAfterSeconds), values };
 
   let userId: string;
   try {
@@ -60,6 +64,13 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
   }
 
   const where = parseIdentifier(parsed.data.identifier);
+  // Count per account and per IP, so neither guessing one password nor trying many accounts works.
+  const identifierKey = `login:id:${where ? Object.values(where)[0] : parsed.data.identifier.toLowerCase()}`;
+  const limited = await consumeAll([
+    [identifierKey, LIMITS.loginPerIdentifier],
+    [`login:ip:${await clientIp()}`, LIMITS.loginPerIp],
+  ]);
+  if (!limited.allowed) return { message: retryMessage(limited.retryAfterSeconds), values };
   const user = where
     ? await db.user.findUnique({ where, select: { id: true, passwordHash: true } })
     : null;
@@ -71,6 +82,7 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
     return { message: "Incorrect phone number, email or password.", values };
   }
 
+  await reset(identifierKey);
   await createSession(user.id);
   redirect("/dashboard");
 }

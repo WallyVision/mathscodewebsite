@@ -12,8 +12,9 @@ export default async function DashboardPage() {
   const now = new Date();
 
   const [subscription, upcomingTests] = await Promise.all([
+    // Renewals start when the current period ends, so the latest end date is when access stops.
     db.subscription.findFirst({
-      where: { userId: user.id, level: user.level, startsAt: { lte: now }, endsAt: { gt: now } },
+      where: { userId: user.id, level: user.level, endsAt: { gt: now } },
       orderBy: { endsAt: "desc" },
       select: { endsAt: true },
     }),

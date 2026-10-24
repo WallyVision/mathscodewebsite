@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
-import { logout } from "@/app/(auth)/actions";
 import { getCurrentUser } from "@/lib/auth/session";
 import { site } from "@/lib/site";
 import "katex/dist/katex.min.css";
@@ -25,10 +24,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="flex min-h-dvh flex-col">
         <header className="border-b border-slate-200 bg-white">
           <nav className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
-            <Link href="/" className="text-lg font-bold text-brand-700">
+            <Link href={user ? "/dashboard" : "/"} className="text-lg font-bold text-brand-700">
               {site.name}
             </Link>
-            <div className="flex items-center gap-3 text-sm">
+            <div className="flex items-center gap-4 text-sm">
               {user ? (
                 <>
                   <Link href="/learn" className="font-medium hover:text-brand-700">
@@ -37,17 +36,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <Link href="/tests" className="font-medium hover:text-brand-700">
                     Tests
                   </Link>
-                  <Link href="/dashboard" className="font-medium hover:text-brand-700">
-                    Dashboard
-                  </Link>
                   {user.role !== "STUDENT" && (
                     <Link href="/admin" className="font-medium text-brand-700 hover:underline">
                       Admin
                     </Link>
                   )}
-                  <form action={logout}>
-                    <button className="text-slate-600 hover:text-slate-900">Log out</button>
-                  </form>
+                  <Link href="/account" className="font-medium hover:text-brand-700">
+                    Account
+                  </Link>
                 </>
               ) : (
                 <>
