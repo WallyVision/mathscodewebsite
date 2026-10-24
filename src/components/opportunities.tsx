@@ -65,10 +65,13 @@ export function PostCard({
   post,
   now,
   showCategory = false,
+  locked = false,
 }: {
   post: PostSummary;
   now: Date;
   showCategory?: boolean;
+  /** Show that the full post is for subscribers. */
+  locked?: boolean;
 }) {
   const info = categoryInfo(post.category);
   return (
@@ -87,8 +90,9 @@ export function PostCard({
       </div>
       <h3 className="font-semibold">{post.title}</h3>
       <p className="mt-1 line-clamp-2 text-sm text-slate-600">{post.summary}</p>
-      <div className="mt-2">
+      <div className="mt-2 flex flex-wrap items-center gap-2">
         <DeadlineBadge deadline={post.deadline} now={now} />
+        {locked && <span className="text-xs font-medium text-amber-700">🔒 Subscribers</span>}
       </div>
     </Link>
   );

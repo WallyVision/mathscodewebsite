@@ -59,7 +59,9 @@ export default function HomePage() {
 
       <section className="mx-auto max-w-5xl px-4 pb-12">
         <h2 className="text-2xl font-bold">Beyond the GCE</h2>
-        <p className="mt-2 text-slate-600">Free guides and opportunities for what comes next.</p>
+        <p className="mt-2 text-slate-600">
+          Scholarships, jobs and guides for what comes next. Included with every subscription.
+        </p>
         <div className="mt-6">
           <CategoryButtons />
         </div>
@@ -82,6 +84,7 @@ export default function HomePage() {
                 <li>✓ All weekly and monthly tests</li>
                 <li>✓ Every worked solution</li>
                 <li>✓ Leaderboard and monthly prizes</li>
+                <li>✓ Scholarships, jobs and career guides</li>
               </ul>
               <Link
                 href={`/checkout?plan=${level}`}

@@ -58,7 +58,7 @@ src/
     (auth)/            Login, registration, logout
     dashboard/         Student home
     learn/             Notes, topics, practice questions and past papers
-    opportunities/     Scholarships, jobs, travel, finance and career posts (public)
+    opportunities/     Scholarships, jobs, travel, finance and career posts (articles for subscribers)
   components/          Shared UI
   lib/
     auth/              Password hashing, sessions, input validation

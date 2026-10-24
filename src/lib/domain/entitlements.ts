@@ -29,3 +29,13 @@ export function canViewSolution(viewer: ViewerAccess, target: SolutionTarget, no
 export function canEnterTest(viewer: ViewerAccess, level: Level, now: Date): boolean {
   return viewer.role !== "STUDENT" || hasActiveSubscription(viewer.subscriptions, level, now);
 }
+
+/**
+ * Opportunity and guide articles are a subscriber benefit: any active
+ * subscription (O or A Level) opens them, as does staff access.
+ */
+export function canReadPosts(viewer: ViewerAccess | null, now: Date): boolean {
+  if (!viewer) return false;
+  if (viewer.role !== "STUDENT") return true;
+  return viewer.subscriptions.some((s) => s.startsAt <= now && now < s.endsAt);
+}

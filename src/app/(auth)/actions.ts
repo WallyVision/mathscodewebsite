@@ -7,6 +7,7 @@ import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { createSession, destroySession } from "@/lib/auth/session";
 import { loginSchema, parseIdentifier, registerSchema } from "@/lib/auth/validation";
 import { db } from "@/lib/db";
+import { safeReturnPath } from "@/lib/domain/checkout";
 import { clientIp, consume, consumeAll, LIMITS, reset, retryMessage } from "@/lib/rate-limit";
 
 export interface FormState {
@@ -50,7 +51,7 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
   }
 
   await createSession(userId);
-  redirect("/dashboard");
+  redirect(safeReturnPath(String(formData.get("next") ?? "")) ?? "/dashboard");
 }
 
 // Compared against when no user matches, so response time does not reveal which accounts exist.
@@ -84,7 +85,7 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
 
   await reset(identifierKey);
   await createSession(user.id);
-  redirect("/dashboard");
+  redirect(safeReturnPath(String(formData.get("next") ?? "")) ?? "/dashboard");
 }
 
 export async function logout(): Promise<void> {

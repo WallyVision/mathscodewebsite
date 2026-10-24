@@ -1,3 +1,6 @@
+import { loadViewerAccess } from "@/lib/access";
+import { getCurrentUser } from "@/lib/auth/session";
+import { canReadPosts } from "@/lib/domain/entitlements";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/breadcrumbs";
@@ -18,6 +21,8 @@ export default async function CategoryPage({ params }: Props) {
   const info = categoryBySlug((await params).category);
   if (!info) notFound();
   const now = new Date();
+  const user = await getCurrentUser();
+  const locked = !canReadPosts(user ? await loadViewerAccess(user) : null, now);
   const { open, closed } = await listCategoryPosts(info.category, info.hasDeadlines, now);
 
   return (
@@ -38,7 +43,7 @@ export default async function CategoryPage({ params }: Props) {
               : "Articles are on the way. Check back soon."}
           </p>
         ) : (
-          open.map((post) => <PostCard key={post.slug} post={post} now={now} />)
+          open.map((post) => <PostCard key={post.slug} post={post} now={now} locked={locked} />)
         )}
       </section>
 
@@ -47,7 +52,7 @@ export default async function CategoryPage({ params }: Props) {
           <h2 className="mb-3 text-sm font-semibold text-slate-500 uppercase">Recently closed</h2>
           <div className="space-y-3 opacity-75">
             {closed.map((post) => (
-              <PostCard key={post.slug} post={post} now={now} />
+              <PostCard key={post.slug} post={post} now={now} locked={locked} />
             ))}
           </div>
         </section>

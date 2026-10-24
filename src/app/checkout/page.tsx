@@ -64,6 +64,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
       "Every weekly and monthly test",
       "Every worked solution",
       "Leaderboard and monthly cash prizes",
+      "Scholarships, jobs, travel, finance and career guides",
       ...(current
         ? [`Adds 30 days after your current subscription ends (${formatDateTime(current.endsAt)})`]
         : []),
