@@ -10,6 +10,7 @@ Names, slogans and the domain live in `src/lib/site.ts`.
 
 Product rules, pricing and roadmap: **[docs/SPEC.md](docs/SPEC.md)**.
 Putting the site online: **[docs/DEPLOY.md](docs/DEPLOY.md)**.
+Capacity measurements: **[docs/LOAD_TEST.md](docs/LOAD_TEST.md)**.
 
 ## Tech stack
 
@@ -131,7 +132,8 @@ match the server's price, then grants access once (repeat checks are harmless).
 
 ## Security notes
 
-- Passwords: scrypt (N=2¹⁷, r=8, p=1) with a per-user salt.
+- Passwords: Argon2id (19 MiB, 2 passes, 1 lane; OWASP's first recommendation) with a
+  per-user salt. Older scrypt hashes still verify and are upgraded at the next login.
 - Sessions: random 256-bit token in an `HttpOnly`, `SameSite=Lax` cookie (`Secure` in
   production); only its SHA-256 hash is stored.
 - Login does the same work for unknown accounts, so response time does not reveal which

@@ -3,7 +3,7 @@
 import { Prisma } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { hashPassword, verifyPassword } from "@/lib/auth/password";
+import { hashPassword, needsRehash, verifyPassword } from "@/lib/auth/password";
 import { createSession, destroySession } from "@/lib/auth/session";
 import { loginSchema, parseIdentifier, registerSchema } from "@/lib/auth/validation";
 import { db } from "@/lib/db";
@@ -84,6 +84,13 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
   }
 
   await reset(identifierKey);
+  if (needsRehash(user.passwordHash)) {
+    // Upgrade passwords stored with older settings, now that we know the password.
+    await db.user.update({
+      where: { id: user.id },
+      data: { passwordHash: await hashPassword(parsed.data.password) },
+    });
+  }
   await createSession(user.id);
   redirect(safeReturnPath(String(formData.get("next") ?? "")) ?? "/dashboard");
 }

@@ -17,6 +17,12 @@ import { gradeMcq } from "@/lib/domain/scoring";
 
 type Tx = Prisma.TransactionClient;
 
+/**
+ * Marking runs in a transaction. When many students submit at once they queue
+ * for a database connection, so wait well beyond Prisma's 2-second default.
+ */
+const TRANSACTION_OPTIONS = { maxWait: 15_000, timeout: 20_000 };
+
 export type Answers = Record<string, string | null>;
 
 /** Answers, correct options and the leaderboard are revealed once the test window closes. */
@@ -224,8 +230,9 @@ async function gradeAndClose(
   attempt: { id: string; testId: string; startedAt: Date; deadlineAt: Date },
   status: Extract<AttemptStatus, "SUBMITTED" | "EXPIRED">,
   now: Date,
+  preloaded?: TestQuestionRow[],
 ) {
-  const rows = await loadTestQuestions(attempt.testId, tx);
+  const rows = preloaded ?? (await loadTestQuestions(attempt.testId, tx));
   const answers = await tx.attemptAnswer.findMany({
     where: { attemptId: attempt.id },
     select: { questionId: true, selectedOptionId: true },
@@ -258,10 +265,21 @@ export async function submitAttempt(testId: string, userId: string, finalAnswers
   await db.$transaction(async (tx) => {
     const attempt = await openAttempt(testId, userId, now, tx);
     if (!attempt) return;
-    const answers = validAnswers(await loadTestQuestions(testId, tx), finalAnswers);
-    await upsertAnswers(attempt.id, answers, now, tx);
-    await gradeAndClose(tx, attempt, "SUBMITTED", now);
-  });
+    const rows = await loadTestQuestions(testId, tx);
+    const saved = await tx.attemptAnswer.findMany({
+      where: { attemptId: attempt.id },
+      select: { questionId: true, selectedOptionId: true },
+    });
+    const savedById = new Map(saved.map((a) => [a.questionId, a.selectedOptionId]));
+    // Autosave has usually stored these already; only write what differs.
+    const changed = Object.fromEntries(
+      Object.entries(validAnswers(rows, finalAnswers)).filter(
+        ([questionId, optionId]) => savedById.get(questionId) !== optionId,
+      ),
+    );
+    await upsertAnswers(attempt.id, changed, now, tx);
+    await gradeAndClose(tx, attempt, "SUBMITTED", now, rows);
+  }, TRANSACTION_OPTIONS);
   // Covers an attempt that ran out of time before the submission arrived.
   await finalizeExpiredAttempts(testId);
 }
@@ -275,7 +293,10 @@ export async function finalizeExpiredAttempts(testId: string): Promise<void> {
     select: { id: true, testId: true, startedAt: true, deadlineAt: true },
   });
   for (const attempt of expired) {
-    await db.$transaction((tx) => gradeAndClose(tx, attempt, "EXPIRED", attempt.deadlineAt));
+    await db.$transaction(
+      (tx) => gradeAndClose(tx, attempt, "EXPIRED", attempt.deadlineAt),
+      TRANSACTION_OPTIONS,
+    );
   }
 }
 

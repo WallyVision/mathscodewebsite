@@ -16,15 +16,21 @@ Hosting screens change often; if a button has moved, look for the same setting n
 
 ### Environment variables
 
-| Variable              | Value                                                                |
-| --------------------- | -------------------------------------------------------------------- |
-| `DATABASE_URL`        | From the PostgreSQL service (Railway can link it for you)            |
-| `APP_URL`             | `https://studentlife237.com` (the public address, with https)        |
-| `CAMPAY_ENVIRONMENT`  | `demo` while testing, `live` to take real payments                   |
-| `CAMPAY_APP_USERNAME` | From the CamPay application page (live app for `live`)               |
-| `CAMPAY_APP_PASSWORD` | From the CamPay application page                                     |
-| `CAMPAY_WEBHOOK_KEY`  | From the CamPay application page                                     |
-| `SUPPORT_WHATSAPP`    | Optional. Overrides the support WhatsApp number in `src/lib/site.ts` |
+| Variable       | Value                                                     |
+| -------------- | --------------------------------------------------------- |
+| `DATABASE_URL` | From the PostgreSQL service (Railway can link it for you) |
+
+| `APP_URL` | `https://studentlife237.com` (the public address, with https) |
+| `CAMPAY_ENVIRONMENT` | `demo` while testing, `live` to take real payments |
+| `CAMPAY_APP_USERNAME` | From the CamPay application page (live app for `live`) |
+| `CAMPAY_APP_PASSWORD` | From the CamPay application page |
+| `CAMPAY_WEBHOOK_KEY` | From the CamPay application page |
+| `SUPPORT_WHATSAPP` | Optional. Overrides the support WhatsApp number in `src/lib/site.ts` |
+
+Add `connection_limit=10` to the database address (for example
+`postgresql://…/railway?connection_limit=10`). Prisma otherwise sizes its connection pool
+from the server's CPU count, which on a 1-CPU plan is only 3 connections and makes students
+queue during a test. See docs/LOAD_TEST.md for measured capacity.
 
 Paste every value exactly, with no quotes, brackets or spaces. The server checks this when
 it starts and refuses to run, with a message naming the problem, if something is missing
