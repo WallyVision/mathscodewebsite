@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CategoryButtons } from "@/components/opportunities";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { formatXaf, LEVEL_LABEL, SUBSCRIPTION_PRICE } from "@/lib/domain/pricing";
@@ -82,6 +83,15 @@ export default async function DashboardPage() {
             ))}
           </ul>
         )}
+      </section>
+      <section>
+        <div className="mb-3 flex items-baseline justify-between">
+          <h2 className="font-semibold">Beyond the GCE</h2>
+          <Link href="/opportunities" className="text-sm text-brand-700 hover:underline">
+            See all
+          </Link>
+        </div>
+        <CategoryButtons compact />
       </section>
     </div>
   );

@@ -23,11 +23,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en">
       <body className="flex min-h-dvh flex-col">
         <header className="border-b border-slate-200 bg-white">
-          <nav className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
-            <Link href={user ? "/dashboard" : "/"} className="text-lg font-bold text-brand-700">
+          <nav className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
+            <Link
+              href={user ? "/dashboard" : "/"}
+              className="shrink-0 text-base font-bold text-brand-700 sm:text-lg"
+            >
               {site.name}
             </Link>
-            <div className="flex items-center gap-4 text-sm">
+            <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-sm sm:gap-x-4">
               {user ? (
                 <>
                   <Link href="/learn" className="font-medium hover:text-brand-700">
@@ -35,6 +38,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   </Link>
                   <Link href="/tests" className="font-medium hover:text-brand-700">
                     Tests
+                  </Link>
+                  <Link href="/opportunities" className="font-medium hover:text-brand-700">
+                    Explore
                   </Link>
                   {user.role !== "STUDENT" && (
                     <Link href="/admin" className="font-medium text-brand-700 hover:underline">
@@ -47,6 +53,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </>
               ) : (
                 <>
+                  <Link href="/opportunities" className="font-medium hover:text-brand-700">
+                    Explore
+                  </Link>
                   <Link href="/login" className="font-medium hover:text-brand-700">
                     Log in
                   </Link>

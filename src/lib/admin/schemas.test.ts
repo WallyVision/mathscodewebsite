@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { noteSchema, questionSchema, slugify, testSchema } from "./schemas";
+import { noteSchema, postSchema, questionSchema, slugify, testSchema } from "./schemas";
 
 const question = {
   subjectId: "s1",
@@ -93,5 +93,38 @@ describe("testSchema", () => {
 
   it("rejects duplicate questions", () => {
     expect(testSchema.safeParse({ ...test, questionIds: ["q1", "q1"] }).success).toBe(false);
+  });
+});
+
+describe("postSchema", () => {
+  const post = {
+    category: "SCHOLARSHIP",
+    title: "Example Scholarship 2027",
+    slug: "example-scholarship-2027",
+    summary: "Full tuition for first-year engineering students.",
+    body: "## Who can apply\n\nA Level holders.",
+    externalUrl: "https://example.org/apply",
+    organisation: "Example Foundation",
+    location: "",
+    deadline: "2027-03-31T23:59",
+    status: "PUBLISHED",
+  };
+
+  it("parses a post, with Cameroon-time deadline and blank fields as null", () => {
+    const p = postSchema.parse(post);
+    expect(p.deadline).toEqual(new Date("2027-03-31T22:59:00Z"));
+    expect(p.location).toBeNull();
+    expect(p.externalUrl).toBe("https://example.org/apply");
+  });
+
+  it("allows no link and no deadline", () => {
+    const p = postSchema.parse({ ...post, externalUrl: "", deadline: "" });
+    expect(p).toMatchObject({ externalUrl: null, deadline: null });
+  });
+
+  it("rejects links that are not web addresses", () => {
+    for (const externalUrl of ["javascript:alert(1)", "example.org", "ftp://example.org"]) {
+      expect(postSchema.safeParse({ ...post, externalUrl }).success).toBe(false);
+    }
   });
 });

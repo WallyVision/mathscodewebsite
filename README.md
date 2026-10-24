@@ -58,6 +58,7 @@ src/
     (auth)/            Login, registration, logout
     dashboard/         Student home
     learn/             Notes, topics, practice questions and past papers
+    opportunities/     Scholarships, jobs, travel, finance and career posts (public)
   components/          Shared UI
   lib/
     auth/              Password hashing, sessions, input validation
@@ -84,7 +85,7 @@ Sign in and open **/admin** (an Admin link appears in the header for staff).
 
 | Role   | Can use                                                                |
 | ------ | ---------------------------------------------------------------------- |
-| Author | Questions, notes, past papers                                          |
+| Author | Questions, notes, past papers, opportunities and guides                |
 | Admin  | Everything above, plus tests, students, manual payments, roles, prizes |
 
 The first admin is created from the command line, after registering on the site:

@@ -22,6 +22,9 @@ body {
 .prose-content {
   @apply leading-relaxed;
 }
+.prose-content > :first-child {
+  @apply mt-0;
+}
 .prose-content > * + * {
   @apply mt-3;
 }

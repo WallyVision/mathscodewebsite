@@ -127,7 +127,12 @@ Implemented in `src/lib/domain/prizes.ts`. All values below are decided.
    previews) and admins (test scheduling with a question picker, attempts review and
    disqualification, students with manual payment recording and roles, monthly prize
    standings, awards and payout tracking).
-6. **Growth:** SMS or WhatsApp reminders before tests, referral rewards, streaks,
+6. **Opportunities (done):** public `/opportunities` with five sections (scholarships, jobs,
+   travel, finance management, career orientation), buttons on the home page and dashboard,
+   deadlines with "closing soon" badges, official apply links, WhatsApp sharing and an
+   anti-scam notice. Authors publish posts from `/admin/posts`. Free and public so they bring
+   new visitors to the revision side.
+7. **Growth:** SMS or WhatsApp reminders before tests, referral rewards, streaks,
    topic-level progress reports, schools plan.
 
 ## Open decisions

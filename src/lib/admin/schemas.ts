@@ -133,3 +133,48 @@ export const roleSchema = z.object({
   userId: id,
   role: z.enum(["STUDENT", "AUTHOR", "ADMIN"]),
 });
+
+const optionalText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .transform((v) => (v === "" ? null : v));
+
+export const postSchema = z.object({
+  category: z.enum(["SCHOLARSHIP", "JOB", "TRAVEL", "FINANCE", "CAREER"], {
+    error: "Choose a section",
+  }),
+  title: z.string().trim().min(2, "Enter a title").max(140),
+  slug: slugSchema,
+  summary: z
+    .string()
+    .trim()
+    .min(10, "Write a one or two sentence summary")
+    .max(300, "Keep the summary under 300 characters"),
+  body: markdown("article", 50_000),
+  externalUrl: z
+    .string()
+    .trim()
+    .transform((v, ctx) => {
+      if (v === "") return null;
+      try {
+        const url = new URL(v);
+        if (url.protocol === "https:" || url.protocol === "http:") return url.toString();
+      } catch {}
+      ctx.addIssue({ code: "custom", message: "Enter a full web address starting with https://" });
+      return z.NEVER;
+    }),
+  organisation: optionalText(120),
+  location: optionalText(120),
+  deadline: z.string().transform((v, ctx) => {
+    if (v === "") return null;
+    const date = fromDoualaInput(v);
+    if (!date) {
+      ctx.addIssue({ code: "custom", message: "Enter a valid date and time" });
+      return z.NEVER;
+    }
+    return date;
+  }),
+  status,
+});

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CategoryButtons } from "@/components/opportunities";
 import { formatXaf, LEVEL_LABEL, SUBSCRIPTION_PRICE } from "@/lib/domain/pricing";
 import { site } from "@/lib/site";
 
@@ -54,6 +55,14 @@ export default function HomePage() {
             </li>
           ))}
         </ol>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-4 pb-12">
+        <h2 className="text-2xl font-bold">Beyond the GCE</h2>
+        <p className="mt-2 text-slate-600">Free guides and opportunities for what comes next.</p>
+        <div className="mt-6">
+          <CategoryButtons />
+        </div>
       </section>
 
       <section className="mx-auto max-w-5xl px-4 pb-16">
