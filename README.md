@@ -14,16 +14,16 @@ Capacity measurements: **[docs/LOAD_TEST.md](docs/LOAD_TEST.md)**.
 
 ## Tech stack
 
-| Concern       | Choice                                                |
-| ------------- | ----------------------------------------------------- |
-| Web framework | Next.js 15 (App Router, React Server Components)      |
-| Language      | TypeScript (strict)                                   |
-| Database      | PostgreSQL 16 with Prisma ORM and migrations          |
-| Styling       | Tailwind CSS 4                                        |
-| Validation    | Zod                                                   |
-| Auth          | Phone or email + password; scrypt hashes; DB sessions |
-| Tests         | Vitest                                                |
-| CI            | GitHub Actions: format, lint, typecheck, test, build  |
+| Concern       | Choice                                                  |
+| ------------- | ------------------------------------------------------- |
+| Web framework | Next.js 15 (App Router, React Server Components)        |
+| Language      | TypeScript (strict)                                     |
+| Database      | PostgreSQL 16 with Prisma ORM and migrations            |
+| Styling       | Tailwind CSS 4                                          |
+| Validation    | Zod                                                     |
+| Auth          | Phone or email + password; Argon2id hashes; DB sessions |
+| Tests         | Vitest                                                  |
+| CI            | GitHub Actions: format, lint, typecheck, test, build    |
 
 ## Getting started
 
