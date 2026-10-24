@@ -1,8 +1,8 @@
 {
-  "name": "prep237",
+  "name": "studentlife237",
   "version": "0.1.0",
   "private": true,
-  "description": "Revision and weekly testing platform for Cameroon GCE O Level and A Level students.",
+  "description": "StudentLife237: GCE revision (GCEPrep237), scholarships, jobs and guidance for Cameroonian students.",
   "engines": {
     "node": ">=20.18"
   },

@@ -126,7 +126,7 @@ export async function startCheckout(
     result = await provider.collect({
       amount,
       from: toProviderPhone(phoneE164),
-      description: productDescription(product, site.name),
+      description: productDescription(product, site.gcePrep.name),
       externalReference: payment.id,
     });
   } catch (err) {

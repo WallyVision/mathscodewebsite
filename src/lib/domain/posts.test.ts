@@ -54,8 +54,8 @@ describe("daysLeft", () => {
 
 describe("whatsappShareUrl", () => {
   it("encodes the title and link", () => {
-    expect(whatsappShareUrl("MTN Scholarship", "https://gceprep237.com/x")).toBe(
-      "https://wa.me/?text=MTN%20Scholarship%0Ahttps%3A%2F%2Fgceprep237.com%2Fx",
+    expect(whatsappShareUrl("MTN Scholarship", "https://studentlife237.com/x")).toBe(
+      "https://wa.me/?text=MTN%20Scholarship%0Ahttps%3A%2F%2Fstudentlife237.com%2Fx",
     );
   });
 });

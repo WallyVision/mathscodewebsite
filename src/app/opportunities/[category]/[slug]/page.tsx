@@ -15,6 +15,7 @@ import { categoryBySlug, deadlineState, whatsappShareUrl } from "@/lib/domain/po
 import { formatXaf, SUBSCRIPTION_PRICE } from "@/lib/domain/pricing";
 import { formatDateTime } from "@/lib/format";
 import { visiblePostWhere } from "@/lib/posts";
+import { site } from "@/lib/site";
 
 interface Props {
   params: Promise<{ category: string; slug: string }>;
@@ -96,7 +97,7 @@ export default async function PostPage({ params }: Props) {
         </>
       ) : (
         <div className="mt-6 rounded-lg border-2 border-dashed border-amber-300 bg-amber-50 p-5">
-          <p className="font-semibold text-amber-900">🔒 For Prep237 subscribers</p>
+          <p className="font-semibold text-amber-900">🔒 For {site.name} subscribers</p>
           <p className="mt-1 text-sm text-amber-900">
             Subscribe to read the full{" "}
             {info.hasDeadlines ? "details and get the application link" : "guide"}. Every

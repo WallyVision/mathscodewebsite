@@ -1,6 +1,12 @@
-# Prep237: product specification
+# StudentLife237: product specification
 
-**Prep237**, "Revise. Compete. Win.", is an online revision and testing platform for **Cameroon GCE O Level and A Level** students.
+**StudentLife237**, "Equal opportunities to all", has two sections: **GCEPrep237** ("Prepare
+for the GCE smarter."), the GCE revision and testing product described below, and
+**Opportunities** (scholarships, jobs, travel, finance, careers). The home page and the
+student dashboard show both as big tiles; the header links GCE Prep, Opportunities and
+Account, and every GCEPrep237 page has a Home · Revise · Tests bar.
+
+GCEPrep237 is an online revision and testing platform for **Cameroon GCE O Level and A Level** students.
 Students revise with notes and past questions, sit timed weekly and monthly tests, see
 where they rank, and compete for cash prizes paid by Mobile Money.
 
@@ -139,4 +145,4 @@ Implemented in `src/lib/domain/prizes.ts`. All values below are decided.
 ## Open decisions
 
 - Payment aggregator: compare Campay and Notch Pay on fees, payout API and support.
-- Register the domain **gceprep237.com** (chosen; not yet registered).
+- Register the domain **studentlife237.com** (chosen; not yet registered).

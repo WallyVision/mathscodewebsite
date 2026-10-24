@@ -1,4 +1,4 @@
-# Putting Prep237 online
+# Putting StudentLife237 online
 
 This guide uses **Railway** (railway.com): it runs the site and its PostgreSQL database
 together, deploys automatically from GitHub, and provides HTTPS for your own domain. Any
@@ -19,7 +19,7 @@ Hosting screens change often; if a button has moved, look for the same setting n
 | Variable              | Value                                                                |
 | --------------------- | -------------------------------------------------------------------- |
 | `DATABASE_URL`        | From the PostgreSQL service (Railway can link it for you)            |
-| `APP_URL`             | `https://gceprep237.com` (the public address, with https)            |
+| `APP_URL`             | `https://studentlife237.com` (the public address, with https)        |
 | `CAMPAY_ENVIRONMENT`  | `demo` while testing, `live` to take real payments                   |
 | `CAMPAY_APP_USERNAME` | From the CamPay application page (live app for `live`)               |
 | `CAMPAY_APP_PASSWORD` | From the CamPay application page                                     |
@@ -56,12 +56,12 @@ or malformed.
    npm run admin:grant -- 676999221
    ```
 
-8. **Connect the domain.** Buy `gceprep237.com` from a registrar (Namecheap, Cloudflare,
-   GoDaddy…). In Railway: Settings → Networking → Custom domain → `gceprep237.com`, then add
+8. **Connect the domain.** Buy `studentlife237.com` from a registrar (Namecheap, Cloudflare,
+   GoDaddy…). In Railway: Settings → Networking → Custom domain → `studentlife237.com`, then add
    the DNS records Railway shows at your registrar. HTTPS is set up automatically once DNS
    has updated (minutes to a few hours). Make sure `APP_URL` matches.
 9. **Connect CamPay.** In the CamPay application settings, set the webhook URL to
-   `https://gceprep237.com/api/payments/campay`.
+   `https://studentlife237.com/api/payments/campay`.
 10. **Go live with payments.** Replace the three CamPay values with your **live** app's
     values, set `CAMPAY_ENVIRONMENT=live`, redeploy, then from the shell send yourself a
     small real payment:
@@ -72,7 +72,7 @@ or malformed.
 
 ## Before announcing the launch
 
-- [ ] Health check is green at `https://gceprep237.com/api/health`
+- [ ] Health check is green at `https://studentlife237.com/api/health`
 - [ ] Registration, login and password change work on a phone
 - [ ] A real subscription payment completes and shows the end date
 - [ ] Notes and questions for the first weeks are published

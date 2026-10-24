@@ -7,6 +7,7 @@ import { productAmount, safeReturnPath, type Product } from "@/lib/domain/checko
 import { formatXaf, LEVEL_LABEL } from "@/lib/domain/pricing";
 import { formatDateTime } from "@/lib/format";
 import { getPaymentProvider } from "@/lib/payments/campay";
+import { site } from "@/lib/site";
 import { CheckoutForm } from "./checkout-form";
 
 export const metadata: Metadata = { title: "Checkout" };
@@ -59,7 +60,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
       orderBy: { endsAt: "desc" },
       select: { endsAt: true },
     });
-    title = `${LEVEL_LABEL[level]} subscription: 30 days`;
+    title = `${site.gcePrep.name} ${LEVEL_LABEL[level]}: 30 days`;
     details = [
       "Every weekly and monthly test",
       "Every worked solution",

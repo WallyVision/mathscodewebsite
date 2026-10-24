@@ -43,7 +43,7 @@ export default async function LoginPage({
               from the phone number on your account and we will send you a reset link.
             </>
           ) : (
-            "Contact Prep237 support from the phone number on your account and we will send you a reset link."
+            `Contact ${site.name} support from the phone number on your account and we will send you a reset link.`
           )}
         </p>
       </details>

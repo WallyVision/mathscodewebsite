@@ -1,7 +1,12 @@
-# Prep237
+# StudentLife237
 
-Revision notes, past questions, worked solutions and weekly timed tests with prizes for
-Cameroon GCE O Level and A Level students.
+**Equal opportunities to all.** A platform for Cameroonian students with two sections:
+
+- **GCEPrep237** ("Prepare for the GCE smarter."): revision notes, past questions, worked
+  solutions and weekly timed tests with prizes for GCE O Level and A Level.
+- **Opportunities**: scholarships, jobs, travel, finance management and career orientation.
+
+Names, slogans and the domain live in `src/lib/site.ts`.
 
 Product rules, pricing and roadmap: **[docs/SPEC.md](docs/SPEC.md)**.
 Putting the site online: **[docs/DEPLOY.md](docs/DEPLOY.md)**.
@@ -56,7 +61,8 @@ prisma/
 src/
   app/                 Routes (pages, layouts, server actions)
     (auth)/            Login, registration, logout
-    dashboard/         Student home
+    dashboard/         Student home: the two sections
+    gce/               GCEPrep237 home (intro for visitors, revision home for students)
     learn/             Notes, topics, practice questions and past papers
     opportunities/     Scholarships, jobs, travel, finance and career posts (articles for subscribers)
   components/          Shared UI

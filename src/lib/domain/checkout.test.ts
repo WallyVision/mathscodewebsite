@@ -40,7 +40,7 @@ describe("products", () => {
   });
 
   it("describes the purchase for the payment prompt", () => {
-    expect(productDescription(products[0]!, "Prep237")).toBe("Prep237 O Level 30 days");
+    expect(productDescription(products[0]!, "GCEPrep237")).toBe("GCEPrep237 O Level 30 days");
   });
 });
 

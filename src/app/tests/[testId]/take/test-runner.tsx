@@ -24,7 +24,7 @@ type SaveState = "saving" | "saved" | "error";
 const RETRY_MS = 5000;
 
 function storageKey(testId: string) {
-  return `prep237:test:${testId}:answers`;
+  return `studentlife237:test:${testId}:answers`;
 }
 
 // Local backup of answers, so a reload on a bad connection loses nothing.

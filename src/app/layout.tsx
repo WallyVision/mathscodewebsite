@@ -7,7 +7,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: site.name, template: `%s · ${site.name}` },
-  description: site.tagline,
+  description: `${site.slogan}. ${site.tagline}`,
 };
 
 export const viewport: Viewport = {
@@ -33,14 +33,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-sm sm:gap-x-4">
               {user ? (
                 <>
-                  <Link href="/learn" className="font-medium hover:text-brand-700">
-                    Revise
-                  </Link>
-                  <Link href="/tests" className="font-medium hover:text-brand-700">
-                    Tests
+                  <Link href="/gce" className="font-medium hover:text-brand-700">
+                    GCE Prep
                   </Link>
                   <Link href="/opportunities" className="font-medium hover:text-brand-700">
-                    Explore
+                    Opportunities
                   </Link>
                   {user.role !== "STUDENT" && (
                     <Link href="/admin" className="font-medium text-brand-700 hover:underline">
@@ -53,8 +50,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </>
               ) : (
                 <>
-                  <Link href="/opportunities" className="font-medium hover:text-brand-700">
-                    Explore
+                  <Link href="/gce" className="hidden font-medium hover:text-brand-700 sm:inline">
+                    GCE Prep
+                  </Link>
+                  <Link
+                    href="/opportunities"
+                    className="hidden font-medium hover:text-brand-700 sm:inline"
+                  >
+                    Opportunities
                   </Link>
                   <Link href="/login" className="font-medium hover:text-brand-700">
                     Log in
@@ -72,7 +75,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </header>
         <main className="flex-1">{children}</main>
         <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
-          © {new Date().getFullYear()} {site.name}. Not affiliated with the Cameroon GCE Board.
+          © {new Date().getFullYear()} {site.name}. {site.gcePrep.name} is not affiliated with the
+          Cameroon GCE Board.
         </footer>
       </body>
     </html>
