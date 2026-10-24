@@ -32,17 +32,18 @@ npm run dev                   # http://localhost:3000
 
 ## Scripts
 
-| Command                                   | What it does                                    |
-| ----------------------------------------- | ----------------------------------------------- |
-| `npm run dev`                             | Development server                              |
-| `npm run build`                           | Production build                                |
-| `npm test`                                | Unit tests                                      |
-| `npm run lint`                            | ESLint                                          |
-| `npm run typecheck`                       | TypeScript check                                |
-| `npm run format`                          | Prettier                                        |
-| `npm run db:migrate`                      | Create and apply a migration after schema edits |
-| `npm run db:studio`                       | Browse the database in a GUI                    |
-| `npm run admin:grant -- <phone or email>` | Make an existing account an admin               |
+| Command                                       | What it does                                                 |
+| --------------------------------------------- | ------------------------------------------------------------ |
+| `npm run dev`                                 | Development server                                           |
+| `npm run build`                               | Production build                                             |
+| `npm test`                                    | Unit tests                                                   |
+| `npm run lint`                                | ESLint                                                       |
+| `npm run typecheck`                           | TypeScript check                                             |
+| `npm run format`                              | Prettier                                                     |
+| `npm run db:migrate`                          | Create and apply a migration after schema edits              |
+| `npm run db:studio`                           | Browse the database in a GUI                                 |
+| `npm run admin:grant -- <phone or email>`     | Make an existing account an admin                            |
+| `npm run payments:smoke -- <mobile> [amount]` | Send one real CamPay payment request and wait for the result |
 
 ## Project layout
 
@@ -112,6 +113,9 @@ quotes or brackets):
 In the CamPay application settings, set the webhook URL to
 `https://<your domain>/api/payments/campay`. Without it, payments still complete while the
 student keeps the waiting page open, but the webhook covers students who close it.
+
+To check credentials and the phone flow (for example before switching to `live`), run
+`npm run payments:smoke -- 676999221 25` and confirm the prompt on that phone.
 
 How a payment is trusted: the site never grants access from the browser or from the
 notification alone. It asks CamPay for the transaction, checks the amount and currency

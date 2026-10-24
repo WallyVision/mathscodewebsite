@@ -22,7 +22,8 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate",
-    "admin:grant": "tsx scripts/make-admin.ts"
+    "admin:grant": "tsx scripts/make-admin.ts",
+    "payments:smoke": "tsx --conditions=react-server scripts/campay-smoke.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
