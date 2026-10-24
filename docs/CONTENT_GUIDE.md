@@ -1,6 +1,6 @@
 # Content writing guide
 
-For anyone writing notes, questions or solutions for Prep237.
+For anyone writing notes, questions or solutions for StudentLife237.
 
 ## Format
 

@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/admin/questions", label: "Questions", adminOnly: false },
   { href: "/admin/notes", label: "Notes", adminOnly: false },
   { href: "/admin/papers", label: "Past papers", adminOnly: false },
+  { href: "/admin/posts", label: "Opportunities", adminOnly: false },
   { href: "/admin/tests", label: "Tests", adminOnly: true },
   { href: "/admin/students", label: "Students", adminOnly: true },
   { href: "/admin/prizes", label: "Prizes", adminOnly: true },

@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/session";
 import {
@@ -15,11 +14,18 @@ import {
 const id = z.string().min(1).max(64);
 const answersSchema = z.record(id, id.nullable()).refine((a) => Object.keys(a).length <= 500);
 
-export async function startTest(testId: string): Promise<Exclude<StartResult, { ok: true }>> {
+/**
+ * Starts (or resumes) the student's attempt and says where to go next. The
+ * browser navigates itself, so the server does not render the paper inside
+ * this request; that keeps starts cheap when a whole class begins together.
+ */
+export async function startTest(
+  testId: string,
+): Promise<{ next: string } | Exclude<StartResult, { ok: true }>> {
   const user = await requireUser();
   const result = await startAttempt(id.parse(testId), user);
-  if (result.ok) redirect(`/tests/${testId}/take`);
-  if (result.reason === "FINISHED") redirect(`/tests/${testId}/results`);
+  if (result.ok) return { next: `/tests/${testId}/take` };
+  if (result.reason === "FINISHED") return { next: `/tests/${testId}/results` };
   return result;
 }
 
@@ -43,5 +49,5 @@ export async function submitTest(testId: string, answers: Record<string, string 
   const user = await requireUser();
   const parsed = answersSchema.safeParse(answers);
   await submitAttempt(id.parse(testId), user.id, parsed.success ? parsed.data : {});
-  redirect(`/tests/${testId}/results`);
+  return { next: `/tests/${testId}/results` };
 }

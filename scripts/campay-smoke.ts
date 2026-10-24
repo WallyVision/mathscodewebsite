@@ -35,7 +35,7 @@ async function main() {
   const started = await campay.collect({
     amount,
     from: phone.replace(/^\+/, ""),
-    description: "Prep237 payment test",
+    description: "StudentLife237 payment test",
     externalReference: `smoke-${Date.now()}`,
   });
   if (!started.ok) {

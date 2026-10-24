@@ -1,9 +1,19 @@
-/** Brand settings in one place so the name can change without a code hunt. */
+/** Brand settings in one place so names can change without a code hunt. */
 export const site = {
-  name: "Prep237",
-  domain: "gceprep237.com",
+  name: "StudentLife237",
+  slogan: "Equal opportunities to all",
+  tagline: "GCE revision, scholarships, jobs and guidance for Cameroonian students.",
+  domain: "studentlife237.com",
   /** WhatsApp number students contact for help and password resets (SUPPORT_WHATSAPP overrides it). */
   supportWhatsApp: "237676999221",
-  slogan: "Revise. Compete. Win.",
-  tagline: "Weekly tests, past questions and worked solutions for GCE O and A Level.",
+  /** The GCE revision section inside the platform. */
+  gcePrep: {
+    name: "GCEPrep237",
+    slogan: "Prepare for the GCE smarter.",
+    tagline: "Notes, past questions, weekly timed tests and cash prizes for GCE O and A Level.",
+  },
+  opportunities: {
+    name: "Opportunities",
+    tagline: "Scholarships, jobs, studying abroad, money and careers.",
+  },
 } as const;

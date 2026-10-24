@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canEnterTest, canViewSolution, type ViewerAccess } from "./entitlements";
+import { canEnterTest, canReadPosts, canViewSolution, type ViewerAccess } from "./entitlements";
 
 const now = new Date("2026-10-21");
 const student = (overrides: Partial<ViewerAccess> = {}): ViewerAccess => ({
@@ -57,5 +57,36 @@ describe("canViewSolution", () => {
 describe("canEnterTest", () => {
   it("requires a subscription for students", () => {
     expect(canEnterTest(student(), "A_LEVEL", now)).toBe(false);
+  });
+});
+
+describe("canReadPosts", () => {
+  it("is closed to visitors and students without a subscription", () => {
+    expect(canReadPosts(null, now)).toBe(false);
+    expect(canReadPosts(student(), now)).toBe(false);
+  });
+
+  it("opens with a subscription at either level", () => {
+    for (const level of ["O_LEVEL", "A_LEVEL"] as const) {
+      const viewer = student({
+        subscriptions: [
+          { level, startsAt: new Date("2026-10-01"), endsAt: new Date("2026-10-31") },
+        ],
+      });
+      expect(canReadPosts(viewer, now)).toBe(true);
+    }
+  });
+
+  it("closes when the subscription has ended", () => {
+    const viewer = student({
+      subscriptions: [
+        { level: "O_LEVEL", startsAt: new Date("2026-09-01"), endsAt: new Date("2026-10-01") },
+      ],
+    });
+    expect(canReadPosts(viewer, now)).toBe(false);
+  });
+
+  it("is open to staff", () => {
+    expect(canReadPosts(student({ role: "AUTHOR" }), now)).toBe(true);
   });
 });

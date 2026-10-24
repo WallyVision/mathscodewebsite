@@ -5,13 +5,14 @@ import { register, type FormState } from "@/app/(auth)/actions";
 import { Field, FormMessage, SubmitButton } from "@/components/form";
 import { formatXaf, SUBSCRIPTION_PRICE } from "@/lib/domain/pricing";
 
-export function RegisterForm() {
+export function RegisterForm({ next }: { next?: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(register, {});
   const errors = state.fieldErrors ?? {};
   const values = state.values ?? {};
 
   return (
     <form action={action} className="space-y-4" noValidate>
+      {next && <input type="hidden" name="next" value={next} />}
       <FormMessage message={state.message} />
       <Field
         label="Full name"

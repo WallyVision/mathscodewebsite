@@ -394,3 +394,37 @@ model PrizeAward {
   @@unique([subjectId, period, category, rank])
   @@index([userId])
 }
+
+// ─── Opportunities and guides ────────────────────────────────────────────────
+
+enum PostCategory {
+  SCHOLARSHIP
+  JOB
+  TRAVEL
+  FINANCE
+  CAREER
+}
+
+/// Scholarships, jobs, travel, finance and career articles. Public, so they bring new visitors.
+model Post {
+  id           String        @id @default(cuid())
+  category     PostCategory
+  slug         String        @unique
+  title        String
+  // One or two sentences shown in lists and when shared
+  summary      String
+  // Markdown
+  body         String
+  // Where to apply or read more
+  externalUrl  String?
+  organisation String?
+  location     String?
+  // Application deadline, for scholarships and jobs
+  deadline     DateTime?
+  status       ContentStatus @default(DRAFT)
+  publishedAt  DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([category, status, publishedAt])
+}

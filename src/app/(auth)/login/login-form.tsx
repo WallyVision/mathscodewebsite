@@ -4,12 +4,13 @@ import { useActionState } from "react";
 import { login, type FormState } from "@/app/(auth)/actions";
 import { Field, FormMessage, SubmitButton } from "@/components/form";
 
-export function LoginForm() {
+export function LoginForm({ next }: { next?: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(login, {});
   const errors = state.fieldErrors ?? {};
 
   return (
     <form action={action} className="space-y-4" noValidate>
+      {next && <input type="hidden" name="next" value={next} />}
       <FormMessage message={state.message} />
       <Field
         label="Phone number or email"

@@ -257,6 +257,7 @@ async function main() {
   }
 
   await seedNotes();
+  await seedPosts();
   await seedSpecimenPaper(oMaths.id);
 
   if ((await db.test.count()) === 0) {
@@ -459,6 +460,139 @@ async function seedSpecimenPaper(subjectId: string) {
     });
   }
   console.log("Seeded specimen paper");
+}
+
+const samplePosts: {
+  category: "SCHOLARSHIP" | "JOB" | "TRAVEL" | "FINANCE" | "CAREER";
+  slug: string;
+  title: string;
+  summary: string;
+  body: string[];
+  organisation?: string;
+  location?: string;
+  externalUrl?: string;
+  deadlineInDays?: number;
+}[] = [
+  {
+    category: "FINANCE",
+    slug: "student-budget-with-mobile-money",
+    title: "Make a simple monthly budget with Mobile Money",
+    summary:
+      "Know where your money goes, save a little every month and avoid running out before month end.",
+    body: [
+      "## 1. Write down what comes in",
+      "Pocket money, holiday job pay, gifts. Use the **real** amount, not what you hope for.",
+      "",
+      "## 2. List what must be paid first",
+      "- Transport to school",
+      "- Food and data bundles",
+      "- School needs: books, photocopies, exam fees",
+      "",
+      "## 3. Save before you spend",
+      "Move **10%** into savings the day money arrives. With MTN MoMo or Orange Money you can keep it in a separate wallet or savings feature so it is not mixed with spending money.",
+      "",
+      "## 4. Check every Sunday",
+      "Look at your Mobile Money history. If one thing takes too much, plan to reduce it next week.",
+      "",
+      "**Tip:** never share your PIN or the code in an SMS, even with someone who says they are from MTN or Orange.",
+    ],
+  },
+  {
+    category: "CAREER",
+    slug: "choosing-a-level-subjects-for-your-career",
+    title: "Choosing A Level subjects for the career you want",
+    summary:
+      "Your A Level combination decides which university courses you can apply for. Choose with the end in mind.",
+    body: [
+      "## Start from the course, not the subject",
+      "Look up the entry requirements of two or three university courses you like, then pick the subjects they ask for.",
+      "",
+      "| If you are aiming for | Subjects usually asked for |",
+      "| --- | --- |",
+      "| Medicine, pharmacy | Biology, Chemistry, plus Physics or Maths |",
+      "| Engineering | Mathematics, Physics, often Chemistry |",
+      "| Computer science | Mathematics, plus Physics or Further Maths |",
+      "| Economics, accounting | Mathematics, Economics |",
+      "",
+      "Requirements differ between universities, so always check the official admission notice.",
+      "",
+      "## Be honest about your strengths",
+      "Your O Level results in a subject are a good guide to how you will cope with it at A Level.",
+      "",
+      "## Talk to people already doing the job",
+      "Ask what they studied and what they would do differently.",
+    ],
+  },
+  {
+    category: "TRAVEL",
+    slug: "avoid-study-abroad-scams",
+    title: "Studying abroad: how to avoid scams",
+    summary:
+      "Fake admission letters and visa agents cost families a lot of money. Five checks before you pay anyone.",
+    body: [
+      "1. **Apply directly** on the university's official website. Admission is usually free or has a small, published application fee.",
+      "2. **Check the website address** carefully. Scam sites copy real names with small changes.",
+      "3. **No one can guarantee a visa.** Only the embassy decides.",
+      "4. **Pay fees only to the university's official bank account**, never to a personal account or agent's Mobile Money number.",
+      "5. **Ask the embassy** in Yaoundé for the official visa checklist and fees.",
+      "",
+      "If an offer sounds too good to be true, it probably is.",
+    ],
+  },
+  {
+    category: "SCHOLARSHIP",
+    slug: "sample-engineering-scholarship",
+    title: "Sample: Engineering scholarship for A Level students",
+    summary:
+      "Sample post to show how scholarships appear. Replace it with real opportunities before launch.",
+    organisation: "Sample Foundation",
+    location: "Cameroon",
+    externalUrl: "https://example.org/scholarship",
+    deadlineInDays: 45,
+    body: [
+      "## Who can apply",
+      "- A Level holders with Mathematics and Physics",
+      "",
+      "## What it covers",
+      "- Tuition for the first year",
+    ],
+  },
+  {
+    category: "JOB",
+    slug: "sample-holiday-tutoring-job",
+    title: "Sample: Holiday tutoring job for O Level maths",
+    summary:
+      "Sample post to show how jobs appear. Replace it with real opportunities before launch.",
+    organisation: "Sample Tutoring Centre",
+    location: "Buea",
+    externalUrl: "https://example.org/jobs",
+    deadlineInDays: 5,
+    body: [
+      "## The role",
+      "Help Form 4 students revise algebra during the holidays.",
+      "",
+      "## You need",
+      "- A good O Level grade in Mathematics",
+    ],
+  },
+];
+
+async function seedPosts() {
+  const now = Date.now();
+  for (const p of samplePosts) {
+    const { body, deadlineInDays, ...data } = p;
+    await db.post.upsert({
+      where: { slug: p.slug },
+      update: {},
+      create: {
+        ...data,
+        body: body.join("\n"),
+        status: "PUBLISHED",
+        publishedAt: new Date(now),
+        deadline: deadlineInDays ? new Date(now + deadlineInDays * 24 * 60 * 60 * 1000) : null,
+      },
+    });
+  }
 }
 
 main()

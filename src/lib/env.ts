@@ -11,7 +11,7 @@ export function checkEnv(env: Record<string, string | undefined>): {
 
   if (!env.DATABASE_URL) errors.push("DATABASE_URL is not set.");
   if (!env.APP_URL) {
-    errors.push("APP_URL is not set (e.g. https://gceprep237.com).");
+    errors.push("APP_URL is not set (e.g. https://studentlife237.com).");
   } else if (!/^https:\/\//.test(env.APP_URL)) {
     errors.push("APP_URL must start with https:// in production.");
   }

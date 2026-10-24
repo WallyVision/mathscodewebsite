@@ -1,23 +1,29 @@
-# Prep237
+# StudentLife237
 
-Revision notes, past questions, worked solutions and weekly timed tests with prizes for
-Cameroon GCE O Level and A Level students.
+**Equal opportunities to all.** A platform for Cameroonian students with two sections:
+
+- **GCEPrep237** ("Prepare for the GCE smarter."): revision notes, past questions, worked
+  solutions and weekly timed tests with prizes for GCE O Level and A Level.
+- **Opportunities**: scholarships, jobs, travel, finance management and career orientation.
+
+Names, slogans and the domain live in `src/lib/site.ts`.
 
 Product rules, pricing and roadmap: **[docs/SPEC.md](docs/SPEC.md)**.
 Putting the site online: **[docs/DEPLOY.md](docs/DEPLOY.md)**.
+Capacity measurements: **[docs/LOAD_TEST.md](docs/LOAD_TEST.md)**.
 
 ## Tech stack
 
-| Concern       | Choice                                                |
-| ------------- | ----------------------------------------------------- |
-| Web framework | Next.js 15 (App Router, React Server Components)      |
-| Language      | TypeScript (strict)                                   |
-| Database      | PostgreSQL 16 with Prisma ORM and migrations          |
-| Styling       | Tailwind CSS 4                                        |
-| Validation    | Zod                                                   |
-| Auth          | Phone or email + password; scrypt hashes; DB sessions |
-| Tests         | Vitest                                                |
-| CI            | GitHub Actions: format, lint, typecheck, test, build  |
+| Concern       | Choice                                                  |
+| ------------- | ------------------------------------------------------- |
+| Web framework | Next.js 15 (App Router, React Server Components)        |
+| Language      | TypeScript (strict)                                     |
+| Database      | PostgreSQL 16 with Prisma ORM and migrations            |
+| Styling       | Tailwind CSS 4                                          |
+| Validation    | Zod                                                     |
+| Auth          | Phone or email + password; Argon2id hashes; DB sessions |
+| Tests         | Vitest                                                  |
+| CI            | GitHub Actions: format, lint, typecheck, test, build    |
 
 ## Getting started
 
@@ -56,8 +62,10 @@ prisma/
 src/
   app/                 Routes (pages, layouts, server actions)
     (auth)/            Login, registration, logout
-    dashboard/         Student home
+    dashboard/         Student home: the two sections
+    gce/               GCEPrep237 home (intro for visitors, revision home for students)
     learn/             Notes, topics, practice questions and past papers
+    opportunities/     Scholarships, jobs, travel, finance and career posts (articles for subscribers)
   components/          Shared UI
   lib/
     auth/              Password hashing, sessions, input validation
@@ -84,7 +92,7 @@ Sign in and open **/admin** (an Admin link appears in the header for staff).
 
 | Role   | Can use                                                                |
 | ------ | ---------------------------------------------------------------------- |
-| Author | Questions, notes, past papers                                          |
+| Author | Questions, notes, past papers, opportunities and guides                |
 | Admin  | Everything above, plus tests, students, manual payments, roles, prizes |
 
 The first admin is created from the command line, after registering on the site:
@@ -124,7 +132,8 @@ match the server's price, then grants access once (repeat checks are harmless).
 
 ## Security notes
 
-- Passwords: scrypt (N=2¹⁷, r=8, p=1) with a per-user salt.
+- Passwords: Argon2id (19 MiB, 2 passes, 1 lane; OWASP's first recommendation) with a
+  per-user salt. Older scrypt hashes still verify and are upgraded at the next login.
 - Sessions: random 256-bit token in an `HttpOnly`, `SameSite=Lax` cookie (`Secure` in
   production); only its SHA-256 hash is stored.
 - Login does the same work for unknown accounts, so response time does not reveal which

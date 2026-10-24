@@ -1,6 +1,12 @@
-# Prep237: product specification
+# StudentLife237: product specification
 
-**Prep237**, "Revise. Compete. Win.", is an online revision and testing platform for **Cameroon GCE O Level and A Level** students.
+**StudentLife237**, "Equal opportunities to all", has two sections: **GCEPrep237** ("Prepare
+for the GCE smarter."), the GCE revision and testing product described below, and
+**Opportunities** (scholarships, jobs, travel, finance, careers). The home page and the
+student dashboard show both as big tiles; the header links GCE Prep, Opportunities and
+Account, and every GCEPrep237 page has a Home · Revise · Tests bar.
+
+GCEPrep237 is an online revision and testing platform for **Cameroon GCE O Level and A Level** students.
 Students revise with notes and past questions, sit timed weekly and monthly tests, see
 where they rank, and compete for cash prizes paid by Mobile Money.
 
@@ -127,10 +133,16 @@ Implemented in `src/lib/domain/prizes.ts`. All values below are decided.
    previews) and admins (test scheduling with a question picker, attempts review and
    disqualification, students with manual payment recording and roles, monthly prize
    standings, awards and payout tracking).
-6. **Growth:** SMS or WhatsApp reminders before tests, referral rewards, streaks,
+6. **Opportunities (done):** `/opportunities` with five sections (scholarships, jobs,
+   travel, finance management, career orientation), buttons on the home page and dashboard.
+   Everyone sees the buttons and each section's titles, summaries and deadlines; the full
+   article and the apply link are for **subscribers** (either level) and staff, and are not
+   sent to anyone else. Visitors are asked to sign up or log in and return to the same post.
+   WhatsApp sharing for everyone, anti-scam notice. Authors publish from `/admin/posts`.
+7. **Growth:** SMS or WhatsApp reminders before tests, referral rewards, streaks,
    topic-level progress reports, schools plan.
 
 ## Open decisions
 
 - Payment aggregator: compare Campay and Notch Pay on fees, payout API and support.
-- Register the domain **gceprep237.com** (chosen; not yet registered).
+- Register the domain **studentlife237.com** (chosen; not yet registered).

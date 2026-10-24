@@ -3,7 +3,7 @@ import { checkEnv } from "./env";
 
 const good = {
   DATABASE_URL: "postgresql://db",
-  APP_URL: "https://gceprep237.com",
+  APP_URL: "https://studentlife237.com",
   CAMPAY_ENVIRONMENT: "live",
   CAMPAY_APP_USERNAME: "user",
   CAMPAY_APP_PASSWORD: "pass",
@@ -19,7 +19,7 @@ describe("checkEnv", () => {
     const { errors } = checkEnv({
       ...good,
       DATABASE_URL: undefined,
-      APP_URL: "http://gceprep237.com",
+      APP_URL: "http://studentlife237.com",
     });
     expect(errors).toEqual([
       "DATABASE_URL is not set.",

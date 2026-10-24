@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useActionState } from "react";
 import { startTest } from "@/app/tests/actions";
 
@@ -12,10 +13,18 @@ const MESSAGES = {
 } as const;
 
 export function StartButton({ testId }: { testId: string }) {
-  const [state, action, pending] = useActionState<{ reason?: keyof typeof MESSAGES }>(
-    () => startTest(testId),
-    {},
-  );
+  const router = useRouter();
+  const [state, action, pending] = useActionState<{
+    reason?: keyof typeof MESSAGES;
+    opening?: boolean;
+  }>(async () => {
+    const result = await startTest(testId);
+    if ("next" in result) {
+      router.push(result.next);
+      return { opening: true };
+    }
+    return { reason: result.reason };
+  }, {});
   return (
     <form action={action} className="space-y-2">
       {state.reason && (
@@ -25,10 +34,10 @@ export function StartButton({ testId }: { testId: string }) {
       )}
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || state.opening}
         className="w-full rounded-md bg-brand-600 px-5 py-3 font-semibold text-white hover:bg-brand-700 disabled:opacity-60 sm:w-auto"
       >
-        {pending ? "Starting…" : "Start test"}
+        {pending || state.opening ? "Opening your test…" : "Start test"}
       </button>
     </form>
   );

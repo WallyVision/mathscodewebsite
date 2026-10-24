@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { reportFocusLoss, saveAnswerAction, submitTest } from "@/app/tests/actions";
 import { formatSeconds } from "@/lib/format";
@@ -22,9 +23,11 @@ interface Props {
 type SaveState = "saving" | "saved" | "error";
 
 const RETRY_MS = 5000;
+/** Pauses before each submission retry; the last entry is the final attempt. */
+const SUBMIT_RETRY_DELAYS_MS = [1000, 3000, 0];
 
 function storageKey(testId: string) {
-  return `prep237:test:${testId}:answers`;
+  return `studentlife237:test:${testId}:answers`;
 }
 
 // Local backup of answers, so a reload on a bad connection loses nothing.
@@ -60,6 +63,7 @@ export function TestRunner({
   deadlineAt,
   serverNow,
 }: Props) {
+  const router = useRouter();
   const [answers, setAnswers] = useState(initialAnswers);
   const [saveState, setSaveState] = useState<Record<string, SaveState>>({});
   const [current, setCurrent] = useState(0);
@@ -77,18 +81,23 @@ export function TestRunner({
     if (submitted.current) return;
     submitted.current = true;
     startSubmit(async () => {
-      try {
-        // Answers travel with the submission, so the local backup is no longer needed.
-        clearBackup(testId);
-        await submitTest(testId, answersRef.current);
-      } catch (err) {
-        // A redirect is how a successful submission finishes; let it through.
-        if (err && typeof err === "object" && "digest" in err) throw err;
-        submitted.current = false;
-        alert("Could not submit. Check your connection and try again.");
+      // Retry a few times: a weak connection or a busy server should not cost a submission.
+      for (const [attempt, delay] of SUBMIT_RETRY_DELAYS_MS.entries()) {
+        try {
+          const { next } = await submitTest(testId, answersRef.current);
+          // Answers are now marked on the server, so the local backup is no longer needed.
+          clearBackup(testId);
+          router.replace(next);
+          return;
+        } catch {
+          if (attempt === SUBMIT_RETRY_DELAYS_MS.length - 1) break;
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
       }
+      submitted.current = false;
+      alert("Could not submit. Your answers are saved. Check your connection and try again.");
     });
-  }, [testId]);
+  }, [testId, router]);
 
   const save = useCallback(
     async (questionId: string, optionId: string | null) => {

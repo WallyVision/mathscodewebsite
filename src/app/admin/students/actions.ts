@@ -7,6 +7,7 @@ import { ADMIN_ONLY, requireRole } from "@/lib/auth/session";
 import { appUrl } from "@/lib/app-url";
 import { createResetToken } from "@/lib/auth/password-reset";
 import { db } from "@/lib/db";
+import { site } from "@/lib/site";
 import { nextSubscriptionPeriod } from "@/lib/domain/subscription";
 
 /**
@@ -82,7 +83,7 @@ export async function createResetLink(userId: string): Promise<ResetLinkResult> 
   if (!user) return { error: "Student not found." };
   const { token, expiresAt } = await createResetToken(user.id, admin.id);
   const url = `${await appUrl()}/reset-password/${token}`;
-  const text = `Hello ${user.name.split(" ")[0]}, here is your Prep237 password reset link (valid 24 hours): ${url}`;
+  const text = `Hello ${user.name.split(" ")[0]}, here is your ${site.name} password reset link (valid 24 hours): ${url}`;
   return {
     url,
     expiresAt: expiresAt.toISOString(),

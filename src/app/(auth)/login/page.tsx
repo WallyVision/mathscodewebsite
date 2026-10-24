@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/session";
+import { safeReturnPath } from "@/lib/domain/checkout";
 import { site } from "@/lib/site";
 import { LoginForm } from "./login-form";
 
@@ -10,10 +11,11 @@ export const metadata: Metadata = { title: "Log in" };
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reset?: string }>;
+  searchParams: Promise<{ reset?: string; next?: string }>;
 }) {
-  if (await getCurrentUser()) redirect("/dashboard");
-  const { reset } = await searchParams;
+  const { reset, next: nextParam } = await searchParams;
+  const next = safeReturnPath(nextParam ?? "") ?? undefined;
+  if (await getCurrentUser()) redirect(next ?? "/dashboard");
   const support = (process.env.SUPPORT_WHATSAPP || site.supportWhatsApp).replace(/\D/g, "");
   return (
     <div className="mx-auto max-w-sm px-4 py-10">
@@ -26,7 +28,7 @@ export default async function LoginPage({
           Your password has been changed. Log in with the new one.
         </p>
       )}
-      <LoginForm />
+      <LoginForm next={next} />
       <details className="mt-4 text-sm text-slate-600">
         <summary className="cursor-pointer text-brand-700 hover:underline">
           Forgot your password?
@@ -41,13 +43,16 @@ export default async function LoginPage({
               from the phone number on your account and we will send you a reset link.
             </>
           ) : (
-            "Contact Prep237 support from the phone number on your account and we will send you a reset link."
+            `Contact ${site.name} support from the phone number on your account and we will send you a reset link.`
           )}
         </p>
       </details>
       <p className="mt-6 text-center text-sm text-slate-600">
         New here?{" "}
-        <Link href="/register" className="font-medium text-brand-700 hover:underline">
+        <Link
+          href={next ? `/register?next=${encodeURIComponent(next)}` : "/register"}
+          className="font-medium text-brand-700 hover:underline"
+        >
           Create an account
         </Link>
       </p>
