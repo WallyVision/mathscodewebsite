@@ -78,6 +78,7 @@ export default async function EditQuestionPage({ params, searchParams }: Props) 
             options: question.options.map((o) => ({ label: o.label, text: o.text })),
             correctLabel: question.options.find((o) => o.isCorrect)?.label ?? null,
             fromPastPaper: question.pastPaperId !== null,
+            pastPaperId: question.pastPaperId,
             solution: question.solution,
           }}
         />

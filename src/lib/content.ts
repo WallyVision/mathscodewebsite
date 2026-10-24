@@ -40,6 +40,7 @@ export interface PracticeQuestion {
   options: { label: string; text: string }[];
   correctLabel: string | null;
   fromPastPaper: boolean;
+  pastPaperId: string | null;
   /** Worked solution when the viewer may see it; "locked" when they may not; null when none written. */
   solution: string | "locked" | null;
 }
@@ -84,6 +85,7 @@ async function toPracticeQuestions(
       options: q.options.map(({ label, text }) => ({ label, text })),
       correctLabel: q.options.find((o) => o.isCorrect)?.label ?? null,
       fromPastPaper: q.pastPaperId !== null,
+      pastPaperId: q.pastPaperId,
       solution: q.solution === null ? null : allowed ? q.solution : "locked",
     };
   });

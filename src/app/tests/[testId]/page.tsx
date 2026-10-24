@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { loadViewerAccess } from "@/lib/access";
 import { requireUser } from "@/lib/auth/session";
+import { checkoutPath } from "@/lib/domain/checkout";
 import { canEnterTest } from "@/lib/domain/entitlements";
 import { formatXaf, SUBSCRIPTION_PRICE } from "@/lib/domain/pricing";
 import { formatDateTime } from "@/lib/format";
@@ -83,9 +84,17 @@ export default async function TestPage({ params }: Props) {
             <p className="font-semibold">Subscribe to take this test</p>
             <p className="mt-1">
               A subscription costs {formatXaf(SUBSCRIPTION_PRICE[test.subject.level])} a month and
-              includes every test, every worked solution and the monthly prizes. Mobile Money
-              payments are coming soon.
+              includes every test, every worked solution and the monthly prizes.
             </p>
+            <Link
+              href={checkoutPath(
+                { kind: "SUBSCRIPTION", level: test.subject.level },
+                `/tests/${test.id}`,
+              )}
+              className="mt-3 inline-block rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+            >
+              Subscribe with Mobile Money
+            </Link>
           </div>
         )}
       </div>

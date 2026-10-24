@@ -1,8 +1,19 @@
+import Link from "next/link";
 import type { PracticeQuestion } from "@/lib/content";
+import { checkoutPath } from "@/lib/domain/checkout";
 import { formatXaf, UNLOCK_PRICE } from "@/lib/domain/pricing";
 import { Markdown } from "./markdown";
 
-export function QuestionCard({ question, index }: { question: PracticeQuestion; index: number }) {
+export function QuestionCard({
+  question,
+  index,
+  returnTo,
+}: {
+  question: PracticeQuestion;
+  index: number;
+  /** Page to come back to after unlocking; the question's anchor is added. */
+  returnTo?: string;
+}) {
   const number = question.number ?? index + 1;
   return (
     <article
@@ -38,30 +49,48 @@ export function QuestionCard({ question, index }: { question: PracticeQuestion; 
         </details>
       )}
 
-      <SolutionBlock solution={question.solution} paperBased={question.fromPastPaper} />
+      <SolutionBlock
+        question={question}
+        returnTo={returnTo ? `${returnTo}#q-${question.id}` : undefined}
+      />
     </article>
   );
 }
 
-function SolutionBlock({
-  solution,
-  paperBased,
-}: {
-  solution: PracticeQuestion["solution"];
-  paperBased: boolean;
-}) {
+function SolutionBlock({ question, returnTo }: { question: PracticeQuestion; returnTo?: string }) {
+  const { solution } = question;
   if (solution === null) return null;
 
   if (solution === "locked") {
+    const linkClass = "inline-block rounded-md px-3 py-1.5 text-sm font-semibold transition";
     return (
       <div className="mt-4 rounded-md border border-dashed border-amber-300 bg-amber-50 px-4 py-3 text-sm">
         <p className="font-medium text-amber-900">🔒 Worked solution</p>
         <p className="mt-1 text-amber-800">
-          Included with a subscription, or unlock this one for{" "}
-          {formatXaf(UNLOCK_PRICE.questionSolution)}
-          {paperBased && <> (or the whole paper for {formatXaf(UNLOCK_PRICE.paperSolutions)})</>}.
-          Mobile Money payments are coming soon.
+          Included with a subscription, or unlock it on its own.
         </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link
+            href={checkoutPath({ kind: "QUESTION_SOLUTION", questionId: question.id }, returnTo)}
+            className={`${linkClass} bg-amber-500 text-slate-900 hover:bg-amber-400`}
+          >
+            Unlock for {formatXaf(UNLOCK_PRICE.questionSolution)}
+          </Link>
+          {question.pastPaperId && (
+            <Link
+              href={checkoutPath(
+                { kind: "PAPER_SOLUTIONS", pastPaperId: question.pastPaperId },
+                returnTo,
+              )}
+              className={`${linkClass} border border-amber-400 bg-white text-amber-900 hover:bg-amber-100`}
+            >
+              Whole paper: {formatXaf(UNLOCK_PRICE.paperSolutions)}
+            </Link>
+          )}
+          <Link href="/checkout" className={`${linkClass} text-brand-700 hover:underline`}>
+            Subscribe
+          </Link>
+        </div>
       </div>
     );
   }

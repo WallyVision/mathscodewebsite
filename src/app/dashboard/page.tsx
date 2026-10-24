@@ -52,6 +52,14 @@ export default async function DashboardPage() {
             unlock every solution and compete for prizes.
           </p>
         )}
+        {!subscription && (
+          <Link
+            href="/checkout"
+            className="mt-3 inline-block rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+          >
+            Subscribe with Mobile Money
+          </Link>
+        )}
       </section>
 
       <section>

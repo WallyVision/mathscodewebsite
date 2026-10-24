@@ -118,8 +118,11 @@ Implemented in `src/lib/domain/prizes.ts`. All values below are decided.
    student, per-student question and option order, autosave with a local backup and
    retry, automatic submission when time runs out, results with rank, leaderboard, and
    a full answer review with solutions once the test closes.
-4. **Payments:** Mobile Money checkout through an aggregator (Campay or Notch Pay), signed
-   webhooks, subscriptions and unlocks granted only on confirmed payment.
+4. **Payments (done, tested on CamPay demo):** `/checkout` for subscriptions, single
+   solutions and whole papers; MTN/Orange prompt via CamPay; waiting page that confirms by
+   itself. Access is granted only after the site re-checks the payment with CamPay and the
+   amount matches, exactly once per payment. Signed CamPay notifications at
+   `/api/payments/campay` trigger the same check.
 5. **Admin (done):** `/admin` for authors (questions, notes, past papers, with student
    previews) and admins (test scheduling with a question picker, attempts review and
    disqualification, students with manual payment recording and roles, monthly prize

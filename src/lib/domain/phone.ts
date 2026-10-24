@@ -12,3 +12,8 @@ export function normalizeCameroonPhone(input: string): string | null {
   if (!/^[26]\d{8}$/.test(digits)) return null;
   return `+237${digits}`;
 }
+
+/** Mobile Money only works on mobile numbers (+2376…), not landlines (+2372…). */
+export function isCameroonMobile(e164: string): boolean {
+  return /^\+2376\d{8}$/.test(e164);
+}

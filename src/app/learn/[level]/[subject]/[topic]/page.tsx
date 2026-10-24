@@ -73,7 +73,12 @@ export default async function TopicPage({ params }: Props) {
         ) : (
           <div className="space-y-4">
             {questions.map((question, i) => (
-              <QuestionCard key={question.id} question={question} index={i} />
+              <QuestionCard
+                key={question.id}
+                question={question}
+                index={i}
+                returnTo={`${subjectHref}/${topic.slug}`}
+              />
             ))}
           </div>
         )}

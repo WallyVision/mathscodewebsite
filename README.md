@@ -93,8 +93,29 @@ npm run admin:grant -- 677123456
 
 After that, admins change roles from **/admin/students**.
 
-Until Mobile Money checkout is connected, record payments received by hand on a
-student's page; it adds 30 days and counts towards prize income.
+Payments received outside the site (cash, direct transfer) can be recorded on a student's
+page; it adds 30 days and counts towards prize income.
+
+## Payments (CamPay)
+
+Students pay by MTN or Orange Mobile Money through [CamPay](https://www.campay.net).
+Set these environment variables (values exactly as shown in the CamPay app, with no
+quotes or brackets):
+
+| Variable              | Value                                         |
+| --------------------- | --------------------------------------------- |
+| `CAMPAY_ENVIRONMENT`  | `demo` (test money, default) or `live`        |
+| `CAMPAY_APP_USERNAME` | App username from the CamPay application page |
+| `CAMPAY_APP_PASSWORD` | App password from the CamPay application page |
+| `CAMPAY_WEBHOOK_KEY`  | Webhook key from the CamPay application page  |
+
+In the CamPay application settings, set the webhook URL to
+`https://<your domain>/api/payments/campay`. Without it, payments still complete while the
+student keeps the waiting page open, but the webhook covers students who close it.
+
+How a payment is trusted: the site never grants access from the browser or from the
+notification alone. It asks CamPay for the transaction, checks the amount and currency
+match the server's price, then grants access once (repeat checks are harmless).
 
 ## Security notes
 
@@ -104,5 +125,5 @@ student's page; it adds 30 days and counts towards prize income.
 - Login does the same work for unknown accounts, so response time does not reveal which
   phone numbers are registered.
 - Security headers are set in `next.config.ts`.
-- **To do before launch:** login rate limiting, password reset by SMS or email, payment
-  webhook signature verification.
+- CamPay notifications must carry a valid HS256 signature made with the webhook key.
+- **To do before launch:** login rate limiting, password reset by SMS or email.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeCameroonPhone } from "./phone";
+import { isCameroonMobile, normalizeCameroonPhone } from "./phone";
 
 describe("normalizeCameroonPhone", () => {
   it.each([
@@ -19,4 +19,11 @@ describe("normalizeCameroonPhone", () => {
       expect(normalizeCameroonPhone(input)).toBeNull();
     },
   );
+});
+
+describe("isCameroonMobile", () => {
+  it("accepts mobiles and rejects landlines", () => {
+    expect(isCameroonMobile("+237677123456")).toBe(true);
+    expect(isCameroonMobile("+237222123456")).toBe(false);
+  });
 });

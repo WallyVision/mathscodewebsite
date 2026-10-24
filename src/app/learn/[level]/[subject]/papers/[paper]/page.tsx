@@ -6,7 +6,7 @@ import { QuestionCard } from "@/components/question-card";
 import { requireUser } from "@/lib/auth/session";
 import { getPaperQuestions, requireSubject } from "@/lib/content";
 import { db } from "@/lib/db";
-import { parsePaperSlug } from "@/lib/domain/levels";
+import { paperSlug, parsePaperSlug } from "@/lib/domain/levels";
 import { LEVEL_LABEL } from "@/lib/domain/pricing";
 
 interface Props {
@@ -64,7 +64,12 @@ export default async function PastPaperPage(props: Props) {
           <p className="text-sm text-slate-600">Questions for this paper are being added.</p>
         ) : (
           questions.map((question, i) => (
-            <QuestionCard key={question.id} question={question} index={i} />
+            <QuestionCard
+              key={question.id}
+              question={question}
+              index={i}
+              returnTo={`${subjectHref}/papers/${paperSlug(paper.year, paper.paperNumber)}`}
+            />
           ))
         )}
       </div>
