@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/session";
+import { site } from "@/lib/site";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Log in" };
@@ -13,7 +14,7 @@ export default async function LoginPage({
 }) {
   if (await getCurrentUser()) redirect("/dashboard");
   const { reset } = await searchParams;
-  const support = process.env.SUPPORT_WHATSAPP?.replace(/\D/g, "");
+  const support = (process.env.SUPPORT_WHATSAPP || site.supportWhatsApp).replace(/\D/g, "");
   return (
     <div className="mx-auto max-w-sm px-4 py-10">
       <h1 className="mb-6 text-2xl font-bold">Log in</h1>

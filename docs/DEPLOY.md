@@ -16,15 +16,15 @@ Hosting screens change often; if a button has moved, look for the same setting n
 
 ### Environment variables
 
-| Variable              | Value                                                               |
-| --------------------- | ------------------------------------------------------------------- |
-| `DATABASE_URL`        | From the PostgreSQL service (Railway can link it for you)           |
-| `APP_URL`             | `https://gceprep237.com` (the public address, with https)           |
-| `CAMPAY_ENVIRONMENT`  | `demo` while testing, `live` to take real payments                  |
-| `CAMPAY_APP_USERNAME` | From the CamPay application page (live app for `live`)              |
-| `CAMPAY_APP_PASSWORD` | From the CamPay application page                                    |
-| `CAMPAY_WEBHOOK_KEY`  | From the CamPay application page                                    |
-| `SUPPORT_WHATSAPP`    | Optional. Number students message for password resets, e.g. 237676… |
+| Variable              | Value                                                                |
+| --------------------- | -------------------------------------------------------------------- |
+| `DATABASE_URL`        | From the PostgreSQL service (Railway can link it for you)            |
+| `APP_URL`             | `https://gceprep237.com` (the public address, with https)            |
+| `CAMPAY_ENVIRONMENT`  | `demo` while testing, `live` to take real payments                   |
+| `CAMPAY_APP_USERNAME` | From the CamPay application page (live app for `live`)               |
+| `CAMPAY_APP_PASSWORD` | From the CamPay application page                                     |
+| `CAMPAY_WEBHOOK_KEY`  | From the CamPay application page                                     |
+| `SUPPORT_WHATSAPP`    | Optional. Overrides the support WhatsApp number in `src/lib/site.ts` |
 
 Paste every value exactly, with no quotes, brackets or spaces. The server checks this when
 it starts and refuses to run, with a message naming the problem, if something is missing
