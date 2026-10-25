@@ -7,25 +7,25 @@ Hosting screens change often; if a button has moved, look for the same setting n
 
 ## What the site needs
 
-| Setting           | Value                                                         |
-| ----------------- | ------------------------------------------------------------- |
-| Build command     | `npm run build`                                               |
-| Start command     | `npm run start:production` (applies database updates, starts) |
-| Health check path | `/api/health`                                                 |
-| Node.js           | 20.18 or newer                                                |
+| Setting           | Value                                                             |
+| ----------------- | ----------------------------------------------------------------- |
+| Build command     | `npm run build`                                                   |
+| Start command     | `npm run start:production` (database updates, first setup, start) |
+| Health check path | `/api/health`                                                     |
+| Node.js           | 20.18 or newer                                                    |
 
 ### Environment variables
 
-| Variable       | Value                                                     |
-| -------------- | --------------------------------------------------------- |
-| `DATABASE_URL` | From the PostgreSQL service (Railway can link it for you) |
-
-| `APP_URL` | `https://studentlife237.com` (the public address, with https) |
-| `CAMPAY_ENVIRONMENT` | `demo` while testing, `live` to take real payments |
-| `CAMPAY_APP_USERNAME` | From the CamPay application page (live app for `live`) |
-| `CAMPAY_APP_PASSWORD` | From the CamPay application page |
-| `CAMPAY_WEBHOOK_KEY` | From the CamPay application page |
-| `SUPPORT_WHATSAPP` | Optional. Overrides the support WhatsApp number in `src/lib/site.ts` |
+| Variable              | Value                                                                        |
+| --------------------- | ---------------------------------------------------------------------------- |
+| `DATABASE_URL`        | From the PostgreSQL service (Railway can link it for you)                    |
+| `APP_URL`             | `https://studentlife237.com` (the public address, with https)                |
+| `CAMPAY_ENVIRONMENT`  | `demo` while testing, `live` to take real payments                           |
+| `CAMPAY_APP_USERNAME` | From the CamPay application page (live app for `live`)                       |
+| `CAMPAY_APP_PASSWORD` | From the CamPay application page                                             |
+| `CAMPAY_WEBHOOK_KEY`  | From the CamPay application page                                             |
+| `SUPPORT_WHATSAPP`    | Optional. Overrides the support WhatsApp number in `src/lib/site.ts`         |
+| `ADMIN_ACCOUNTS`      | Optional. Phone numbers or emails (comma-separated) made admin at each start |
 
 Add `connection_limit=10` to the database address (for example
 `postgresql://…/railway?connection_limit=10`). Prisma otherwise sizes its connection pool
@@ -46,22 +46,13 @@ or malformed.
 4. **Add the other variables** from the table above. Start with `CAMPAY_ENVIRONMENT=demo`.
 5. **Set the commands.** In the site service's Settings: start command
    `npm run start:production`, health check path `/api/health`. Deploy.
-6. **Create the subjects and topics** (once), from the service's shell / one-off command:
-
-   ```bash
-   SEED_SAMPLE_CONTENT=false npm run db:seed
-   ```
-
-   Leave out `SEED_SAMPLE_CONTENT=false` only on a test copy, where sample questions and a
-   demo test are useful.
-
-7. **Make yourself admin.** Open the site, register with your phone number, then in the
-   shell:
-
-   ```bash
-   npm run admin:grant -- 676999221
-   ```
-
+6. **Subjects and topics** are created automatically the first time the site starts on an
+   empty database (no sample questions). To fill a test copy with sample content instead,
+   run `npm run db:seed` from the service's shell.
+7. **Make yourself admin.** Open the site and register with your phone number. Then add the
+   variable `ADMIN_ACCOUNTS=676999221` and redeploy (Railway redeploys when a variable
+   changes). Each start gives admin access to the accounts listed, so register **before**
+   adding your number. Alternatively, from a shell: `npm run admin:grant -- 676999221`.
 8. **Connect the domain.** Buy `studentlife237.com` from a registrar (Namecheap, Cloudflare,
    GoDaddy…). In Railway: Settings → Networking → Custom domain → `studentlife237.com`, then add
    the DNS records Railway shows at your registrar. HTTPS is set up automatically once DNS

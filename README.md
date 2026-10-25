@@ -95,7 +95,8 @@ Sign in and open **/admin** (an Admin link appears in the header for staff).
 | Author | Questions, notes, past papers, opportunities and guides                |
 | Admin  | Everything above, plus tests, students, manual payments, roles, prizes |
 
-The first admin is created from the command line, after registering on the site:
+The first admin: register on the site, then either set `ADMIN_ACCOUNTS=677123456` (phone
+numbers or emails, comma-separated; applied each time the production server starts) or run:
 
 ```bash
 npm run admin:grant -- 677123456
