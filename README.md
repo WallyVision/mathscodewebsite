@@ -107,6 +107,11 @@ After that, admins change roles from **/admin/students** → a person → Role. 
 prizes (those pages return "not found" for them). Authors can import many questions at once
 from **/admin/questions/import**.
 
+Diagrams and pictures are uploaded from any content form or **/admin/media** (Authors too).
+They are stored in the database (300 KB each at most) and served from `/media/<id>` with a
+year-long cache. Files are checked by their bytes; SVGs with scripts, links or embedded HTML
+are refused, and images are served with a sandboxing Content-Security-Policy.
+
 Payments received outside the site (cash, direct transfer) can be recorded on a student's
 page; it adds 30 days and counts towards prize income.
 

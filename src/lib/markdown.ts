@@ -15,7 +15,10 @@ interface HastNode {
 
 const SAFE_URL = /^(https?:|mailto:|#|\/(?!\/))/i;
 
-/** Removes link and image addresses that are not ordinary web, mail or same-site links. */
+/**
+ * Removes link and image addresses that are not ordinary web, mail or same-site
+ * links, and makes images load lazily.
+ */
 function rehypeSafeUrls() {
   const walk = (node: HastNode) => {
     if (node.type === "element" && node.properties) {
@@ -23,6 +26,9 @@ function rehypeSafeUrls() {
         const value = node.properties[attr];
         if (typeof value === "string" && !SAFE_URL.test(value.trim())) delete node.properties[attr];
       }
+      // Images further down the page load only when the student scrolls to them.
+      if (node.tagName === "img")
+        Object.assign(node.properties, { loading: "lazy", decoding: "async" });
     }
     node.children?.forEach(walk);
   };

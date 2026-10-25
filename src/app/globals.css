@@ -54,3 +54,6 @@ body {
 .prose-content .katex-display {
   @apply overflow-x-auto overflow-y-hidden py-1;
 }
+.prose-content img {
+  @apply my-2 h-auto max-w-full rounded;
+}

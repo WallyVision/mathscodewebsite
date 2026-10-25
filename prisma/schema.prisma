@@ -428,3 +428,22 @@ model Post {
 
   @@index([category, status, publishedAt])
 }
+
+// ─── Media ───────────────────────────────────────────────────────────────────
+
+// Diagrams and pictures used in questions, notes and posts, served at /media/<id>.
+// Kept in the database so the site needs no separate file storage; images are small.
+model Media {
+  id          String   @id @default(cuid())
+  // Original file name, for the media library
+  name        String
+  contentType String
+  size        Int
+  data        Bytes
+  // SHA-256 of the bytes: uploading the same file twice reuses it
+  sha256      String   @unique
+  uploadedBy  String?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}
