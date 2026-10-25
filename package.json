@@ -24,7 +24,7 @@
     "postinstall": "prisma generate",
     "admin:grant": "tsx scripts/make-admin.ts",
     "payments:smoke": "tsx --conditions=react-server scripts/campay-smoke.ts",
-    "start:production": "prisma migrate deploy && next start"
+    "start:production": "prisma migrate deploy && tsx scripts/bootstrap.ts && next start"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.2.2",
