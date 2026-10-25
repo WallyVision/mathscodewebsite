@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 205" width="270" height="205" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#111">
+<rect width="270" height="205" fill="#fff"/>
+<polygon points="40.0,170.0 213.2,170.0 213.2,70.0" fill="#e6e6e6" stroke="#111" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="200.2,170.0 200.2,157.0 213.2,157.0" fill="none" stroke="#111" stroke-width="1.5"/>
+<path d="M 74.0 170.0 A 34 34 0 0 0 69.4 153.0" fill="none" stroke="#111" stroke-width="1.5"/>
+<text x="80.0" y="164.0" font-style="italic">θ</text>
+<text x="223.2" y="125.0">2 m</text>
+<text x="126.6" y="192.0" text-anchor="middle">2√3 m</text>
+</svg>

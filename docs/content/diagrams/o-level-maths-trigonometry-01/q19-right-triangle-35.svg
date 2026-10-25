@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 205" width="270" height="205" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#111">
+<rect width="270" height="205" fill="#fff"/>
+<polygon points="40.0,180.0 220.2,180.0 220.2,53.8" fill="none" stroke="#111" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="207.2,180.0 207.2,167.0 220.2,167.0" fill="none" stroke="#111" stroke-width="1.5"/>
+<path d="M 74.0 180.0 A 34 34 0 0 0 67.9 160.5" fill="none" stroke="#111" stroke-width="1.5"/>
+<text x="80.0" y="173.0">35°</text>
+<text x="122.1" y="110.9" text-anchor="end">20 cm</text>
+<text x="230.2" y="121.9">?</text>
+</svg>
