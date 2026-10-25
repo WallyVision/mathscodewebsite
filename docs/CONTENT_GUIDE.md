@@ -41,6 +41,20 @@ s &= ut + \tfrac{1}{2}at^2
 $$
 ```
 
+### Diagrams and pictures
+
+Open **Add a diagram or picture** on any question, note or post form (or **Admin → Images**),
+upload the file and paste the line it gives, for example `![Triangle ABC](/media/abc123)`,
+where the picture should appear: in the question, an option, the solution or a note. The text
+in square brackets is read aloud by screen readers, so describe the picture briefly.
+
+- PNG, JPG, WebP or SVG, up to 300 KB. SVG is best for drawings: sharp and tiny.
+- Photos of hand-drawn diagrams: crop them, then save as JPG.
+- Still state the key facts in words ("angle $B = 90^\circ$"), so the question works even on a
+  slow connection.
+- Uploading the same file twice reuses the first copy. Pasted lines also work in a set you
+  import.
+
 ### Common LaTeX
 
 | Shows as        | Write                            |

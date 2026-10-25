@@ -26,6 +26,14 @@ describe("renderMarkdown", () => {
     expect(renderMarkdown("[x](/learn)")).toContain('href="/learn"');
   });
 
+  it("shows uploaded images, loading them lazily", () => {
+    const html = renderMarkdown("![Triangle ABC](/media/abc123)");
+    expect(html).toContain('src="/media/abc123"');
+    expect(html).toContain('alt="Triangle ABC"');
+    expect(html).toContain('loading="lazy"');
+    expect(renderMarkdown("![x](data:image/png;base64,AAAA)")).not.toContain("data:");
+  });
+
   it("returns the cached result for repeated content", () => {
     const source = `Cache check $${Math.random()}$`;
     expect(renderMarkdown(source)).toBe(renderMarkdown(source));
