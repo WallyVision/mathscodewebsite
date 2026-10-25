@@ -4,6 +4,11 @@ export const site = {
   slogan: "Equal opportunities to all",
   tagline: "GCE revision, scholarships, jobs and guidance for Cameroonian students.",
   domain: "studentlife237.com",
+  /**
+   * Who runs the site, as shown in the terms and on the contact page. Once the business is
+   * registered, set the registered name and its RCCM number.
+   */
+  operator: { name: "StudentLife237", rccm: null as string | null, city: "Cameroon" },
   /** WhatsApp number students contact for help and password resets (SUPPORT_WHATSAPP overrides it). */
   supportWhatsApp: "237676999221",
   /** The GCE revision section inside the platform. */

@@ -25,6 +25,7 @@ Hosting screens change often; if a button has moved, look for the same setting n
 | `CAMPAY_APP_PASSWORD` | From the CamPay application page                                             |
 | `CAMPAY_WEBHOOK_KEY`  | From the CamPay application page                                             |
 | `SUPPORT_WHATSAPP`    | Optional. Overrides the support WhatsApp number in `src/lib/site.ts`         |
+| `SUPPORT_EMAIL`       | Optional. Email shown on the contact page                                    |
 | `ADMIN_ACCOUNTS`      | Optional. Phone numbers or emails (comma-separated) made admin at each start |
 
 Add `connection_limit=10` to the database address (for example
@@ -74,7 +75,7 @@ or malformed.
 - [ ] A real subscription payment completes and shows the end date
 - [ ] Notes and questions for the first weeks are published
 - [ ] The first weekly test is scheduled
-- [ ] Terms and conditions for prizes are published (see docs/SPEC.md)
+- [ ] Terms, privacy and refund pages reviewed by a lawyer (prize rules in particular)
 - [ ] Automatic database backups are on in the host's database settings
 
 ## Updating the site

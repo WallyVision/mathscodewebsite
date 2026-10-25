@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { register, type FormState } from "@/app/(auth)/actions";
 import { Field, FormMessage, SubmitButton } from "@/components/form";
@@ -77,6 +78,17 @@ export function RegisterForm({ next }: { next?: string }) {
         errors={errors.password}
         required
       />
+      <p className="text-xs text-slate-600">
+        By creating an account you agree to the{" "}
+        <Link href="/terms" className="text-brand-700 underline">
+          Terms and Conditions
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className="text-brand-700 underline">
+          Privacy Policy
+        </Link>
+        . If you are under 18, a parent or guardian must agree too.
+      </p>
       <SubmitButton pending={pending}>Create account</SubmitButton>
     </form>
   );
