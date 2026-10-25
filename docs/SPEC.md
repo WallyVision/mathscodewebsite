@@ -139,7 +139,11 @@ Implemented in `src/lib/domain/prizes.ts`. All values below are decided.
    article and the apply link are for **subscribers** (either level) and staff, and are not
    sent to anyone else. Visitors are asked to sign up or log in and return to the same post.
    WhatsApp sharing for everyone, anti-scam notice. Authors publish from `/admin/posts`.
-7. **Growth:** SMS or WhatsApp reminders before tests, referral rewards, streaks,
+7. **Policies (done):** `/terms` (including the prize rules), `/privacy`, `/refunds` and
+   `/contact`, linked in the footer and on sign-up. Prices and prize rules in the text come
+   from the same constants the site uses. Set the registered business name and RCCM in
+   `site.operator` once the business is registered.
+8. **Growth:** SMS or WhatsApp reminders before tests, referral rewards, streaks,
    topic-level progress reports, schools plan.
 
 ## Open decisions
