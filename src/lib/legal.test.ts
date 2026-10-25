@@ -6,7 +6,8 @@ describe("legal pages", () => {
     const terms = termsMarkdown();
     expect(terms).toContain("1,500 FCFA");
     expect(terms).toContain("2,000 FCFA");
-    expect(terms).toContain("15%");
+    expect(terms).toContain("20%");
+    expect(terms).toContain("1,000 FCFA");
     expect(terms).toContain("10,000 FCFA");
     expect(terms).toContain("1st 50%, 2nd 30%, 3rd 20%");
   });

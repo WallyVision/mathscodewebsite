@@ -6,10 +6,15 @@ import type { ViewerAccess } from "@/lib/domain/entitlements";
 
 /** Loads what a user has paid for. Cached per request. */
 export const loadViewerAccess = cache(async (user: CurrentUser): Promise<ViewerAccess> => {
-  const [subscriptions, unlocks] = await Promise.all([
+  const now = new Date();
+  const [subscriptions, entries, unlocks] = await Promise.all([
     db.subscription.findMany({
-      where: { userId: user.id, endsAt: { gt: new Date() } },
+      where: { userId: user.id, endsAt: { gt: now } },
       select: { level: true, startsAt: true, endsAt: true },
+    }),
+    db.competitionEntry.findMany({
+      where: { userId: user.id, endsAt: { gt: now } },
+      select: { subjectId: true, startsAt: true, endsAt: true },
     }),
     db.solutionUnlock.findMany({
       where: { userId: user.id },
@@ -19,6 +24,7 @@ export const loadViewerAccess = cache(async (user: CurrentUser): Promise<ViewerA
   return {
     role: user.role,
     subscriptions,
+    entries,
     unlockedQuestionIds: new Set(unlocks.flatMap((u) => (u.questionId ? [u.questionId] : []))),
     unlockedPaperIds: new Set(unlocks.flatMap((u) => (u.pastPaperId ? [u.pastPaperId] : []))),
   };

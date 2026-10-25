@@ -21,38 +21,54 @@ function Notice({ state }: { state: AdminFormState }) {
 
 export function GrantForm({
   userId,
-  level,
+  subjects,
+  defaultSubjectId,
   prices,
 }: {
   userId: string;
-  level: string;
-  prices: Record<string, number>;
+  subjects: { id: string; label: string; level: "O_LEVEL" | "A_LEVEL" }[];
+  defaultSubjectId: string;
+  prices: { membership: Record<string, number>; extra: Record<string, number> };
 }) {
   const [state, action, pending] = useActionState<AdminFormState, FormData>(grantSubscription, {});
   const errors = state.fieldErrors ?? {};
+  const [product, setProduct] = useState(state.values?.product ?? "MEMBERSHIP");
+  const [subjectId, setSubjectId] = useState(state.values?.subjectId ?? defaultSubjectId);
+  const level = subjects.find((s) => s.id === subjectId)?.level ?? "O_LEVEL";
+  const price = (product === "EXTRA" ? prices.extra : prices.membership)[level];
   return (
     <form key={resultKey(state)} action={action} className="space-y-3">
       <input type="hidden" name="userId" value={userId} />
       <Notice state={state} />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <Select
-          label="Level"
-          name="level"
-          defaultValue={state.values?.level ?? level}
+          label="Paid for"
+          name="product"
+          value={product}
+          onChange={(e) => setProduct(e.target.value)}
           options={[
-            { value: "O_LEVEL", label: "O Level" },
-            { value: "A_LEVEL", label: "A Level" },
+            { value: "MEMBERSHIP", label: "Membership (includes this subject)" },
+            { value: "EXTRA", label: "Extra competition subject" },
           ]}
         />
-        <Field
-          label="Amount paid (FCFA)"
-          name="amount"
-          type="number"
-          inputMode="numeric"
-          defaultValue={state.values?.amount ?? String(prices[level] ?? "")}
-          errors={errors.amount}
+        <Select
+          label="Competition subject"
+          name="subjectId"
+          value={subjectId}
+          onChange={(e) => setSubjectId(e.target.value)}
+          options={subjects.map((s) => ({ value: s.id, label: s.label }))}
+          errors={errors.subjectId}
         />
       </div>
+      <Field
+        key={`${product}-${level}`}
+        label="Amount paid (FCFA)"
+        name="amount"
+        type="number"
+        inputMode="numeric"
+        defaultValue={state.values?.amount ?? String(price ?? "")}
+        errors={errors.amount}
+      />
       <Field
         label="Payment reference"
         name="reference"

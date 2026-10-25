@@ -112,8 +112,12 @@ They are stored in the database (300 KB each at most) and served from `/media/<i
 year-long cache. Files are checked by their bytes; SVGs with scripts, links or embedded HTML
 are refused, and images are served with a sandboxing Content-Security-Policy.
 
+Subjects and topics are created at **/admin/subjects**; a new subject starts closed for
+competition until it has content.
+
 Payments received outside the site (cash, direct transfer) can be recorded on a student's
-page; it adds 30 days and counts towards prize income.
+page, as a membership with its competition subject or an extra subject; it adds 30 days and
+counts as that subject's income.
 
 ## Payments (CamPay)
 

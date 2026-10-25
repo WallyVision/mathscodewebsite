@@ -1,22 +1,35 @@
+import type { PaymentPurpose } from "@prisma/client";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { logout } from "@/app/(auth)/actions";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { formatXaf, LEVEL_LABEL } from "@/lib/domain/pricing";
-import { formatDateTime } from "@/lib/format";
+import { formatDate, formatDateTime } from "@/lib/format";
 import { PasswordForm } from "./password-form";
 
 export const metadata: Metadata = { title: "Account" };
 
+const PURPOSE_LABEL: Record<PaymentPurpose, string> = {
+  SUBSCRIPTION: "Membership",
+  COMPETITION_ENTRY: "Competition subject",
+  QUESTION_SOLUTION: "Solution unlock",
+  PAPER_SOLUTIONS: "Paper solutions",
+};
+
 export default async function AccountPage() {
   const user = await requireUser();
   const now = new Date();
-  const [periods, payments] = await Promise.all([
+  const [periods, entryPeriods, payments] = await Promise.all([
     db.subscription.findMany({
       where: { userId: user.id, endsAt: { gt: now } },
       orderBy: { endsAt: "asc" },
       select: { level: true, endsAt: true },
+    }),
+    db.competitionEntry.findMany({
+      where: { userId: user.id, endsAt: { gt: now } },
+      orderBy: { endsAt: "asc" },
+      select: { subjectId: true, endsAt: true, subject: { select: { name: true } } },
     }),
     db.payment.findMany({
       where: { userId: user.id },
@@ -28,6 +41,7 @@ export default async function AccountPage() {
 
   // Early renewals create back-to-back periods; show each level once, with its final end date.
   const subscriptions = [...new Map(periods.map((p) => [p.level, p])).values()];
+  const entries = [...new Map(entryPeriods.map((e) => [e.subjectId, e])).values()];
 
   return (
     <div className="mx-auto max-w-2xl space-y-8 px-4 py-8">
@@ -46,24 +60,39 @@ export default async function AccountPage() {
       </div>
 
       <section className="rounded-lg border border-slate-200 bg-white p-5">
-        <h2 className="font-semibold">Subscription</h2>
+        <h2 className="font-semibold">Membership</h2>
         {subscriptions.length === 0 ? (
           <p className="mt-1 text-sm text-slate-600">
-            No active subscription.{" "}
+            No active membership.{" "}
             <Link href="/checkout" className="text-brand-700 underline">
-              Subscribe
+              Become a member
             </Link>
           </p>
         ) : (
           subscriptions.map((s) => (
             <p key={s.level} className="mt-1 text-sm text-slate-600">
-              {LEVEL_LABEL[s.level]}: active until {formatDateTime(s.endsAt)}.{" "}
+              {LEVEL_LABEL[s.level]}: active until {formatDate(s.endsAt)}.{" "}
               <Link href={`/checkout?plan=${s.level}`} className="text-brand-700 underline">
                 Renew early
               </Link>
             </p>
           ))
         )}
+        <h3 className="mt-4 text-sm font-semibold">Competition subjects</h3>
+        {entries.length === 0 ? (
+          <p className="mt-1 text-sm text-slate-600">None.</p>
+        ) : (
+          <ul className="mt-1 space-y-0.5 text-sm text-slate-600">
+            {entries.map((e) => (
+              <li key={e.subjectId}>
+                {e.subject.name}: until {formatDate(e.endsAt)}
+              </li>
+            ))}
+          </ul>
+        )}
+        <Link href="/tests" className="mt-2 inline-block text-sm text-brand-700 underline">
+          Add a competition subject
+        </Link>
       </section>
 
       <section className="rounded-lg border border-slate-200 bg-white p-5">
@@ -75,8 +104,7 @@ export default async function AccountPage() {
             {payments.map((p) => (
               <li key={p.id} className="flex justify-between gap-3 py-2">
                 <Link href={`/payments/${p.id}`} className="text-brand-700 hover:underline">
-                  {formatDateTime(p.createdAt)} ·{" "}
-                  {p.purpose === "SUBSCRIPTION" ? "Subscription" : "Solution unlock"}
+                  {formatDateTime(p.createdAt)} · {PURPOSE_LABEL[p.purpose]}
                 </Link>
                 <span className="text-slate-600">
                   {formatXaf(p.amount)} · {p.status.toLowerCase()}

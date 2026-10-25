@@ -5,6 +5,7 @@ const now = new Date("2026-10-21");
 const student = (overrides: Partial<ViewerAccess> = {}): ViewerAccess => ({
   role: "STUDENT",
   subscriptions: [],
+  entries: [],
   unlockedQuestionIds: new Set(),
   unlockedPaperIds: new Set(),
   ...overrides,
@@ -55,8 +56,34 @@ describe("canViewSolution", () => {
 });
 
 describe("canEnterTest", () => {
-  it("requires a subscription for students", () => {
-    expect(canEnterTest(student(), "A_LEVEL", now)).toBe(false);
+  const maths = {
+    subjectId: "maths",
+    startsAt: new Date("2026-10-01"),
+    endsAt: new Date("2026-10-31"),
+  };
+
+  it("lets a student sit only the subjects they entered", () => {
+    const viewer = student({ entries: [maths] });
+    expect(canEnterTest(viewer, "maths", now)).toBe(true);
+    expect(canEnterTest(viewer, "physics", now)).toBe(false);
+  });
+
+  it("refuses a membership without an entry for the subject", () => {
+    const viewer = student({
+      subscriptions: [
+        { level: "O_LEVEL", startsAt: new Date("2026-10-01"), endsAt: new Date("2026-10-31") },
+      ],
+    });
+    expect(canEnterTest(viewer, "maths", now)).toBe(false);
+  });
+
+  it("closes when the entry has ended", () => {
+    const viewer = student({ entries: [{ ...maths, endsAt: new Date("2026-10-15") }] });
+    expect(canEnterTest(viewer, "maths", now)).toBe(false);
+  });
+
+  it("always allows staff", () => {
+    expect(canEnterTest(student({ role: "ADMIN" }), "maths", now)).toBe(true);
   });
 });
 

@@ -51,7 +51,7 @@ export default async function PostPage({ params }: Props) {
   const path = `/opportunities/${info.slug}/${post.slug}`;
   const url = `${await appUrl()}${path}`;
   const user = await getCurrentUser();
-  // The article and apply link are only rendered (and so only sent) for subscribers.
+  // The article and apply link are only rendered (and so only sent) for members.
   const canRead = canReadPosts(user ? await loadViewerAccess(user) : null, now);
 
   return (
@@ -97,12 +97,12 @@ export default async function PostPage({ params }: Props) {
         </>
       ) : (
         <div className="mt-6 rounded-lg border-2 border-dashed border-amber-300 bg-amber-50 p-5">
-          <p className="font-semibold text-amber-900">🔒 For {site.name} subscribers</p>
+          <p className="font-semibold text-amber-900">🔒 For {site.name} members</p>
           <p className="mt-1 text-sm text-amber-900">
-            Subscribe to read the full{" "}
-            {info.hasDeadlines ? "details and get the application link" : "guide"}. Every
-            subscription also includes all weekly tests, every worked solution and the monthly
-            prizes.
+            Become a member to read the full{" "}
+            {info.hasDeadlines ? "details and get the application link" : "guide"}. Membership also
+            includes every worked solution and one competition subject with its weekly tests and
+            monthly prizes.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             {user ? (
@@ -110,7 +110,7 @@ export default async function PostPage({ params }: Props) {
                 href={checkoutPath({ kind: "SUBSCRIPTION", level: user.level }, path)}
                 className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
               >
-                Subscribe from {formatXaf(SUBSCRIPTION_PRICE[user.level])}/month
+                Become a member: {formatXaf(SUBSCRIPTION_PRICE[user.level])}/month
               </Link>
             ) : (
               <>

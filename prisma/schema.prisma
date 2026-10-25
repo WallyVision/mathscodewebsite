@@ -39,6 +39,7 @@ model User {
   sessions      Session[]
   attempts      TestAttempt[]
   subscriptions Subscription[]
+  entries       CompetitionEntry[]
   payments      Payment[]
   unlocks       SolutionUnlock[]
   prizes        PrizeAward[]
@@ -87,14 +88,17 @@ enum ContentStatus {
 }
 
 model Subject {
-  id    String  @id @default(cuid())
-  level Level
-  slug  String // e.g. "mathematics", "physics"
-  name  String
+  id              String  @id @default(cuid())
+  level           Level
+  slug            String // e.g. "mathematics", "physics"
+  name            String
   // GCE Board subject code, when known
-  code  String?
+  code            String?
+  // Whether students can choose this subject for competitive tests and prizes
+  competitionOpen Boolean @default(true)
 
   topics      Topic[]
+  entries     CompetitionEntry[]
   pastPapers  PastPaper[]
   questions   Question[]
   tests       Test[]
@@ -295,7 +299,8 @@ enum PaymentStatus {
 }
 
 enum PaymentPurpose {
-  SUBSCRIPTION
+  SUBSCRIPTION // membership: everything on the site plus one competition subject
+  COMPETITION_ENTRY // an extra competition subject for a member
   QUESTION_SOLUTION
   PAPER_SOLUTIONS
 }
@@ -317,8 +322,9 @@ model Payment {
   createdAt         DateTime       @default(now())
   completedAt       DateTime?
 
-  user          User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user          User               @relation(fields: [userId], references: [id], onDelete: Restrict)
   subscriptions Subscription[]
+  entries       CompetitionEntry[]
   unlocks       SolutionUnlock[]
 
   @@index([userId, createdAt])
@@ -337,6 +343,34 @@ model Subscription {
   payment Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
 
   @@index([userId, endsAt])
+}
+
+enum EntrySource {
+  MEMBERSHIP // the competition subject included in a membership
+  EXTRA // an extra subject bought on top of a membership
+}
+
+// A student's right to sit one subject's competitive tests and compete for its prizes.
+// The money it brought in is that subject's income, shared between the platform, the
+// subject's team and the subject's prize pool.
+model CompetitionEntry {
+  id        String      @id @default(cuid())
+  userId    String
+  subjectId String
+  startsAt  DateTime
+  endsAt    DateTime
+  source    EntrySource
+  // XAF counted as this subject's income
+  income    Int
+  paymentId String?
+  createdAt DateTime    @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject Subject  @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  payment Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  @@index([userId, subjectId, endsAt])
+  @@index([subjectId, createdAt])
 }
 
 model SolutionUnlock {

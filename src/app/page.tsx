@@ -67,7 +67,7 @@ export default function HomePage() {
       <section className="mx-auto max-w-5xl px-4 pb-12">
         <h2 className="text-2xl font-bold">Opportunities</h2>
         <p className="mt-2 text-slate-600">
-          Scholarships, jobs and guides for what comes next. Included with every subscription.
+          Scholarships, jobs and guides for what comes next. Included with every membership.
         </p>
         <div className="mt-6">
           <CategoryButtons />

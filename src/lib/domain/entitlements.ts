@@ -1,9 +1,16 @@
 import type { Level } from "@prisma/client";
-import { hasActiveSubscription, type SubscriptionPeriod } from "./subscription";
+import {
+  hasActiveEntry,
+  hasActiveSubscription,
+  type EntryPeriod,
+  type SubscriptionPeriod,
+} from "./subscription";
 
 export interface ViewerAccess {
   role: "STUDENT" | "AUTHOR" | "ADMIN";
   subscriptions: readonly SubscriptionPeriod[];
+  /** Competition subjects the student has entered. */
+  entries: readonly EntryPeriod[];
   unlockedQuestionIds: ReadonlySet<string>;
   unlockedPaperIds: ReadonlySet<string>;
 }
@@ -25,9 +32,12 @@ export function canViewSolution(viewer: ViewerAccess, target: SolutionTarget, no
   return target.pastPaperId !== null && viewer.unlockedPaperIds.has(target.pastPaperId);
 }
 
-/** Entering tests (and so competing for prizes) requires a subscription. */
-export function canEnterTest(viewer: ViewerAccess, level: Level, now: Date): boolean {
-  return viewer.role !== "STUDENT" || hasActiveSubscription(viewer.subscriptions, level, now);
+/**
+ * Competitive tests are per subject: a student sits a subject's tests (and
+ * competes for its prizes) only while entered in that subject.
+ */
+export function canEnterTest(viewer: ViewerAccess, subjectId: string, now: Date): boolean {
+  return viewer.role !== "STUDENT" || hasActiveEntry(viewer.entries, subjectId, now);
 }
 
 /**

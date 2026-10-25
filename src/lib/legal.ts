@@ -6,11 +6,13 @@
  */
 import { DEFAULT_PRIZE_POLICY } from "@/lib/domain/prizes";
 import {
+  EXTRA_SUBJECT_PRICE,
   formatXaf,
   SUBSCRIPTION_DAYS,
   SUBSCRIPTION_PRICE,
   UNLOCK_PRICE,
 } from "@/lib/domain/pricing";
+import { DEFAULT_REVENUE_POLICY } from "@/lib/domain/revenue";
 import { site } from "@/lib/site";
 
 export const LEGAL_UPDATED = "25 October 2026";
@@ -45,24 +47,30 @@ terms, the [Privacy Policy](/privacy) and the [Refund Policy](/refunds).
   any payment.
 - ${site.gcePrep.name} is not affiliated with the Cameroon GCE Board.
 
-## 2. Subscriptions
+## 2. Membership and competition subjects
 
-| Plan | Price | Length |
-| --- | --- | --- |
-| O Level | ${formatXaf(SUBSCRIPTION_PRICE.O_LEVEL)} | ${SUBSCRIPTION_DAYS} days |
-| A Level | ${formatXaf(SUBSCRIPTION_PRICE.A_LEVEL)} | ${SUBSCRIPTION_DAYS} days |
+| Level | Membership (includes one competition subject) | Each extra competition subject | Length |
+| --- | --- | --- | --- |
+| O Level | ${formatXaf(SUBSCRIPTION_PRICE.O_LEVEL)} | ${formatXaf(EXTRA_SUBJECT_PRICE.O_LEVEL)} | ${SUBSCRIPTION_DAYS} days |
+| A Level | ${formatXaf(SUBSCRIPTION_PRICE.A_LEVEL)} | ${formatXaf(EXTRA_SUBJECT_PRICE.A_LEVEL)} | ${SUBSCRIPTION_DAYS} days |
 
-- A subscription covers every subject at its level: tests, worked solutions, leaderboards,
-  prizes and the full Opportunities articles.
-- It starts when your payment is confirmed. Paying again before it ends adds
-  ${SUBSCRIPTION_DAYS} days after the current end date, so no paid days are lost.
-- Subscriptions **do not renew automatically**. Nothing is taken from your Mobile Money
-  account unless you confirm a payment with your PIN.
+- **Membership** opens everything on the site at its level: revision notes, past questions,
+  worked solutions and the full Opportunities articles. It includes **one competition
+  subject**, which you choose when you pay.
+- **Competitive tests and prizes are per subject.** You sit a subject's tests, appear on its
+  leaderboard and can win its prizes only while you are entered in that subject. Members can
+  enter more subjects for the price above each.
+- A membership, and the subject included in it, starts when your payment is confirmed. Paying
+  again before it ends adds ${SUBSCRIPTION_DAYS} days after the current end date, so no paid
+  days are lost; you can choose a different included subject each time. An extra subject
+  runs for ${SUBSCRIPTION_DAYS} days from its own payment.
+- Nothing renews automatically. Nothing is taken from your Mobile Money account unless you
+  confirm a payment with your PIN.
 - We may change prices. A change never affects a period you have already paid for.
 
 ## 3. Single solutions
 
-Without a subscription you can unlock one worked solution for
+Without a membership you can unlock one worked solution for
 ${formatXaf(UNLOCK_PRICE.questionSolution)}, or every solution of a past paper for
 ${formatXaf(UNLOCK_PRICE.paperSolutions)}. Unlocked solutions stay available on your account.
 
@@ -86,18 +94,18 @@ confirmed by CamPay for the right amount.
 
 Prizes reward skill. There is no chance involved and no extra payment to take part.
 
-- **Pool:** ${percent(p.poolShare)} of the month's subscription income for each level, shared
-  equally between that level's subjects. Each subject's pool is at least
-  ${formatXaf(p.minimumPool)}.
+- **Pool:** each subject has its own prize pool: ${percent(DEFAULT_REVENUE_POLICY.prizeShare)} of
+  what students paid that month to enter that subject's competition (memberships and extra
+  subjects), after payment fees. Each subject's pool is at least
+  ${formatXaf(p.minimumPool)} in any month with entrants.
 - **Places:** ${split.join(", ")} of the subject's pool, rounded down to the nearest
   ${formatXaf(p.roundTo)}.
 - **Month:** a calendar month in Cameroon time. A test counts in the month it closes.
 - **Ranking:** total score across the month's tests in that subject, then the shortest total
   time, then the earliest final submission. Students still equal share the prizes for the
   places they occupy equally.
-- **Who can win:** subscribers with an active subscription during the month who sat
-  **every** test of that subject in the month. Our staff, content writers and members of
-  their households cannot win.
+- **Who can win:** students entered in the subject who sat **every** test of that subject in
+  the month. Our staff, content writers and members of their households cannot win.
 - **Checks before payment:** we review winning attempts. Winners may be asked to show ID and
   to explain some answers on a short call. The name on the account must match the name on
   the Mobile Money account that receives the prize.
@@ -243,11 +251,13 @@ This policy explains when we give money back.
   refund the full amount.
 - **You were charged twice** for the same thing: we refund the extra payment.
 - **A fault on our side** stopped you from using a paid period or sitting a test: we add
-  days to your subscription or refund the affected part, whichever you prefer.
+  days to your membership or competition entry, or refund the affected part, whichever you
+  prefer.
 
 ## We do not refund
 
-- a subscription you no longer want after access was given, or the unused days of a period;
+- a membership or competition entry you no longer want after access was given, or the unused
+  days of a period;
 - solutions you have unlocked;
 - accounts suspended for breaking the [Terms and Conditions](/terms), for example for
   cheating;

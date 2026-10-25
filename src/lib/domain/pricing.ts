@@ -1,9 +1,20 @@
 import type { Level } from "@prisma/client";
 
-/** All amounts are whole XAF (FCFA). */
+/**
+ * All amounts are whole XAF (FCFA).
+ *
+ * Membership (a "subscription") opens everything on the site and includes one
+ * competition subject, chosen at checkout.
+ */
 export const SUBSCRIPTION_PRICE: Record<Level, number> = {
   O_LEVEL: 1500,
   A_LEVEL: 2000,
+};
+
+/** Each further competition subject a member enters, for 30 days. */
+export const EXTRA_SUBJECT_PRICE: Record<Level, number> = {
+  O_LEVEL: 1000,
+  A_LEVEL: 1500,
 };
 
 /** A paid month of access. Counted in days so renewals are predictable. */

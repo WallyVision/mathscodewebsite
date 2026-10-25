@@ -42,6 +42,7 @@ class FakeCampay implements PaymentProvider {
 let fake: FakeCampay;
 let user: CurrentUser;
 let subjectId: string;
+let otherSubjectId: string;
 let questionId: string;
 let previousKey: string | undefined;
 
@@ -74,6 +75,10 @@ beforeAll(async () => {
     data: { level: "O_LEVEL", slug: `pay-${run}`, name: `Pay ${run}` },
   });
   subjectId = subject.id;
+  const other = await db.subject.create({
+    data: { level: "O_LEVEL", slug: `pay-other-${run}`, name: `Other ${run}` },
+  });
+  otherSubjectId = other.id;
   const q = await db.question.create({
     data: { subjectId, stem: "Paid question", solution: "Worked solution", status: "PUBLISHED" },
   });
@@ -86,6 +91,7 @@ beforeEach(() => {
 });
 
 afterEach(async () => {
+  await db.competitionEntry.deleteMany({ where: { userId: user.id } });
   await db.subscription.deleteMany({ where: { userId: user.id } });
   await db.solutionUnlock.deleteMany({ where: { userId: user.id } });
   await db.payment.deleteMany({ where: { userId: user.id } });
@@ -94,14 +100,14 @@ afterEach(async () => {
 afterAll(async () => {
   setPaymentProvider(null);
   process.env.CAMPAY_WEBHOOK_KEY = previousKey;
-  await db.subject.delete({ where: { id: subjectId } });
+  await db.subject.deleteMany({ where: { id: { in: [subjectId, otherSubjectId] } } });
   await db.user.delete({ where: { id: user.id } });
   await db.$disconnect();
 });
 
 describe("subscription checkout", () => {
   it("asks CamPay for the server's price and records a pending payment", async () => {
-    const payment = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL" });
+    const payment = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL", subjectId });
     expect(fake.collected[0]).toMatchObject({
       amount: 1500,
       from: "237677000111",
@@ -116,7 +122,7 @@ describe("subscription checkout", () => {
   });
 
   it("grants 30 days once CamPay confirms, exactly once", async () => {
-    const payment = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL" });
+    const payment = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL", subjectId });
     expect((await refreshPayment(payment.id))?.status).toBe("PENDING");
 
     fake.settle(payment.providerReference!, "SUCCESSFUL");
@@ -131,13 +137,24 @@ describe("subscription checkout", () => {
     const subs = await db.subscription.findMany({ where: { userId: user.id } });
     expect(subs).toHaveLength(1);
     expect(subs[0]).toMatchObject({ level: "O_LEVEL", paymentId: payment.id });
+    // The chosen competition subject runs alongside, and the whole fee is its income.
+    const entries = await db.competitionEntry.findMany({ where: { userId: user.id } });
+    expect(entries).toHaveLength(1);
+    expect(entries[0]).toMatchObject({
+      subjectId,
+      source: "MEMBERSHIP",
+      income: 1500,
+      paymentId: payment.id,
+      startsAt: subs[0]!.startsAt,
+      endsAt: subs[0]!.endsAt,
+    });
     expect((await db.payment.findUniqueOrThrow({ where: { id: payment.id } })).status).toBe(
       "SUCCESSFUL",
     );
   });
 
   it("never grants a payment whose amount differs from the price", async () => {
-    const payment = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL" });
+    const payment = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL", subjectId });
     fake.settle(payment.providerReference!, "SUCCESSFUL", "15");
     const updated = await refreshPayment(payment.id);
     expect(updated?.status).toBe("FAILED");
@@ -146,7 +163,7 @@ describe("subscription checkout", () => {
   });
 
   it("records declined payments", async () => {
-    const payment = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL" });
+    const payment = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL", subjectId });
     fake.settle(payment.providerReference!, "FAILED");
     expect((await refreshPayment(payment.id))?.status).toBe("FAILED");
   });
@@ -155,7 +172,7 @@ describe("subscription checkout", () => {
     fake.failCollect = "Invalid phone number";
     const result = await startCheckout(
       user,
-      { kind: "SUBSCRIPTION", level: "O_LEVEL" },
+      { kind: "SUBSCRIPTION", level: "O_LEVEL", subjectId },
       "+237677000111",
     );
     expect(result).toEqual({
@@ -168,8 +185,8 @@ describe("subscription checkout", () => {
   });
 
   it("reuses a payment still waiting on the phone instead of prompting twice", async () => {
-    const first = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL" });
-    const second = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL" });
+    const first = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL", subjectId });
+    const second = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL", subjectId });
     expect(second.id).toBe(first.id);
     expect(fake.collected).toHaveLength(1);
   });
@@ -213,12 +230,86 @@ describe("solution unlocks", () => {
   });
 });
 
+describe("competition subjects", () => {
+  const member = async () => {
+    const payment = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL", subjectId });
+    fake.settle(payment.providerReference!, "SUCCESSFUL");
+    await refreshPayment(payment.id);
+  };
+
+  it("sells an extra subject only to members, priced by level", async () => {
+    const extra = {
+      kind: "COMPETITION_ENTRY",
+      level: "O_LEVEL",
+      subjectId: otherSubjectId,
+    } as const;
+    expect(await startCheckout(user, extra, "+237677000111")).toEqual({
+      ok: false,
+      reason: "MEMBERSHIP_REQUIRED",
+    });
+
+    await member();
+    const payment = await checkout(extra);
+    expect(payment.amount).toBe(1000);
+    fake.settle(payment.providerReference!, "SUCCESSFUL");
+    await refreshPayment(payment.id);
+    const entry = await db.competitionEntry.findFirstOrThrow({
+      where: { userId: user.id, subjectId: otherSubjectId },
+    });
+    expect(entry).toMatchObject({ source: "EXTRA", income: 1000, paymentId: payment.id });
+  });
+
+  it("extends an extra subject bought again before it ends", async () => {
+    await member();
+    for (let i = 0; i < 2; i++) {
+      const payment = await checkout({
+        kind: "COMPETITION_ENTRY",
+        level: "O_LEVEL",
+        subjectId: otherSubjectId,
+      });
+      fake.settle(payment.providerReference!, "SUCCESSFUL");
+      await refreshPayment(payment.id);
+    }
+    const [first, second] = await db.competitionEntry.findMany({
+      where: { userId: user.id, subjectId: otherSubjectId },
+      orderBy: { startsAt: "asc" },
+    });
+    expect(second!.startsAt).toEqual(first!.endsAt);
+  });
+
+  it("refuses a subject that is closed, missing or at another level", async () => {
+    await db.subject.update({ where: { id: otherSubjectId }, data: { competitionOpen: false } });
+    try {
+      expect(
+        await startCheckout(
+          user,
+          { kind: "SUBSCRIPTION", level: "O_LEVEL", subjectId: otherSubjectId },
+          "+237677000111",
+        ),
+      ).toEqual({ ok: false, reason: "SUBJECT_CLOSED" });
+    } finally {
+      await db.subject.update({ where: { id: otherSubjectId }, data: { competitionOpen: true } });
+    }
+    for (const product of [
+      { kind: "SUBSCRIPTION", level: "A_LEVEL", subjectId },
+      { kind: "SUBSCRIPTION", level: "O_LEVEL", subjectId: "missing" },
+      { kind: "SUBSCRIPTION", level: "O_LEVEL" },
+    ] as const) {
+      expect(await startCheckout(user, product, "+237677000111"), JSON.stringify(product)).toEqual({
+        ok: false,
+        reason: "NOT_FOUND",
+      });
+    }
+    expect(fake.collected).toHaveLength(0);
+  });
+});
+
 describe("CamPay notifications", () => {
   const notify = (params: Record<string, string>) =>
     webhook(new NextRequest(`http://localhost/api/payments/campay?${new URLSearchParams(params)}`));
 
   it("rejects notifications without a valid signature", async () => {
-    const payment = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL" });
+    const payment = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL", subjectId });
     fake.settle(payment.providerReference!, "SUCCESSFUL");
     const forged = await notify({
       reference: payment.providerReference!,
@@ -232,7 +323,7 @@ describe("CamPay notifications", () => {
   });
 
   it("re-checks the payment with CamPay instead of trusting the notification", async () => {
-    const payment = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL" });
+    const payment = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL", subjectId });
     // Signed and claims success, but CamPay still reports PENDING.
     const early = await notify({
       reference: payment.providerReference!,

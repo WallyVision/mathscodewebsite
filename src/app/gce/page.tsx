@@ -3,8 +3,13 @@ import Link from "next/link";
 import { GcePricing, GceSteps } from "@/components/sections";
 import { getCurrentUser, type CurrentUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
-import { formatXaf, LEVEL_LABEL, SUBSCRIPTION_PRICE } from "@/lib/domain/pricing";
-import { formatDateTime } from "@/lib/format";
+import {
+  EXTRA_SUBJECT_PRICE,
+  formatXaf,
+  LEVEL_LABEL,
+  SUBSCRIPTION_PRICE,
+} from "@/lib/domain/pricing";
+import { formatDate, formatDateTime } from "@/lib/format";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -57,11 +62,16 @@ function GceIntro() {
 /** For signed-in students: their GCE revision home. */
 async function GceHome({ user }: { user: CurrentUser }) {
   const now = new Date();
-  const [subscription, upcomingTests] = await Promise.all([
+  const [subscription, entries, upcomingTests] = await Promise.all([
     db.subscription.findFirst({
       where: { userId: user.id, level: user.level, endsAt: { gt: now } },
       orderBy: { endsAt: "desc" },
       select: { endsAt: true },
+    }),
+    db.competitionEntry.findMany({
+      where: { userId: user.id, startsAt: { lte: now }, endsAt: { gt: now } },
+      orderBy: { endsAt: "desc" },
+      select: { endsAt: true, subject: { select: { name: true } } },
     }),
     db.test.findMany({
       where: { status: "SCHEDULED", closesAt: { gt: now }, subject: { level: user.level } },
@@ -111,23 +121,32 @@ async function GceHome({ user }: { user: CurrentUser }) {
       </div>
 
       <section className="rounded-lg border border-slate-200 bg-white p-5">
-        <h2 className="font-semibold">Subscription</h2>
+        <h2 className="font-semibold">Membership</h2>
         {subscription ? (
-          <p className="mt-1 text-sm text-slate-600">
-            Active until {formatDateTime(subscription.endsAt)}.
-          </p>
+          <>
+            <p className="mt-1 text-sm text-slate-600">
+              Active until {formatDate(subscription.endsAt)}.{" "}
+              {entries.length > 0
+                ? `Competing in ${entries.map((e) => e.subject.name).join(", ")}.`
+                : "You are not entered in any competition subject."}
+            </p>
+            <Link href="/tests" className="mt-2 inline-block text-sm text-brand-700 underline">
+              Manage your competition subjects
+            </Link>
+          </>
         ) : (
           <>
             <p className="mt-1 text-sm text-slate-600">
-              You are on the free plan. Subscribe for{" "}
-              <strong>{formatXaf(SUBSCRIPTION_PRICE[user.level])}/month</strong> to enter tests,
-              unlock every solution, compete for prizes and read every opportunity.
+              You are on the free plan. Become a member for{" "}
+              <strong>{formatXaf(SUBSCRIPTION_PRICE[user.level])}/month</strong>: every worked
+              solution, every opportunity, and one competition subject with its weekly tests and
+              prizes. Add more subjects for {formatXaf(EXTRA_SUBJECT_PRICE[user.level])} each.
             </p>
             <Link
               href="/checkout"
               className="mt-3 inline-block rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
             >
-              Subscribe with Mobile Money
+              Become a member with Mobile Money
             </Link>
           </>
         )}

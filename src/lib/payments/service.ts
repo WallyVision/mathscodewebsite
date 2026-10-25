@@ -15,9 +15,10 @@ import {
   type Product,
 } from "@/lib/domain/checkout";
 import { canViewSolution } from "@/lib/domain/entitlements";
-import { hasActiveSubscription, nextSubscriptionPeriod } from "@/lib/domain/subscription";
+import { hasActiveSubscription } from "@/lib/domain/subscription";
 import { site } from "@/lib/site";
 import { getPaymentProvider } from "./campay";
+import { grantPurchase } from "./grant";
 
 /** A pending payment for the same product this recent is reused instead of prompting twice. */
 const REUSE_PENDING_MS = 2 * 60 * 1000;
@@ -28,14 +29,39 @@ export type CheckoutResult =
   | { ok: true; paymentId: string }
   | {
       ok: false;
-      reason: "UNAVAILABLE" | "NOT_FOUND" | "ALREADY_OWNED" | "PROVIDER_ERROR";
+      reason:
+        | "UNAVAILABLE"
+        | "NOT_FOUND"
+        | "ALREADY_OWNED"
+        | "SUBJECT_CLOSED"
+        | "MEMBERSHIP_REQUIRED"
+        | "PROVIDER_ERROR";
       message?: string;
     };
 
 /** Checks that the product exists and is worth buying for this student. */
 async function validateProduct(product: Product, user: CurrentUser) {
-  if (product.kind === "SUBSCRIPTION") return { ok: true as const };
   const now = new Date();
+  if (product.kind === "SUBSCRIPTION" || product.kind === "COMPETITION_ENTRY") {
+    // A competition subject must exist at the product's level and be open.
+    if (!product.subjectId) return { ok: false as const, reason: "NOT_FOUND" as const };
+    const subject = await db.subject.findUnique({
+      where: { id: product.subjectId },
+      select: { level: true, competitionOpen: true },
+    });
+    if (!subject || subject.level !== product.level) {
+      return { ok: false as const, reason: "NOT_FOUND" as const };
+    }
+    if (!subject.competitionOpen) return { ok: false as const, reason: "SUBJECT_CLOSED" as const };
+    if (product.kind === "COMPETITION_ENTRY") {
+      const access = await loadViewerAccess(user);
+      if (!hasActiveSubscription(access.subscriptions, product.level, now)) {
+        return { ok: false as const, reason: "MEMBERSHIP_REQUIRED" as const };
+      }
+    }
+    return { ok: true as const };
+  }
+
   const access = await loadViewerAccess(user);
 
   if (product.kind === "QUESTION_SOLUTION") {
@@ -168,28 +194,7 @@ async function fulfil(payment: Payment, now: Date): Promise<void> {
     });
     if (claimed.count === 0 || !product) return;
 
-    if (product.kind === "SUBSCRIPTION") {
-      const existing = await tx.subscription.findMany({
-        where: { userId: payment.userId },
-        select: { level: true, startsAt: true, endsAt: true },
-      });
-      const period = nextSubscriptionPeriod(existing, product.level, now);
-      await tx.subscription.create({
-        data: { userId: payment.userId, level: product.level, ...period, paymentId: payment.id },
-      });
-    } else if (product.kind === "QUESTION_SOLUTION") {
-      await tx.solutionUnlock.upsert({
-        where: { userId_questionId: { userId: payment.userId, questionId: product.questionId } },
-        create: { userId: payment.userId, questionId: product.questionId, paymentId: payment.id },
-        update: {},
-      });
-    } else {
-      await tx.solutionUnlock.upsert({
-        where: { userId_pastPaperId: { userId: payment.userId, pastPaperId: product.pastPaperId } },
-        create: { userId: payment.userId, pastPaperId: product.pastPaperId, paymentId: payment.id },
-        update: {},
-      });
-    }
+    await grantPurchase(tx, payment, product, now);
   });
 }
 

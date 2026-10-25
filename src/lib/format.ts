@@ -14,6 +14,18 @@ export function formatDateTime(date: Date): string {
   return dateTime.format(date);
 }
 
+const dateOnly = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: TIME_ZONE,
+});
+
+/** e.g. "25 Nov 2026", in Cameroon time. */
+export function formatDate(date: Date): string {
+  return dateOnly.format(date);
+}
+
 export function formatSeconds(totalSeconds: number): string {
   const s = Math.max(0, Math.floor(totalSeconds));
   const h = Math.floor(s / 3600);

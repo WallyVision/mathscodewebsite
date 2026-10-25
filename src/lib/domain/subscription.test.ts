@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { hasActiveSubscription, nextSubscriptionPeriod } from "./subscription";
+import {
+  hasActiveEntry,
+  hasActiveSubscription,
+  nextEntryPeriod,
+  nextSubscriptionPeriod,
+} from "./subscription";
 
 const d = (iso: string) => new Date(iso);
 
@@ -42,5 +47,30 @@ describe("nextSubscriptionPeriod", () => {
     ];
     const now = d("2026-10-21");
     expect(nextSubscriptionPeriod(existing, "A_LEVEL", now).startsAt).toEqual(now);
+  });
+});
+
+describe("nextEntryPeriod", () => {
+  const maths = { subjectId: "maths", startsAt: d("2026-10-01"), endsAt: d("2026-10-31") };
+
+  it("starts now for a new subject", () => {
+    const now = d("2026-10-21");
+    expect(nextEntryPeriod([maths], "physics", now)).toEqual({
+      startsAt: now,
+      endsAt: d("2026-11-20"),
+    });
+  });
+
+  it("extends from the end of the current entry for the same subject", () => {
+    expect(nextEntryPeriod([maths], "maths", d("2026-10-21"))).toEqual({
+      startsAt: d("2026-10-31"),
+      endsAt: d("2026-11-30"),
+    });
+  });
+
+  it("reports whether a subject is entered right now", () => {
+    expect(hasActiveEntry([maths], "maths", d("2026-10-21"))).toBe(true);
+    expect(hasActiveEntry([maths], "maths", d("2026-11-01"))).toBe(false);
+    expect(hasActiveEntry([maths], "physics", d("2026-10-21"))).toBe(false);
   });
 });

@@ -70,7 +70,7 @@ export async function startAttempt(testId: string, user: CurrentUser): Promise<S
   const now = new Date();
   const window = canStartAttempt(test, now);
   if (!window.ok) return window;
-  if (!canEnterTest(await loadViewerAccess(user), test.subject.level, now)) {
+  if (!canEnterTest(await loadViewerAccess(user), test.subjectId, now)) {
     return { ok: false, reason: "NOT_SUBSCRIBED" };
   }
 

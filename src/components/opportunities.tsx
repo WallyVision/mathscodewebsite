@@ -70,7 +70,7 @@ export function PostCard({
   post: PostSummary;
   now: Date;
   showCategory?: boolean;
-  /** Show that the full post is for subscribers. */
+  /** Show that the full post is for members. */
   locked?: boolean;
 }) {
   const info = categoryInfo(post.category);
@@ -92,7 +92,7 @@ export function PostCard({
       <p className="mt-1 line-clamp-2 text-sm text-slate-600">{post.summary}</p>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <DeadlineBadge deadline={post.deadline} now={now} />
-        {locked && <span className="text-xs font-medium text-amber-700">🔒 Subscribers</span>}
+        {locked && <span className="text-xs font-medium text-amber-700">🔒 Members</span>}
       </div>
     </Link>
   );

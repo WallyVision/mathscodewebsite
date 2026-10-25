@@ -12,7 +12,12 @@ import {
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { ADMIN_ONLY, requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
-import { formatXaf, LEVEL_LABEL, SUBSCRIPTION_PRICE } from "@/lib/domain/pricing";
+import {
+  EXTRA_SUBJECT_PRICE,
+  formatXaf,
+  LEVEL_LABEL,
+  SUBSCRIPTION_PRICE,
+} from "@/lib/domain/pricing";
 import { formatDateTime } from "@/lib/format";
 import { GrantForm, ResetLinkPanel, RoleForm } from "./student-forms";
 
@@ -25,6 +30,11 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
     where: { id },
     include: {
       subscriptions: { orderBy: { endsAt: "desc" } },
+      entries: {
+        orderBy: { endsAt: "desc" },
+        take: 20,
+        include: { subject: { select: { name: true, level: true } } },
+      },
       payments: { orderBy: { createdAt: "desc" }, take: 20 },
       attempts: {
         orderBy: { startedAt: "desc" },
@@ -35,6 +45,15 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
   });
   if (!user) notFound();
   const now = new Date();
+  const subjects = await db.subject.findMany({
+    orderBy: [{ level: "asc" }, { name: "asc" }],
+    select: { id: true, name: true, level: true },
+  });
+  const subjectOptions = subjects.map((s) => ({
+    id: s.id,
+    label: `${LEVEL_LABEL[s.level]} ${s.name}`,
+    level: s.level,
+  }));
 
   return (
     <div className="space-y-8">
@@ -52,10 +71,17 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
         <section className="rounded-lg border border-slate-200 bg-white p-5">
           <h2 className="mb-1 font-semibold">Record a payment</h2>
           <p className="mb-4 text-sm text-slate-600">
-            For payments taken by hand (cash or a direct MoMo transfer). Adds 30 days after any
-            current subscription.
+            For payments taken by hand (cash or a direct MoMo transfer). Adds 30 days, after any
+            current period, and counts as the subject&apos;s income.
           </p>
-          <GrantForm userId={user.id} level={user.level} prices={SUBSCRIPTION_PRICE} />
+          <GrantForm
+            userId={user.id}
+            subjects={subjectOptions}
+            defaultSubjectId={
+              subjects.find((s) => s.level === user.level)?.id ?? subjects[0]?.id ?? ""
+            }
+            prices={{ membership: SUBSCRIPTION_PRICE, extra: EXTRA_SUBJECT_PRICE }}
+          />
         </section>
         <section className="rounded-lg border border-slate-200 bg-white p-5">
           <h2 className="mb-4 font-semibold">Access</h2>
@@ -72,7 +98,42 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
       </div>
 
       <section>
-        <h2 className="mb-3 font-semibold">Subscriptions</h2>
+        <h2 className="mb-3 font-semibold">Competition subjects</h2>
+        <table className={tableClass}>
+          <thead>
+            <tr>
+              <th className={thClass}>Subject</th>
+              <th className={thClass}>How</th>
+              <th className={thClass}>From</th>
+              <th className={thClass}>Until</th>
+              <th className={thClass} />
+            </tr>
+          </thead>
+          <tbody>
+            {user.entries.length === 0 && <EmptyRow colSpan={5}>No competition subjects.</EmptyRow>}
+            {user.entries.map((e) => (
+              <tr key={e.id}>
+                <td className={tdClass}>
+                  {LEVEL_LABEL[e.subject.level]} {e.subject.name}
+                </td>
+                <td className={tdClass}>{e.source === "MEMBERSHIP" ? "Membership" : "Extra"}</td>
+                <td className={tdClass}>{formatDateTime(e.startsAt)}</td>
+                <td className={tdClass}>{formatDateTime(e.endsAt)}</td>
+                <td className={tdClass}>
+                  {e.startsAt <= now && now < e.endsAt
+                    ? "Active"
+                    : e.startsAt > now
+                      ? "Upcoming"
+                      : "Ended"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2 className="mb-3 font-semibold">Memberships</h2>
         <table className={tableClass}>
           <thead>
             <tr>
@@ -83,7 +144,7 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
             </tr>
           </thead>
           <tbody>
-            {user.subscriptions.length === 0 && <EmptyRow colSpan={4}>Never subscribed.</EmptyRow>}
+            {user.subscriptions.length === 0 && <EmptyRow colSpan={4}>Never a member.</EmptyRow>}
             {user.subscriptions.map((s) => (
               <tr key={s.id}>
                 <td className={tdClass}>{LEVEL_LABEL[s.level]}</td>

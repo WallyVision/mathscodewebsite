@@ -13,6 +13,7 @@ import { ADMIN_ONLY, requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { periodOf, previousPeriod } from "@/lib/domain/period";
 import { DEFAULT_PRIZE_POLICY } from "@/lib/domain/prizes";
+import { DEFAULT_REVENUE_POLICY } from "@/lib/domain/revenue";
 import { formatXaf, LEVEL_LABEL } from "@/lib/domain/pricing";
 import { formatDateTime, formatSeconds } from "@/lib/format";
 import { AwardActions, CreateAwardsButton, DiscardAwardsButton } from "./prize-buttons";
@@ -36,13 +37,14 @@ export default async function PrizesPage({ searchParams }: Props) {
   const period = params.period ?? previousPeriod(periodOf(new Date()));
   const subjectId = params.subject ?? subjects[0]?.id ?? "";
   const data = subjectId ? await loadMonthlyPrizes(period, subjectId) : null;
-  const { poolShare, minimumPool, placeShares } = DEFAULT_PRIZE_POLICY;
+  const { minimumPool, placeShares } = DEFAULT_PRIZE_POLICY;
+  const { prizeShare } = DEFAULT_REVENUE_POLICY;
 
   return (
     <div className="space-y-8">
       <PageHeader title="Monthly prizes">
-        Pool per subject: {poolShare * 100}% of the level&apos;s subscription income ÷ number of
-        subjects, at least {formatXaf(minimumPool)}. Split{" "}
+        Pool per subject: {prizeShare * 100}% of the subject&apos;s income from competition entries
+        after payment fees, at least {formatXaf(minimumPool)}. Split{" "}
         {placeShares.map((s) => `${s * 100}%`).join(" / ")}. Students must sit every test of the
         month.
       </PageHeader>
@@ -80,8 +82,11 @@ export default async function PrizesPage({ searchParams }: Props) {
         <>
           <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
-              [`${LEVEL_LABEL[data.subject.level]} income`, formatXaf(data.revenue)],
-              ["Prize pool for this subject", formatXaf(data.pool)],
+              ["Subject income (after fees)", formatXaf(data.split.net)],
+              [
+                data.split.topUp > 0 ? "Prize pool (topped up to minimum)" : "Prize pool",
+                formatXaf(data.pool),
+              ],
               ["1st / 2nd / 3rd", data.amounts.map((a) => formatXaf(a)).join(" / ")],
               ["Tests this month", String(data.tests.length)],
             ].map(([label, value]) => (
