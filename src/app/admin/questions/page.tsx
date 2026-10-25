@@ -61,7 +61,10 @@ export default async function QuestionsPage({ searchParams }: Props) {
         title="Questions"
         action={{ href: "/admin/questions/new", label: "New question" }}
       >
-        {total} {total === 1 ? "question" : "questions"}
+        {total} {total === 1 ? "question" : "questions"} ·{" "}
+        <Link href="/admin/questions/import" className="text-brand-700 hover:underline">
+          Import many at once
+        </Link>
       </PageHeader>
 
       <form className="mb-4 flex flex-wrap gap-2 text-sm" role="search">

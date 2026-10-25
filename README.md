@@ -102,7 +102,10 @@ numbers or emails, comma-separated; applied each time the production server star
 npm run admin:grant -- 677123456
 ```
 
-After that, admins change roles from **/admin/students**.
+After that, admins change roles from **/admin/students** → a person → Role. Give helpers the
+**Author** role: they can write and publish content but never see students, payments, tests or
+prizes (those pages return "not found" for them). Authors can import many questions at once
+from **/admin/questions/import**.
 
 Payments received outside the site (cash, direct transfer) can be recorded on a student's
 page; it adds 30 days and counts towards prize income.

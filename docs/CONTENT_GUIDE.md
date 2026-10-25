@@ -63,6 +63,36 @@ $$
 - Tag every question with its **topic** so it appears on the topic page.
 - Past paper questions: set the paper and question number, and copy the wording exactly.
 
+### Adding many questions at once
+
+In **Admin → Questions → Import many at once**, paste a whole set written like
+`docs/content/o-level-maths-algebra-01.md`:
+
+```
+## Q1 · difficulty 2
+
+**Stem**
+
+Solve $3x - 7 = 11$.
+
+**Options**
+
+- A. $x = 4$
+- B. $x = 6$
+- C. $x = 7$
+- D. $x = 18$
+
+**Correct:** B
+
+**Solution**
+
+Add 7 to both sides: $3x = 18$, so $x = 6$.
+```
+
+Every question in one import gets the subject and topic chosen on the page and is saved as a
+draft. **Check** lists problems by question; nothing is saved until all questions are valid.
+A question already in the subject is skipped.
+
 ## Worked solutions
 
 Solutions are what students pay for, so they must teach, not just state the answer.
