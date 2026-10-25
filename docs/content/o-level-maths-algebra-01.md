@@ -3,8 +3,9 @@
 Subject: **O Level Mathematics**. Topic: **Algebra**. Source: **Original**.
 Correct letters are spread 5 × A, 5 × B, 5 × C, 5 × D. Difficulty: 1 = easy, 2 = medium, 3 = hard.
 
-Enter each question in **Admin → Questions → New question**: copy the stem, the four options,
-tick the correct letter and paste the solution. Keep it **Draft** until checked, then publish.
+To add the whole set: **Admin → Questions → Import many at once**, choose O Level Mathematics
+and Algebra, paste this file (or choose it) and press **Check**, then **Import as drafts**.
+Review each question, then publish.
 
 ---
 
