@@ -17,12 +17,21 @@ import {
 import { canViewSolution } from "@/lib/domain/entitlements";
 import { hasActiveSubscription, nextSubscriptionPeriod } from "@/lib/domain/subscription";
 import { site } from "@/lib/site";
-import { getPaymentProvider } from "./campay";
+import { getPaymentProvider, type PaymentProvider } from "./campay";
 
 /** A pending payment for the same product this recent is reused instead of prompting twice. */
 const REUSE_PENDING_MS = 2 * 60 * 1000;
 /** Pending payments CamPay has no record of after this long are marked failed. */
 const ABANDON_UNKNOWN_MS = 30 * 60 * 1000;
+
+/**
+ * What the student is actually charged: the price, or less when the provider
+ * caps amounts (CamPay demo). The payment records this amount, so the
+ * provider's confirmation is checked against it.
+ */
+export function chargeAmount(price: number, provider: Pick<PaymentProvider, "maxAmount">): number {
+  return provider.maxAmount ? Math.min(price, provider.maxAmount) : price;
+}
 
 export type CheckoutResult =
   | { ok: true; paymentId: string }
@@ -89,7 +98,7 @@ export async function startCheckout(
 
   const purpose = productPurpose(product);
   const metadata = productMetadata(product);
-  const amount = productAmount(product);
+  const amount = chargeAmount(productAmount(product), provider);
 
   // A double tap or quick retry returns the payment already waiting on the phone.
   const recent = await db.payment.findFirst({

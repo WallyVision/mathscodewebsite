@@ -124,6 +124,9 @@ In the CamPay application settings, set the webhook URL to
 `https://<your domain>/api/payments/campay`. Without it, payments still complete while the
 student keeps the waiting page open, but the webhook covers students who close it.
 
+In `demo` mode CamPay refuses amounts above 25 XAF, so the site charges at most 25 XAF of
+test money and still grants the full product; checkout says so. `live` charges full prices.
+
 To check credentials and the phone flow (for example before switching to `live`), run
 `npm run payments:smoke -- 676999221 25` and confirm the prompt on that phone.
 

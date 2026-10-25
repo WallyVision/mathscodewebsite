@@ -7,6 +7,7 @@ import { productAmount, safeReturnPath, type Product } from "@/lib/domain/checko
 import { formatXaf, LEVEL_LABEL } from "@/lib/domain/pricing";
 import { formatDateTime } from "@/lib/format";
 import { getPaymentProvider } from "@/lib/payments/campay";
+import { chargeAmount } from "@/lib/payments/service";
 import { site } from "@/lib/site";
 import { CheckoutForm } from "./checkout-form";
 
@@ -74,7 +75,8 @@ export default async function CheckoutPage({ searchParams }: Props) {
   }
 
   const amount = productAmount(product);
-  const available = getPaymentProvider() !== null;
+  const provider = getPaymentProvider();
+  const charge = provider ? chargeAmount(amount, provider) : amount;
 
   return (
     <div className="mx-auto max-w-md px-4 py-10">
@@ -92,11 +94,17 @@ export default async function CheckoutPage({ searchParams }: Props) {
       <p className="mt-5 text-3xl font-bold">{formatXaf(amount)}</p>
 
       <div className="mt-6 rounded-lg border border-slate-200 bg-white p-5">
-        {available ? (
+        {charge < amount && (
+          <p className="mb-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            <strong>Test mode:</strong> payments use CamPay demo money, so you will be charged{" "}
+            {formatXaf(charge)} and still get the full {formatXaf(amount)} product.
+          </p>
+        )}
+        {provider ? (
           <CheckoutForm
             hidden={{ ...hidden, ...(returnTo ? { returnTo } : {}) }}
             defaultPhone={user.phone?.replace(/^\+237/, "") ?? ""}
-            amountLabel={formatXaf(amount)}
+            amountLabel={formatXaf(charge)}
           />
         ) : (
           <p className="text-sm text-slate-700">

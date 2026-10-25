@@ -16,6 +16,7 @@ const WEBHOOK_KEY = "test-webhook-key";
 
 class FakeCampay implements PaymentProvider {
   readonly name = "campay";
+  maxAmount: number | undefined = undefined;
   collected: CollectParams[] = [];
   transactions = new Map<string, { status: string; amount: unknown; currency: string }>();
   failCollect: string | null = null;
@@ -113,6 +114,22 @@ describe("subscription checkout", () => {
       providerReference: `ref-${run}-1`,
     });
     expect(payment.metadata).toMatchObject({ level: "O_LEVEL", ussdCode: "*126#" });
+  });
+
+  it("charges at most the demo cap and still grants the full product", async () => {
+    fake.maxAmount = 25;
+    try {
+      const payment = await checkout({ kind: "SUBSCRIPTION", level: "O_LEVEL" });
+      expect(fake.collected.at(-1)?.amount).toBe(25);
+      expect(payment.amount).toBe(25);
+
+      fake.settle(payment.providerReference!, "SUCCESSFUL", "25.00");
+      expect((await refreshPayment(payment.id))?.status).toBe("SUCCESSFUL");
+      const sub = await db.subscription.findFirst({ where: { paymentId: payment.id } });
+      expect(sub).toMatchObject({ level: "O_LEVEL" });
+    } finally {
+      fake.maxAmount = undefined;
+    }
   });
 
   it("grants 30 days once CamPay confirms, exactly once", async () => {

@@ -3,6 +3,8 @@ import "server-only";
 /** The parts of CamPay the site uses, so tests can substitute a fake. */
 export interface PaymentProvider {
   readonly name: string;
+  /** Largest amount the provider accepts, when it caps it (CamPay's demo system). */
+  readonly maxAmount?: number;
   collect(params: CollectParams): Promise<CollectResult>;
   getTransaction(reference: string): Promise<ProviderTransaction | null>;
 }
@@ -28,6 +30,12 @@ export interface ProviderTransaction {
   operatorReference: string | null;
 }
 
+/**
+ * CamPay's demo system refuses anything above 25 XAF. In demo mode the site
+ * charges at most this, so the whole flow can be tried with test money.
+ */
+export const DEMO_MAX_AMOUNT = 25;
+
 const BASE_URLS = {
   demo: "https://demo.campay.net",
   live: "https://www.campay.net",
@@ -43,7 +51,18 @@ export class Campay implements PaymentProvider {
   readonly name = "campay";
   private token: { value: string; expiresAt: number } | null = null;
 
-  constructor(private readonly config: { baseUrl: string; username: string; password: string }) {}
+  constructor(
+    private readonly config: {
+      baseUrl: string;
+      username: string;
+      password: string;
+      maxAmount?: number;
+    },
+  ) {}
+
+  get maxAmount(): number | undefined {
+    return this.config.maxAmount;
+  }
 
   private async request(
     path: string,
@@ -143,7 +162,12 @@ export function getPaymentProvider(): PaymentProvider | null {
   const password = process.env.CAMPAY_APP_PASSWORD;
   if (!username || !password) return null;
   const environment = process.env.CAMPAY_ENVIRONMENT === "live" ? "live" : "demo";
-  provider = new Campay({ baseUrl: BASE_URLS[environment], username, password });
+  provider = new Campay({
+    baseUrl: BASE_URLS[environment],
+    username,
+    password,
+    maxAmount: environment === "demo" ? DEMO_MAX_AMOUNT : undefined,
+  });
   return provider;
 }
 
