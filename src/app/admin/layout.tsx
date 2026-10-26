@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { contentScope } from "@/lib/admin/scope";
+import { openQuestionCount } from "@/lib/ask";
 import { requireRole, STAFF_ROLES } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: { default: "Admin", template: "%s · Admin" } };
 
 const LINKS = [
   { href: "/admin", label: "Overview", adminOnly: false },
+  { href: "/admin/ask", label: "Student questions", adminOnly: false },
   { href: "/admin/questions", label: "Questions", adminOnly: false },
   { href: "/admin/notes", label: "Notes", adminOnly: false },
   { href: "/admin/papers", label: "Past papers", adminOnly: false },
@@ -16,12 +19,14 @@ const LINKS = [
   { href: "/admin/tests", label: "Tests", adminOnly: true },
   { href: "/admin/students", label: "Students", adminOnly: true },
   { href: "/admin/prizes", label: "Prizes", adminOnly: true },
+  { href: "/admin/tools", label: "Tools", adminOnly: true },
 ];
 
 // Access is also checked on every admin page and action; this layout only hides the menu.
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await requireRole(STAFF_ROLES);
   const links = LINKS.filter((l) => !l.adminOnly || user.role === "ADMIN");
+  const waiting = await openQuestionCount(await contentScope(user));
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -34,6 +39,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 className="inline-block rounded-t-md px-3 py-2 font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
               >
                 {link.label}
+                {link.href === "/admin/ask" && waiting > 0 && (
+                  <span className="ml-1.5 rounded-full bg-amber-500 px-1.5 py-0.5 text-xs font-semibold text-white">
+                    {waiting}
+                  </span>
+                )}
               </Link>
             </li>
           ))}

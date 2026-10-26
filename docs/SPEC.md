@@ -173,7 +173,12 @@ Implemented in `src/lib/domain/prizes.ts`. All values below are decided.
     test bank at the moment it opens (cryptographic randomness, once, safe under concurrent
     starts), preferring questions never used before. Test-bank questions stay out of practice
     until a test using them has closed; which questions a test used is shown to admins only.
-11. **Growth:** SMS or WhatsApp reminders before tests, referral rewards, streaks,
+11. **Ask a question and Tools (done):** members send a question (text and/or a photo, shrunk
+    in the browser to under 300 KB) to a subject; the subject's team and the admin answer in
+    **Admin → Student questions** (count shown in the menu) and the student reads the reply on
+    `/ask`. Five questions a day per member. `/tools` lists calculator links the admin manages
+    in **Admin → Tools** (https only, optional subject, order, shown or hidden).
+12. **Growth:** SMS or WhatsApp reminders before tests, referral rewards, streaks,
     topic-level progress reports, schools plan.
 
 ## Open decisions

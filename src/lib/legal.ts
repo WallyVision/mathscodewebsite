@@ -184,6 +184,7 @@ you have. The site is run by ${operatorLine()}.
 | Test answers, scores, times taken, and how often you left the test page | To mark tests, rank students and check prize results are fair |
 | Payments: Mobile Money number, amount, status, CamPay reference | To confirm payments, give access and keep accounting records |
 | Prize winners: ID details and Mobile Money name | To verify winners and pay prizes |
+| Questions you send to teachers, including any photo | So the subject's teachers and our staff can answer you |
 | Messages you send us | To answer you |
 
 We do **not** receive your Mobile Money PIN.

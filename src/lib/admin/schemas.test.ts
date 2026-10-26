@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { noteSchema, postSchema, questionSchema, slugify, testSchema } from "./schemas";
+import { noteSchema, postSchema, questionSchema, slugify, testSchema, toolSchema } from "./schemas";
 
 const question = {
   subjectId: "s1",
@@ -125,6 +125,23 @@ describe("postSchema", () => {
   it("rejects links that are not web addresses", () => {
     for (const externalUrl of ["javascript:alert(1)", "example.org", "ftp://example.org"]) {
       expect(postSchema.safeParse({ ...post, externalUrl }).success).toBe(false);
+    }
+  });
+});
+
+describe("toolSchema", () => {
+  const base = {
+    title: "Statistics calculator",
+    description: "Mean, median and an ogive.",
+    subjectId: "",
+    position: "0",
+    published: "on",
+  };
+
+  it("accepts https links and refuses anything else", () => {
+    expect(toolSchema.safeParse({ ...base, url: "https://example.org/calc" }).success).toBe(true);
+    for (const url of ["http://example.org", "javascript:alert(1)", "example.org", ""]) {
+      expect(toolSchema.safeParse({ ...base, url }).success, url).toBe(false);
     }
   });
 });
