@@ -24,7 +24,8 @@ let subjectId: string;
 const questions: { id: string; correct: string; wrong: string }[] = [];
 const users: CurrentUser[] = [];
 
-async function makeUser(name: string, subscribed: boolean): Promise<CurrentUser> {
+/** "entered": a member entered in this test's subject; "member": a member entered elsewhere. */
+async function makeUser(name: string, access: "entered" | "member" | "none"): Promise<CurrentUser> {
   const user = await db.user.create({
     data: {
       name,
@@ -34,14 +35,16 @@ async function makeUser(name: string, subscribed: boolean): Promise<CurrentUser>
     },
     select: { id: true, name: true, role: true, level: true, email: true, phone: true },
   });
-  if (subscribed) {
-    await db.subscription.create({
-      data: {
-        userId: user.id,
-        level: "O_LEVEL",
-        startsAt: new Date(Date.now() - HOUR),
-        endsAt: new Date(Date.now() + 24 * HOUR),
-      },
+  const period = {
+    startsAt: new Date(Date.now() - HOUR),
+    endsAt: new Date(Date.now() + 24 * HOUR),
+  };
+  if (access !== "none") {
+    await db.subscription.create({ data: { userId: user.id, level: "O_LEVEL", ...period } });
+  }
+  if (access === "entered") {
+    await db.competitionEntry.create({
+      data: { userId: user.id, subjectId, ...period, source: "MEMBERSHIP", income: 1500 },
     });
   }
   users.push(user);
@@ -92,40 +95,43 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await db.test.deleteMany({ where: { subjectId } });
+  await db.competitionEntry.deleteMany({ where: { subjectId } });
   await db.subject.delete({ where: { id: subjectId } });
   await db.user.deleteMany({ where: { id: { in: users.map((u) => u.id) } } });
   await db.$disconnect();
 });
 
 describe("test engine", () => {
-  it("refuses students without a subscription", async () => {
-    const free = await makeUser("Free Student", false);
+  it("refuses students who have not entered the test's subject", async () => {
+    const free = await makeUser("Free Student", "none");
     expect(await startAttempt(testId, free)).toEqual({ ok: false, reason: "NOT_SUBSCRIBED" });
+    const elsewhere = await makeUser("Member Elsewhere", "member");
+    expect(await startAttempt(testId, elsewhere)).toEqual({ ok: false, reason: "NOT_SUBSCRIBED" });
   });
 
   it("starts once, then resumes the same attempt", async () => {
-    const user = await makeUser("Ada Lovelace", true);
+    const user = await makeUser("Ada Lovelace", "entered");
     expect(await startAttempt(testId, user)).toEqual({ ok: true });
     expect(await startAttempt(testId, user)).toEqual({ ok: true });
     expect(await db.testAttempt.count({ where: { testId, userId: user.id } })).toBe(1);
   });
 
   it("never sends correct answers with the paper", async () => {
-    const paper = await getAttemptPaper(testId, users[1]!.id);
+    const paper = await getAttemptPaper(testId, users[2]!.id);
     expect(paper?.questions).toHaveLength(3);
     expect(JSON.stringify(paper)).not.toContain("isCorrect");
   });
 
   it("rejects an option that belongs to another question", async () => {
     const [q0, q1] = questions;
-    expect(await saveAnswer(testId, users[1]!.id, q0!.id, q1!.correct)).toEqual({
+    expect(await saveAnswer(testId, users[2]!.id, q0!.id, q1!.correct)).toEqual({
       ok: false,
       reason: "INVALID",
     });
   });
 
   it("marks autosaved and submitted answers together, once", async () => {
-    const user = users[1]!;
+    const user = users[2]!;
     const [q0, q1, q2] = questions;
     expect(await saveAnswer(testId, user.id, q0!.id, q0!.correct)).toEqual({ ok: true });
     // q1 never autosaved (bad connection) but arrives with the submission.
@@ -145,14 +151,14 @@ describe("test engine", () => {
 
   it("refuses answers after submission", async () => {
     const [q2] = questions.slice(2);
-    expect(await saveAnswer(testId, users[1]!.id, q2!.id, q2!.correct)).toEqual({
+    expect(await saveAnswer(testId, users[2]!.id, q2!.id, q2!.correct)).toEqual({
       ok: false,
       reason: "CLOSED",
     });
   });
 
   it("marks an attempt whose time ran out using its saved answers", async () => {
-    const user = await makeUser("Time Runner", true);
+    const user = await makeUser("Time Runner", "entered");
     await startAttempt(testId, user);
     await saveAnswer(testId, user.id, questions[0]!.id, questions[0]!.correct);
     await db.testAttempt.updateMany({
@@ -184,7 +190,7 @@ describe("test engine", () => {
       where: { id: testId },
       data: { closesAt: new Date(Date.now() - 1000) },
     });
-    const late = await makeUser("Late Comer", true);
+    const late = await makeUser("Late Comer", "entered");
     expect(await startAttempt(testId, late)).toEqual({ ok: false, reason: "CLOSED" });
   });
 });

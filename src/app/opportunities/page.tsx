@@ -22,7 +22,7 @@ export default async function OpportunitiesPage() {
         <h1 className="text-2xl font-bold">Beyond the GCE</h1>
         <p className="text-slate-600">
           Scholarships, jobs, studying abroad, money and careers. Full articles and application
-          links come with every subscription.
+          links come with every membership.
         </p>
       </div>
       <CategoryButtons />

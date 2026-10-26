@@ -32,26 +32,40 @@ where they rank, and compete for cash prizes paid by Mobile Money.
 
 All prices in XAF (FCFA). Defined in `src/lib/domain/pricing.ts`.
 
-| Product                          | Price | Status  |
-| -------------------------------- | ----- | ------- |
-| O Level subscription (30 days)   | 1,500 | Decided |
-| A Level subscription (30 days)   | 2,000 | Decided |
-| Single question solution         | 100   | Decided |
-| All solutions for one past paper | 500   | Decided |
+| Product                                                | O Level | A Level |
+| ------------------------------------------------------ | ------- | ------- |
+| Membership, 30 days (includes one competition subject) | 1,500   | 2,000   |
+| Each extra competition subject, 30 days                | 1,000   | 1,500   |
+| Single question solution                               | 100     | 100     |
+| All solutions for one past paper                       | 500     | 500     |
 
-- A subscription covers **every subject at its level**.
-- Renewing early **extends** the current period; paid days are never lost.
+- **Membership** opens everything at its level: notes, past questions, worked solutions and
+  Opportunities. The student chooses **one competition subject** at checkout.
+- **Competitive tests and prizes are per subject.** A student sits a subject's tests only while
+  entered in it (`CompetitionEntry`). Members add subjects for the extra price.
+- Renewing early **extends** the current period; paid days are never lost. An extra subject
+  runs 30 days from its own payment.
+
+## Subject income and how it is shared
+
+Every entry's fee is **income of its subject** (a membership counts entirely for its chosen
+subject). Each month, per subject (`src/lib/domain/revenue.ts`):
+
+1. Payment fees are taken off online payments (estimate set in `DEFAULT_REVENUE_POLICY`).
+2. The rest is split **40% platform, 40% subject team, 20% subject prize pool**.
+3. The prize pool is at least 10,000 FCFA in any month with entrants; the platform tops it up.
+4. The team share is divided between the subject's team members by weight (next release).
 
 ## What each kind of student can do
 
-| Feature                             | Visitor | Free account | Subscriber |
-| ----------------------------------- | :-----: | :----------: | :--------: |
-| Landing page, pricing               |    ✓    |      ✓       |     ✓      |
-| Revision notes                      |         |      ✓       |     ✓      |
-| Past questions with correct answers |         |      ✓       |     ✓      |
-| Worked solutions                    |         | pay per item |     ✓      |
-| Weekly and monthly tests            |         |              |     ✓      |
-| Leaderboard and prizes              |         |  view only   |     ✓      |
+| Feature                             | Visitor | Free account |    Subscriber    |
+| ----------------------------------- | :-----: | :----------: | :--------------: |
+| Landing page, pricing               |    ✓    |      ✓       |        ✓         |
+| Revision notes                      |         |      ✓       |        ✓         |
+| Past questions with correct answers |         |      ✓       |        ✓         |
+| Worked solutions                    |         | pay per item |        ✓         |
+| Weekly and monthly tests            |         |              | entered subjects |
+| Leaderboard and prizes              |         |  view only   | entered subjects |
 
 ## Tests
 
@@ -78,16 +92,15 @@ Monthly ranking per subject is the sum of a student's test scores that month.
 
 Implemented in `src/lib/domain/prizes.ts`. All values below are decided.
 
-- **Pool:** 15% of the month's subscription revenue for that level, shared equally between
-  the level's subjects. Each subject's pool is at least 10,000 FCFA, so early months still
-  have a meaningful prize (with 4 subjects, at least 40,000 FCFA a month in total).
+- **Pool:** 20% of the subject's income for the month after payment fees, at least
+  10,000 FCFA in any month with entrants, so early months still have a meaningful prize.
 - **Split per subject:** 1st 50%, 2nd 30%, 3rd 20%, rounded down to 500 FCFA.
 - **Month:** calendar month in Cameroon time; a test counts in the month it closes.
   Awards are created from `/admin/prizes` only after the month ends.
 - **Planned extra categories:** most improved, and most consistent (sat every test).
   These keep average students motivated, not only the top few.
-- **Eligibility:** active subscription, sat every test in the month, account details match
-  the Mobile Money name.
+- **Eligibility:** entered in the subject, sat every test of the subject in the month, account
+  details match the Mobile Money name.
 - **Verification before payout:** results are reviewed for integrity signals (focus loss,
   impossible speed, identical answer patterns). Winners may be asked to explain answers on
   a short call. Status moves `PENDING_VERIFICATION → VERIFIED → PAID` or `DISQUALIFIED`.
@@ -143,8 +156,13 @@ Implemented in `src/lib/domain/prizes.ts`. All values below are decided.
    `/contact`, linked in the footer and on sign-up. Prices and prize rules in the text come
    from the same constants the site uses. Set the registered business name and RCCM in
    `site.operator` once the business is registered.
-8. **Growth:** SMS or WhatsApp reminders before tests, referral rewards, streaks,
-   topic-level progress reports, schools plan.
+8. **Competition subjects (done):** `/admin/subjects` to create subjects and topics and open
+   or close them for competition; membership includes a chosen subject; extra subjects;
+   tests and prize pools per subject; cash payments recorded with their subject.
+9. **Subject teams and earnings (next):** authors assigned to subjects, a live "My earnings"
+   page, monthly payouts by the 15th; random test drawing from a larger bank.
+10. **Growth:** SMS or WhatsApp reminders before tests, referral rewards, streaks,
+    topic-level progress reports, schools plan.
 
 ## Open decisions
 

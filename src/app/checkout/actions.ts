@@ -14,10 +14,20 @@ export interface CheckoutFormState {
   message?: string;
   phoneError?: string;
   phone?: string;
+  subjectId?: string;
 }
 
 const productSchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("SUBSCRIPTION"), level: z.enum(["O_LEVEL", "A_LEVEL"]) }),
+  z.object({
+    kind: z.literal("SUBSCRIPTION"),
+    level: z.enum(["O_LEVEL", "A_LEVEL"]),
+    subjectId: z.string().min(1).max(64),
+  }),
+  z.object({
+    kind: z.literal("COMPETITION_ENTRY"),
+    level: z.enum(["O_LEVEL", "A_LEVEL"]),
+    subjectId: z.string().min(1).max(64),
+  }),
   z.object({ kind: z.literal("QUESTION_SOLUTION"), questionId: z.string().min(1).max(64) }),
   z.object({ kind: z.literal("PAPER_SOLUTIONS"), pastPaperId: z.string().min(1).max(64) }),
 ]);
@@ -26,6 +36,8 @@ const MESSAGES = {
   UNAVAILABLE: "Online payment is not available yet. Please try again later.",
   NOT_FOUND: "This item is no longer available.",
   ALREADY_OWNED: "You already have access to this.",
+  SUBJECT_CLOSED: "This subject is not open for competition at the moment. Choose another.",
+  MEMBERSHIP_REQUIRED: "Extra competition subjects are for members. Become a member first.",
 } as const;
 
 export async function startCheckoutAction(
@@ -34,21 +46,33 @@ export async function startCheckoutAction(
 ): Promise<CheckoutFormState> {
   const user = await requireUser();
   const phoneInput = String(formData.get("phone") ?? "");
+  const subjectInput = String(formData.get("subjectId") ?? "") || undefined;
   const phone = normalizeCameroonPhone(phoneInput);
   if (!phone || !isCameroonMobile(phone)) {
     return {
       phoneError: "Enter an MTN or Orange mobile number, e.g. 677 12 34 56",
       phone: phoneInput,
+      subjectId: subjectInput,
     };
   }
 
   const parsed = productSchema.safeParse({
     kind: formData.get("kind"),
     level: formData.get("level") ?? undefined,
+    subjectId: subjectInput,
     questionId: formData.get("questionId") ?? undefined,
     pastPaperId: formData.get("pastPaperId") ?? undefined,
   });
-  if (!parsed.success) return { message: MESSAGES.NOT_FOUND, phone: phoneInput };
+  if (!parsed.success) {
+    return {
+      message:
+        formData.get("kind") === "SUBSCRIPTION" && !subjectInput
+          ? "Choose your competition subject."
+          : MESSAGES.NOT_FOUND,
+      phone: phoneInput,
+      subjectId: subjectInput,
+    };
+  }
 
   const limited = await consumeAll([
     [`checkout:user:${user.id}`, LIMITS.checkoutPerUser],
@@ -63,7 +87,7 @@ export async function startCheckoutAction(
       result.reason === "PROVIDER_ERROR"
         ? `The payment could not be started: ${result.message ?? "unknown error"}`
         : MESSAGES[result.reason];
-    return { message, phone: phoneInput };
+    return { message, phone: phoneInput, subjectId: subjectInput };
   }
 
   const returnTo = safeReturnPath(String(formData.get("returnTo") ?? ""));

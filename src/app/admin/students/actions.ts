@@ -8,11 +8,15 @@ import { appUrl } from "@/lib/app-url";
 import { createResetToken } from "@/lib/auth/password-reset";
 import { db } from "@/lib/db";
 import { site } from "@/lib/site";
-import { nextSubscriptionPeriod } from "@/lib/domain/subscription";
+import { productMetadata, productPurpose } from "@/lib/domain/checkout";
+import { LEVEL_LABEL } from "@/lib/domain/pricing";
+import { grantPurchase } from "@/lib/payments/grant";
 
 /**
  * Records a payment taken outside the site (cash or a direct Mobile Money
- * transfer) and grants a subscription period for it.
+ * transfer) and grants what it paid for: a membership including a competition
+ * subject, or an extra subject for a member. The amount counts as that
+ * subject's income, exactly like an online payment.
  */
 export async function grantSubscription(
   _prev: AdminFormState,
@@ -22,32 +26,55 @@ export async function grantSubscription(
   const values = formValues(formData);
   const parsed = grantSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error, values);
-  const { userId, level, amount, reference } = parsed.data;
+  const { userId, product: kind, subjectId, amount, reference } = parsed.data;
   const now = new Date();
 
-  const period = await db.$transaction(async (tx) => {
-    const existing = await tx.subscription.findMany({
-      where: { userId },
-      select: { level: true, startsAt: true, endsAt: true },
+  const subject = await db.subject.findUnique({
+    where: { id: subjectId },
+    select: { level: true, name: true },
+  });
+  if (!subject) return { fieldErrors: { subjectId: ["Choose the competition subject"] }, values };
+  if (kind === "EXTRA") {
+    const member = await db.subscription.findFirst({
+      where: { userId, level: subject.level, startsAt: { lte: now }, endsAt: { gt: now } },
+      select: { id: true },
     });
+    if (!member) {
+      return {
+        message: `An extra subject needs an active ${LEVEL_LABEL[subject.level]} membership. Record a membership instead.`,
+        fieldErrors: {},
+        values,
+      };
+    }
+  }
+
+  const product =
+    kind === "MEMBERSHIP"
+      ? ({ kind: "SUBSCRIPTION", level: subject.level, subjectId } as const)
+      : ({ kind: "COMPETITION_ENTRY", level: subject.level, subjectId } as const);
+  const period = await db.$transaction(async (tx) => {
     const payment = await tx.payment.create({
       data: {
         userId,
-        purpose: "SUBSCRIPTION",
+        purpose: productPurpose(product),
         amount,
         provider: "manual",
         status: "SUCCESSFUL",
         completedAt: now,
-        metadata: { level, reference, recordedBy: admin.id },
+        metadata: { ...productMetadata(product), reference, recordedBy: admin.id },
       },
     });
-    const next = nextSubscriptionPeriod(existing, level, now);
-    await tx.subscription.create({ data: { userId, level, ...next, paymentId: payment.id } });
-    return next;
+    return grantPurchase(tx, payment, product, now);
   });
 
   revalidatePath(`/admin/students/${userId}`);
-  return { message: `Subscription added until ${period.endsAt.toISOString().slice(0, 10)}.` };
+  const until = period ? ` until ${period.endsAt.toISOString().slice(0, 10)}` : "";
+  return {
+    message:
+      kind === "MEMBERSHIP"
+        ? `Membership with ${subject.name} added${until}.`
+        : `${subject.name} added${until}.`,
+  };
 }
 
 export async function changeRole(

@@ -4,9 +4,9 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { loadViewerAccess } from "@/lib/access";
 import { requireUser } from "@/lib/auth/session";
-import { checkoutPath } from "@/lib/domain/checkout";
+import { EnterCompetition } from "@/components/enter-competition";
 import { canEnterTest } from "@/lib/domain/entitlements";
-import { formatXaf, SUBSCRIPTION_PRICE } from "@/lib/domain/pricing";
+import { hasActiveSubscription } from "@/lib/domain/subscription";
 import { formatDateTime } from "@/lib/format";
 import { getOwnAttempt, getTestForUser } from "@/lib/tests";
 import { StartButton } from "./start-button";
@@ -77,25 +77,14 @@ export default async function TestPage({ params }: Props) {
               See the leaderboard
             </Link>
           </p>
-        ) : canEnterTest(access, test.subject.level, now) ? (
+        ) : canEnterTest(access, test.subjectId, now) ? (
           <StartButton testId={test.id} />
         ) : (
-          <div className="rounded-lg border border-amber-300 bg-amber-50 p-5 text-sm text-amber-900">
-            <p className="font-semibold">Subscribe to take this test</p>
-            <p className="mt-1">
-              A subscription costs {formatXaf(SUBSCRIPTION_PRICE[test.subject.level])} a month and
-              includes every test, every worked solution and the monthly prizes.
-            </p>
-            <Link
-              href={checkoutPath(
-                { kind: "SUBSCRIPTION", level: test.subject.level },
-                `/tests/${test.id}`,
-              )}
-              className="mt-3 inline-block rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
-            >
-              Subscribe with Mobile Money
-            </Link>
-          </div>
+          <EnterCompetition
+            subject={{ id: test.subjectId, name: test.subject.name, level: test.subject.level }}
+            isMember={hasActiveSubscription(access.subscriptions, test.subject.level, now)}
+            returnTo={`/tests/${test.id}`}
+          />
         )}
       </div>
     </div>

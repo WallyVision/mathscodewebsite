@@ -2,7 +2,8 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
-import { levelRevenue, loadMonthlyPrizes } from "./prizes";
+import { subjectIncome } from "@/lib/revenue";
+import { loadMonthlyPrizes } from "./prizes";
 
 const run = randomUUID().slice(0, 8);
 // A month safely in the past, so its tests are closed and awards allowed.
@@ -11,6 +12,7 @@ const inMonth = (day: number, hour = 12) =>
   new Date(`2025-03-${String(day).padStart(2, "0")}T${hour}:00:00+01:00`);
 
 let subjectId: string;
+let otherSubjectId: string;
 const userIds: string[] = [];
 
 beforeAll(async () => {
@@ -77,45 +79,56 @@ beforeAll(async () => {
   await attempt(second, t2.id, 7);
   await attempt(missed, t1.id, 10);
 
-  // Revenue: two A Level payments in March, one outside, one O Level, one failed.
-  const pay = (
-    amount: number,
-    level: string,
-    completedAt: Date,
-    status: "SUCCESSFUL" | "FAILED" = "SUCCESSFUL",
-  ) =>
-    db.payment.create({
+  // Income: two entries in March (one paid online), one in April, one for another subject.
+  const other = await db.subject.create({
+    data: { level: "A_LEVEL", slug: `prize-other-${run}`, name: `Other ${run}` },
+  });
+  otherSubjectId = other.id;
+  const online = await db.payment.create({
+    data: {
+      userId: top,
+      purpose: "SUBSCRIPTION",
+      amount: 2000,
+      provider: "campay",
+      status: "SUCCESSFUL",
+      completedAt: inMonth(2),
+      metadata: { level: "A_LEVEL", subjectId, run },
+    },
+  });
+  const entry = (subject: string, createdAt: Date, paymentId: string | null = null) =>
+    db.competitionEntry.create({
       data: {
         userId: top,
-        purpose: "SUBSCRIPTION",
-        amount,
-        provider: "manual",
-        status,
-        completedAt,
-        metadata: { level, run },
+        subjectId: subject,
+        startsAt: createdAt,
+        endsAt: new Date(createdAt.getTime() + 30 * 86_400_000),
+        source: "MEMBERSHIP",
+        income: 2000,
+        paymentId,
+        createdAt,
       },
     });
-  await pay(2000, "A_LEVEL", inMonth(2));
-  await pay(2000, "A_LEVEL", inMonth(20));
-  await pay(2000, "A_LEVEL", new Date("2025-04-02T10:00:00+01:00"));
-  await pay(1500, "O_LEVEL", inMonth(3));
-  await pay(2000, "A_LEVEL", inMonth(4), "FAILED");
+  await entry(subjectId, inMonth(2), online.id);
+  await entry(subjectId, inMonth(20));
+  await entry(subjectId, new Date("2025-04-02T10:00:00+01:00"));
+  await entry(otherSubjectId, inMonth(3));
 });
 
 afterAll(async () => {
   await db.prizeAward.deleteMany({ where: { subjectId } });
   await db.test.deleteMany({ where: { subjectId } });
+  await db.competitionEntry.deleteMany({ where: { userId: { in: userIds } } });
   await db.payment.deleteMany({ where: { userId: { in: userIds } } });
-  await db.subject.delete({ where: { id: subjectId } });
+  await db.subject.deleteMany({ where: { id: { in: [subjectId, otherSubjectId] } } });
   await db.user.deleteMany({ where: { id: { in: userIds } } });
   await db.$disconnect();
 });
 
 describe("monthly prizes", () => {
-  it("counts only successful subscription payments for the level within the month", async () => {
+  it("counts the subject's entries made within the month, separating online payments", async () => {
     const start = new Date("2025-03-01T00:00:00+01:00");
     const end = new Date("2025-04-01T00:00:00+01:00");
-    expect(await levelRevenue("A_LEVEL", start, end)).toBe(4000);
+    expect(await subjectIncome(subjectId, start, end)).toEqual({ gross: 4000, online: 2000 });
   });
 
   it("ranks students who sat every test closed in the month", async () => {
@@ -127,7 +140,7 @@ describe("monthly prizes", () => {
       ["Second Student", 15, 2],
       ["Missed One", 10, null],
     ]);
-    // 4,000 × 15% shared between the level's subjects is far below the minimum.
+    // 20% of the subject's 4,000 is far below the minimum, so the pool is topped up.
     expect(data?.pool).toBe(10_000);
     expect(data?.amounts).toEqual([5000, 3000, 2000]);
   });

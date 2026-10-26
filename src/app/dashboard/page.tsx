@@ -35,10 +35,10 @@ export default async function DashboardPage() {
         <p className="text-slate-600">
           {site.slogan}.{" "}
           {subscription ? (
-            <>Subscribed until {formatDateTime(subscription.endsAt)}.</>
+            <>Member until {formatDateTime(subscription.endsAt)}.</>
           ) : (
             <Link href="/checkout" className="font-medium text-brand-700 underline">
-              Subscribe to unlock everything
+              Become a member to unlock everything
             </Link>
           )}
         </p>

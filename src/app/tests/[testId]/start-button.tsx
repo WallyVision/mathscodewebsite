@@ -8,7 +8,7 @@ const MESSAGES = {
   NOT_FOUND: "This test is not available.",
   NOT_OPEN: "This test has not opened yet.",
   CLOSED: "This test has closed.",
-  NOT_SUBSCRIBED: "You need an active subscription to enter tests.",
+  NOT_SUBSCRIBED: "Enter this subject's competition to take its tests.",
   FINISHED: "You have already taken this test.",
 } as const;
 

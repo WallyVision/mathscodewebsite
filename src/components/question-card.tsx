@@ -66,9 +66,7 @@ function SolutionBlock({ question, returnTo }: { question: PracticeQuestion; ret
     return (
       <div className="mt-4 rounded-md border border-dashed border-amber-300 bg-amber-50 px-4 py-3 text-sm">
         <p className="font-medium text-amber-900">🔒 Worked solution</p>
-        <p className="mt-1 text-amber-800">
-          Included with a subscription, or unlock it on its own.
-        </p>
+        <p className="mt-1 text-amber-800">Included with membership, or unlock it on its own.</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Link
             href={checkoutPath({ kind: "QUESTION_SOLUTION", questionId: question.id }, returnTo)}
@@ -88,7 +86,7 @@ function SolutionBlock({ question, returnTo }: { question: PracticeQuestion; ret
             </Link>
           )}
           <Link href="/checkout" className={`${linkClass} text-brand-700 hover:underline`}>
-            Subscribe
+            Become a member
           </Link>
         </div>
       </div>

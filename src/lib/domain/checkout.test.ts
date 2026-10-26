@@ -15,14 +15,16 @@ import {
 
 const products: Product[] = [
   { kind: "SUBSCRIPTION", level: "O_LEVEL" },
-  { kind: "SUBSCRIPTION", level: "A_LEVEL" },
+  { kind: "SUBSCRIPTION", level: "A_LEVEL", subjectId: "s1" },
+  { kind: "COMPETITION_ENTRY", level: "O_LEVEL", subjectId: "s2" },
+  { kind: "COMPETITION_ENTRY", level: "A_LEVEL", subjectId: "s3" },
   { kind: "QUESTION_SOLUTION", questionId: "q1" },
   { kind: "PAPER_SOLUTIONS", pastPaperId: "p1" },
 ];
 
 describe("products", () => {
   it("are priced by the server", () => {
-    expect(products.map(productAmount)).toEqual([1500, 2000, 100, 500]);
+    expect(products.map(productAmount)).toEqual([1500, 2000, 1000, 1500, 100, 500]);
   });
 
   it("round-trip through payment metadata", () => {
@@ -35,6 +37,7 @@ describe("products", () => {
 
   it("rejects metadata that does not match the purpose", () => {
     expect(productFromPayment("SUBSCRIPTION", { level: "B_LEVEL" })).toBeNull();
+    expect(productFromPayment("COMPETITION_ENTRY", { level: "O_LEVEL" })).toBeNull();
     expect(productFromPayment("QUESTION_SOLUTION", { pastPaperId: "p1" })).toBeNull();
     expect(productFromPayment("PAPER_SOLUTIONS", null)).toBeNull();
   });
@@ -92,6 +95,12 @@ describe("safeReturnPath", () => {
 describe("checkoutPath", () => {
   it("links to the product and keeps a safe return path", () => {
     expect(checkoutPath({ kind: "SUBSCRIPTION", level: "A_LEVEL" })).toBe("/checkout?plan=A_LEVEL");
+    expect(checkoutPath({ kind: "SUBSCRIPTION", level: "O_LEVEL", subjectId: "s1" })).toBe(
+      "/checkout?plan=O_LEVEL&subject=s1",
+    );
+    expect(checkoutPath({ kind: "COMPETITION_ENTRY", level: "O_LEVEL", subjectId: "s2" })).toBe(
+      "/checkout?entry=s2",
+    );
     expect(checkoutPath({ kind: "QUESTION_SOLUTION", questionId: "q1" }, "/learn/x#q-q1")).toBe(
       "/checkout?question=q1&returnTo=%2Flearn%2Fx%23q-q1",
     );

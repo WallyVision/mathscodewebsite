@@ -18,7 +18,8 @@ export default async function RegisterPage({
     <div className="mx-auto max-w-sm px-4 py-10">
       <h1 className="mb-1 text-2xl font-bold">Create your account</h1>
       <p className="mb-6 text-sm text-slate-600">
-        Free notes and past questions. Subscribe any time to enter tests and win prizes.
+        Free notes and past questions. Become a member any time to compete in weekly tests and win
+        prizes.
       </p>
       <RegisterForm next={next} />
       <p className="mt-6 text-center text-sm text-slate-600">

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 225" width="280" height="225" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#111">
+<rect width="280" height="225" fill="#fff"/>
+<polygon points="40.0,190.0 240.0,190.0 102.5,81.7" fill="none" stroke="#111" stroke-width="2" stroke-linejoin="round"/>
+<path d="M 68.0 190.0 A 28 28 0 0 0 54.0 165.8" fill="none" stroke="#111" stroke-width="1.5"/>
+<text x="72.0" y="182.0">60°</text>
+<text x="34.0" y="210.0">A</text>
+<text x="240.0" y="210.0">B</text>
+<text x="96.5" y="71.7">C</text>
+<text x="140.0" y="212.0" text-anchor="middle">8 cm</text>
+<text x="63.2" y="135.9" text-anchor="end">5 cm</text>
+<text x="181.2" y="131.9">?</text>
+</svg>

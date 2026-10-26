@@ -27,13 +27,18 @@ export default async function PaymentPage({ params }: { params: Promise<{ id: st
   };
   const product = productFromPayment(payment.purpose, payment.metadata);
   const returnTo = safeReturnPath(meta.returnTo ?? "");
-  const subscription =
-    payment.status === "SUCCESSFUL" && product?.kind === "SUBSCRIPTION"
-      ? await db.subscription.findFirst({
-          where: { paymentId: payment.id },
-          select: { endsAt: true },
-        })
-      : null;
+  const grantsCompetition =
+    product?.kind === "SUBSCRIPTION" || product?.kind === "COMPETITION_ENTRY";
+  const [subscription, entry] =
+    payment.status === "SUCCESSFUL" && grantsCompetition
+      ? await Promise.all([
+          db.subscription.findFirst({ where: { paymentId: payment.id }, select: { endsAt: true } }),
+          db.competitionEntry.findFirst({
+            where: { paymentId: payment.id },
+            select: { endsAt: true, subject: { select: { name: true } } },
+          }),
+        ])
+      : [null, null];
 
   return (
     <div className="mx-auto max-w-md px-4 py-10">
@@ -69,11 +74,17 @@ export default async function PaymentPage({ params }: { params: Promise<{ id: st
           </p>
           {product?.kind === "SUBSCRIPTION" && (
             <p className="mt-2 text-slate-700">
-              Your {LEVEL_LABEL[product.level]} subscription is active
-              {subscription && ` until ${formatDateTime(subscription.endsAt)}`}.
+              Your {LEVEL_LABEL[product.level]} membership is active
+              {subscription && ` until ${formatDateTime(subscription.endsAt)}`}
+              {entry && `, with ${entry.subject.name} as your competition subject`}.
             </p>
           )}
-          {product && product.kind !== "SUBSCRIPTION" && (
+          {product?.kind === "COMPETITION_ENTRY" && entry && (
+            <p className="mt-2 text-slate-700">
+              You are entered in {entry.subject.name} until {formatDateTime(entry.endsAt)}.
+            </p>
+          )}
+          {(product?.kind === "QUESTION_SOLUTION" || product?.kind === "PAPER_SOLUTIONS") && (
             <p className="mt-2 text-slate-700">
               The worked solution{product.kind === "PAPER_SOLUTIONS" && "s"} are now unlocked.
             </p>
@@ -88,10 +99,10 @@ export default async function PaymentPage({ params }: { params: Promise<{ id: st
               </Link>
             )}
             <Link
-              href={product?.kind === "SUBSCRIPTION" ? "/tests" : "/learn"}
+              href={grantsCompetition ? "/tests" : "/learn"}
               className="rounded-md border border-slate-300 bg-white px-4 py-2 font-medium"
             >
-              {product?.kind === "SUBSCRIPTION" ? "Go to tests" : "Keep revising"}
+              {grantsCompetition ? "Go to tests" : "Keep revising"}
             </Link>
           </div>
         </>

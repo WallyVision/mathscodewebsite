@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Markdown } from "@/components/markdown";
+import { loadViewerAccess } from "@/lib/access";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
-import { productAmount, safeReturnPath, type Product } from "@/lib/domain/checkout";
-import { formatXaf, LEVEL_LABEL } from "@/lib/domain/pricing";
-import { formatDateTime } from "@/lib/format";
+import { checkoutPath, productAmount, safeReturnPath, type Product } from "@/lib/domain/checkout";
+import { EXTRA_SUBJECT_PRICE, formatXaf, LEVEL_LABEL } from "@/lib/domain/pricing";
+import { hasActiveSubscription } from "@/lib/domain/subscription";
+import { formatDate } from "@/lib/format";
 import { getPaymentProvider } from "@/lib/payments/campay";
 import { site } from "@/lib/site";
 import { CheckoutForm } from "./checkout-form";
@@ -13,7 +16,14 @@ import { CheckoutForm } from "./checkout-form";
 export const metadata: Metadata = { title: "Checkout" };
 
 interface Props {
-  searchParams: Promise<{ plan?: string; question?: string; paper?: string; returnTo?: string }>;
+  searchParams: Promise<{
+    plan?: string;
+    subject?: string;
+    entry?: string;
+    question?: string;
+    paper?: string;
+    returnTo?: string;
+  }>;
 }
 
 export default async function CheckoutPage({ searchParams }: Props) {
@@ -26,6 +36,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
   let details: string[];
   let hidden: Record<string, string>;
   let preview: string | null = null;
+  let subjectChoices: { options: { id: string; name: string }[]; selected: string } | undefined;
 
   if (params.question) {
     const q = await db.question.findUnique({
@@ -52,22 +63,64 @@ export default async function CheckoutPage({ searchParams }: Props) {
       "Yours to keep",
     ];
     hidden = { kind: product.kind, pastPaperId: paper.id };
+  } else if (params.entry) {
+    const subject = await db.subject.findUnique({
+      where: { id: params.entry },
+      select: { id: true, name: true, level: true, competitionOpen: true },
+    });
+    if (!subject || !subject.competitionOpen) return <NotFound />;
+    const now = new Date();
+    const access = await loadViewerAccess(user);
+    if (!hasActiveSubscription(access.subscriptions, subject.level, now)) {
+      // Only members can add subjects; others get a membership with this subject included.
+      redirect(
+        checkoutPath(
+          { kind: "SUBSCRIPTION", level: subject.level, subjectId: subject.id },
+          returnTo,
+        ),
+      );
+    }
+    const current = access.entries
+      .filter((e) => e.subjectId === subject.id && e.endsAt > now)
+      .sort((a, b) => b.endsAt.getTime() - a.endsAt.getTime())[0];
+    product = { kind: "COMPETITION_ENTRY", level: subject.level, subjectId: subject.id };
+    title = `${LEVEL_LABEL[subject.level]} ${subject.name} competition: 30 days`;
+    details = [
+      `Every ${subject.name} weekly and monthly test`,
+      `The ${subject.name} leaderboard and monthly cash prizes`,
+      ...(current
+        ? [`Adds 30 days after your current entry ends (${formatDate(current.endsAt)})`]
+        : []),
+    ];
+    hidden = { kind: product.kind, level: subject.level, subjectId: subject.id };
   } else {
     const level = params.plan === "A_LEVEL" || params.plan === "O_LEVEL" ? params.plan : user.level;
     product = { kind: "SUBSCRIPTION", level };
-    const current = await db.subscription.findFirst({
-      where: { userId: user.id, level, endsAt: { gt: new Date() } },
-      orderBy: { endsAt: "desc" },
-      select: { endsAt: true },
-    });
-    title = `${site.gcePrep.name} ${LEVEL_LABEL[level]}: 30 days`;
+    const [current, open] = await Promise.all([
+      db.subscription.findFirst({
+        where: { userId: user.id, level, endsAt: { gt: new Date() } },
+        orderBy: { endsAt: "desc" },
+        select: { endsAt: true },
+      }),
+      db.subject.findMany({
+        where: { level, competitionOpen: true },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true },
+      }),
+    ]);
+    if (open.length === 0) return <NotFound />;
+    subjectChoices = {
+      options: open,
+      selected: open.some((s) => s.id === params.subject) ? params.subject! : open[0]!.id,
+    };
+    title = `${site.name} ${LEVEL_LABEL[level]} membership: 30 days`;
     details = [
-      "Every weekly and monthly test",
-      "Every worked solution",
-      "Leaderboard and monthly cash prizes",
+      "Every revision note, past question and worked solution",
       "Scholarships, jobs, travel, finance and career guides",
+      "One competition subject: its weekly tests, leaderboard and monthly cash prizes",
+      `More competition subjects for ${formatXaf(EXTRA_SUBJECT_PRICE[level])} each`,
       ...(current
-        ? [`Adds 30 days after your current subscription ends (${formatDateTime(current.endsAt)})`]
+        ? [`Adds 30 days after your current membership ends (${formatDate(current.endsAt)})`]
         : []),
     ];
     hidden = { kind: product.kind, level };
@@ -97,6 +150,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
             hidden={{ ...hidden, ...(returnTo ? { returnTo } : {}) }}
             defaultPhone={user.phone?.replace(/^\+237/, "") ?? ""}
             amountLabel={formatXaf(amount)}
+            subjectChoices={subjectChoices}
           />
         ) : (
           <p className="text-sm text-slate-700">

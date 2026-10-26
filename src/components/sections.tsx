@@ -1,6 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { formatXaf, LEVEL_LABEL, SUBSCRIPTION_PRICE } from "@/lib/domain/pricing";
+import {
+  formatXaf,
+  LEVEL_LABEL,
+  EXTRA_SUBJECT_PRICE,
+  SUBSCRIPTION_PRICE,
+} from "@/lib/domain/pricing";
 import { site } from "@/lib/site";
 
 /** One of the platform's two big sections. */
@@ -56,16 +61,16 @@ export function GcePricing() {
             <span className="text-base font-normal text-slate-500"> / month</span>
           </p>
           <ul className="mt-4 space-y-1 text-sm text-slate-600">
-            <li>✓ All weekly and monthly tests</li>
-            <li>✓ Every worked solution</li>
-            <li>✓ Leaderboard and monthly prizes</li>
+            <li>✓ Every note, past question and worked solution</li>
             <li>✓ All scholarships, jobs and career guides</li>
+            <li>✓ One competition subject: weekly tests and monthly prizes</li>
+            <li>✓ More subjects: {formatXaf(EXTRA_SUBJECT_PRICE[level])} each</li>
           </ul>
           <Link
             href={`/checkout?plan=${level}`}
             className="mt-5 inline-block rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
           >
-            Subscribe
+            Become a member
           </Link>
         </div>
       ))}
@@ -79,10 +84,13 @@ const STEPS = [
     body: "Topic notes and GCE past questions with answers, open to every registered student.",
   },
   {
-    title: "Take the weekly test",
-    body: "Timed MCQ tests in Mathematics and Physics, marked instantly, with your rank on the leaderboard.",
+    title: "Compete in your subjects",
+    body: "Choose your competition subjects and sit their timed weekly tests, marked instantly, with your rank on each subject's leaderboard.",
   },
-  { title: "Win prizes", body: "Top students each month win cash prizes, paid by Mobile Money." },
+  {
+    title: "Win prizes",
+    body: "The top students in each subject win cash prizes every month, paid by Mobile Money.",
+  },
 ];
 
 export function GceSteps() {

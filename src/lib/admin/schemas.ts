@@ -124,7 +124,9 @@ export const testSchema = z
 
 export const grantSchema = z.object({
   userId: id,
-  level: z.enum(["O_LEVEL", "A_LEVEL"]),
+  // A membership including this subject, or this subject added to a membership
+  product: z.enum(["MEMBERSHIP", "EXTRA"]),
+  subjectId: z.string().trim().min(1, "Choose the competition subject"),
   amount: int(0, 1_000_000),
   reference: z.string().trim().min(2, "Enter how it was paid, e.g. MoMo ref or 'cash'").max(120),
 });
@@ -177,4 +179,31 @@ export const postSchema = z.object({
     return date;
   }),
   status,
+});
+
+export const subjectSchema = z.object({
+  level: z.enum(["O_LEVEL", "A_LEVEL"]),
+  name: z.string().trim().min(2, "Enter the subject name").max(80),
+  code: z
+    .string()
+    .trim()
+    .max(20)
+    .transform((v) => (v === "" ? null : v)),
+  competitionOpen: z
+    .string()
+    .optional()
+    .transform((v) => v === "on"),
+});
+
+export const subjectUpdateSchema = subjectSchema.omit({ level: true }).extend({ id });
+
+export const topicSchema = z.object({
+  subjectId: id,
+  name: z.string().trim().min(2, "Enter the topic name").max(80),
+});
+
+export const topicUpdateSchema = z.object({
+  id,
+  name: z.string().trim().min(2, "Enter the topic name").max(80),
+  position: int(0, 999),
 });

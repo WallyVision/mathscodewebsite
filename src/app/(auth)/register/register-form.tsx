@@ -61,7 +61,7 @@ export function RegisterForm({ next }: { next?: string }) {
               <span className="text-sm">
                 {level === "O_LEVEL" ? "O Level" : "A Level"}
                 <span className="block text-xs text-slate-500">
-                  {formatXaf(SUBSCRIPTION_PRICE[level])}/month
+                  Membership {formatXaf(SUBSCRIPTION_PRICE[level])}/month
                 </span>
               </span>
             </label>
