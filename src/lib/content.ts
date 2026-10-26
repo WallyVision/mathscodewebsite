@@ -10,8 +10,9 @@ import { levelFromSlug } from "@/lib/domain/levels";
 
 /**
  * Questions students may revise from: published, and not part of a draft
- * test or a test that has not closed yet. This stops answers to an upcoming
- * or running test leaking through the practice bank.
+ * test or a test that has not closed yet. Test-bank questions stay hidden
+ * until they have appeared in a closed test. This stops answers to an
+ * upcoming or running test leaking through the practice bank.
  */
 export function practiceQuestionWhere(now: Date): Prisma.QuestionWhereInput {
   return {
@@ -19,6 +20,10 @@ export function practiceQuestionWhere(now: Date): Prisma.QuestionWhereInput {
     testQuestions: {
       none: { test: { OR: [{ status: "DRAFT" }, { closesAt: { gt: now } }] } },
     },
+    OR: [
+      { forTests: false },
+      { testQuestions: { some: { test: { status: { not: "DRAFT" }, closesAt: { lte: now } } } } },
+    ],
   };
 }
 

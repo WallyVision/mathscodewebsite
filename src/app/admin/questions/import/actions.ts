@@ -63,6 +63,8 @@ export async function importQuestions(
     };
   }
 
-  const result = await createImportedQuestions(target, questions);
+  const result = await createImportedQuestions(target, questions, {
+    forTests: formData.get("forTests") === "on",
+  });
   return { ...result, values: { subjectId, topicId, text: "" } };
 }

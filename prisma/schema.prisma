@@ -175,6 +175,9 @@ model Question {
   solution    String?
   difficulty  Int            @default(2) // 1 = easy … 3 = hard
   status      ContentStatus  @default(DRAFT)
+  // Test bank: hidden from practice until it has appeared in a closed test, and the pool
+  // that randomly drawn tests take their questions from
+  forTests    Boolean        @default(false)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
@@ -226,6 +229,10 @@ model Test {
   opensAt            DateTime
   closesAt           DateTime
   durationMinutes    Int
+  // When set, this many questions are drawn at random from the subject's test bank at the
+  // moment the test opens, so nobody (authors included) knows them in advance
+  drawCount          Int?
+  drawnAt            DateTime?
   resultsPublishedAt DateTime?
   createdAt          DateTime   @default(now())
 

@@ -45,6 +45,7 @@ export default async function EditQuestionPage({ params, searchParams }: Props) 
     correct: question.options.find((o) => o.isCorrect)?.label ?? "",
     solution: question.solution ?? "",
     difficulty: String(question.difficulty),
+    forTests: question.forTests ? "on" : "",
     status: question.status,
   };
 
@@ -55,7 +56,8 @@ export default async function EditQuestionPage({ params, searchParams }: Props) 
           items={[{ label: "Questions", href: "/admin/questions" }, { label: "Edit" }]}
         />
         <PageHeader title="Edit question">
-          {question.testQuestions.length > 0 &&
+          {user.role === "ADMIN" &&
+            question.testQuestions.length > 0 &&
             `Used in: ${question.testQuestions.map((t) => t.test.title).join(", ")}.`}
           {question._count.answers > 0 &&
             " Students have answered it, so the correct option is locked."}

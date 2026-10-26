@@ -59,6 +59,10 @@ export const questionSchema = z
       .transform((v) => (v === "" ? null : v)),
     difficulty: int(1, 3),
     status,
+    forTests: z
+      .string()
+      .optional()
+      .transform((v) => v === "on"),
   })
   .refine((q) => q.pastPaperId === null || q.number !== null, {
     message: "Give the question number within the past paper",
@@ -107,6 +111,19 @@ export const testSchema = z
     opensAt: doualaDate("opening time"),
     closesAt: doualaDate("closing time"),
     durationMinutes: int(1, 300),
+    questionMode: z.enum(["PICK", "DRAW"]).default("PICK"),
+    drawCount: z
+      .string()
+      .optional()
+      .transform((v, ctx) => {
+        if (!v) return null;
+        const n = Number(v);
+        if (!Number.isInteger(n) || n < 1 || n > 200) {
+          ctx.addIssue({ code: "custom", message: "Enter a number of questions from 1 to 200" });
+          return z.NEVER;
+        }
+        return n;
+      }),
     questionIds: z.array(id).max(200, "A test can have at most 200 questions"),
   })
   .refine((t) => t.closesAt > t.opensAt, {
@@ -117,9 +134,13 @@ export const testSchema = z
     message: "A question was added twice",
     path: ["questionIds"],
   })
-  .refine((t) => t.status === "DRAFT" || t.questionIds.length > 0, {
+  .refine((t) => t.questionMode === "DRAW" || t.status === "DRAFT" || t.questionIds.length > 0, {
     message: "Add at least one question before scheduling",
     path: ["questionIds"],
+  })
+  .refine((t) => t.questionMode === "PICK" || t.drawCount !== null, {
+    message: "Enter how many questions to draw",
+    path: ["drawCount"],
   });
 
 export const grantSchema = z.object({

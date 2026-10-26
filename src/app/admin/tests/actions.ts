@@ -16,7 +16,26 @@ export async function saveTest(_prev: AdminFormState, formData: FormData): Promi
   };
   const parsed = testSchema.safeParse({ ...values, questionIds });
   if (!parsed.success) return invalid(parsed.error, values);
-  const { questionIds: ids, ...data } = parsed.data;
+  const { questionIds: picked, questionMode, drawCount, ...rest } = parsed.data;
+  // A drawn test gets its questions when it opens; until then it has none.
+  const drawn = questionMode === "DRAW";
+  const ids = drawn ? [] : picked;
+  const data = { ...rest, drawCount: drawn ? drawCount : null };
+  if (drawn && data.status === "SCHEDULED" && drawCount) {
+    const bankSize = await db.question.count({
+      where: { subjectId: data.subjectId, status: "PUBLISHED", forTests: true },
+    });
+    if (bankSize < drawCount) {
+      return {
+        fieldErrors: {
+          drawCount: [
+            `The subject's test bank has only ${bankSize} published questions. Add more, draw fewer, or save as a draft.`,
+          ],
+        },
+        values,
+      };
+    }
+  }
 
   const matching = await db.question.count({
     where: { id: { in: ids }, subjectId: data.subjectId },
@@ -34,13 +53,24 @@ export async function saveTest(_prev: AdminFormState, formData: FormData): Promi
       where: { id: testId },
       select: {
         subjectId: true,
+        drawCount: true,
+        drawnAt: true,
         questions: { orderBy: { position: "asc" }, select: { questionId: true } },
         _count: { select: { attempts: true } },
       },
     });
     if (!existing) return { message: "This test no longer exists.", values };
+    if (existing.drawnAt) {
+      // Questions were drawn when it opened: only the details can change now.
+      await db.test.update({
+        where: { id: testId },
+        data: { title: data.title, kind: data.kind, status: data.status, closesAt: data.closesAt },
+      });
+      redirect(`/admin/tests/${testId}?saved=1`);
+    }
     const unchanged =
       existing.subjectId === data.subjectId &&
+      existing.drawCount === data.drawCount &&
       existing.questions.map((q) => q.questionId).join() === ids.join();
     if (existing._count.attempts > 0 && !unchanged) {
       return {

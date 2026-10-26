@@ -107,6 +107,13 @@ Every question in one import gets the subject and topic chosen on the page and i
 draft. **Check** lists problems by question; nothing is saved until all questions are valid.
 A question already in the subject is skipped.
 
+### The test bank
+
+Tick **Test bank** on a question (or **Add to the test bank** when importing) to keep it for
+competitive tests. Test-bank questions are hidden from practice until they have appeared in a
+test that has closed. Prize tests draw their questions at random from the bank when they open,
+so keep each subject's bank at least **three times** the size of a test.
+
 ## Worked solutions
 
 Solutions are what students pay for, so they must teach, not just state the answer.

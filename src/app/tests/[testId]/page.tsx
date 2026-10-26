@@ -37,7 +37,10 @@ export default async function TestPage({ params }: Props) {
 
       <dl className="mt-4 grid grid-cols-2 gap-3 rounded-lg border border-slate-200 bg-white p-5 text-sm sm:grid-cols-4">
         <Fact label="Subject" value={test.subject.name} />
-        <Fact label="Questions" value={String(test._count.questions)} />
+        <Fact
+          label="Questions"
+          value={String(test.drawCount && !test.drawnAt ? test.drawCount : test._count.questions)}
+        />
         <Fact label="Time allowed" value={`${test.durationMinutes} min`} />
         <Fact label="Closes" value={formatDateTime(test.closesAt)} />
       </dl>

@@ -29,6 +29,7 @@ export async function resolveImportTarget(
 export async function createImportedQuestions(
   target: { subjectId: string; topicId: string | null },
   questions: readonly ImportedQuestion[],
+  options: { forTests?: boolean } = {},
 ): Promise<{ created: number; skipped: string[] }> {
   const existing = await db.question.findMany({
     where: { subjectId: target.subjectId, stem: { in: questions.map((q) => q.stem) } },
@@ -56,6 +57,7 @@ export async function createImportedQuestions(
           difficulty: q.difficulty,
           status: "DRAFT",
           source: "ORIGINAL",
+          forTests: options.forTests ?? false,
           options: {
             create: q.options.map((o) => ({ ...o, isCorrect: o.label === q.correct })),
           },

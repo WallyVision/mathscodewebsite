@@ -133,6 +133,19 @@ export function QuestionForm({
           errors={errors.solution}
         />
 
+        <label className="flex items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            name="forTests"
+            defaultChecked={(values.forTests ?? "") === "on"}
+            className="mt-1"
+          />
+          <span>
+            <strong>Test bank</strong>: keep this question for competitive tests. Students cannot
+            practise it until it has appeared in a test that has closed.
+          </span>
+        </label>
+
         <Select
           label="Status"
           name="status"

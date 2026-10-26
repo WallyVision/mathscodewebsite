@@ -120,7 +120,7 @@ Implemented in `src/lib/domain/prizes.ts`. All values below are decided.
 | Answers hidden until window closes    |     ✓     |       |
 | App-switch counter (reloads ignored)  |     ✓     |       |
 | Winner verification before payout     |     ✓     |       |
-| Large question bank, random selection |           |   ✓   |
+| Large question bank, random selection |     ✓     |       |
 | One active session per account        |           |   ✓   |
 
 ## Content and copyright
@@ -165,8 +165,10 @@ Implemented in `src/lib/domain/prizes.ts`. All values below are decided.
    tests and prize pools per subject; cash payments recorded with their subject.
 9. **Subject teams and earnings (done):** authors assigned to subjects edit only those
    subjects; live "My earnings" page; monthly team payouts with paid status and reference.
-10. **Random test drawing (next):** tests drawn from a larger question bank so teams cannot
-    predict them.
+10. **Random test drawing (done):** a test can draw N questions at random from the subject's
+    test bank at the moment it opens (cryptographic randomness, once, safe under concurrent
+    starts), preferring questions never used before. Test-bank questions stay out of practice
+    until a test using them has closed; which questions a test used is shown to admins only.
 11. **Growth:** SMS or WhatsApp reminders before tests, referral rewards, streaks,
     topic-level progress reports, schools plan.
 

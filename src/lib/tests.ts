@@ -10,6 +10,7 @@ import {
   canStartAttempt,
   SUBMISSION_GRACE_SECONDS,
 } from "@/lib/domain/attempt";
+import { drawQuestionIds } from "@/lib/domain/draw";
 import { canEnterTest } from "@/lib/domain/entitlements";
 import { displayLabel, layoutPaper, leaderboardName, timeTakenSeconds } from "@/lib/domain/paper";
 import { rankEntries } from "@/lib/domain/ranking";
@@ -28,6 +29,47 @@ export type Answers = Record<string, string | null>;
 /** Answers, correct options and the leaderboard are revealed once the test window closes. */
 export function isRevealed(test: { closesAt: Date }, now: Date): boolean {
   return now >= test.closesAt;
+}
+
+// ─── Random drawing ─────────────────────────────────────────────────────────
+
+/** Uniform number in [0, 1) from a cryptographic source, so draws cannot be predicted. */
+const secureRandom = () => randomInt(0, 2 ** 32) / 2 ** 32;
+
+/**
+ * For a test set to draw its questions at random: once it has opened, draws
+ * them from the subject's published test bank, exactly once. Before opening
+ * nothing is chosen, so nobody can know the questions in advance.
+ */
+export async function ensureTestDrawn(testId: string, now = new Date()): Promise<void> {
+  const test = await db.test.findUnique({
+    where: { id: testId },
+    select: { subjectId: true, drawCount: true, drawnAt: true, opensAt: true },
+  });
+  if (!test?.drawCount || test.drawnAt || now < test.opensAt) return;
+  const count = test.drawCount;
+
+  await db.$transaction(async (tx) => {
+    // Claiming the draw locks the test row: a concurrent caller waits here, then sees it taken.
+    const claimed = await tx.test.updateMany({
+      where: { id: testId, drawnAt: null },
+      data: { drawnAt: now },
+    });
+    if (claimed.count === 0) return;
+    const bank = await tx.question.findMany({
+      where: { subjectId: test.subjectId, status: "PUBLISHED", forTests: true },
+      select: { id: true, _count: { select: { testQuestions: true } } },
+    });
+    const ids = drawQuestionIds(
+      bank.filter((q) => q._count.testQuestions === 0).map((q) => q.id),
+      bank.filter((q) => q._count.testQuestions > 0).map((q) => q.id),
+      count,
+      secureRandom,
+    );
+    await tx.testQuestion.createMany({
+      data: ids.map((questionId, position) => ({ testId, questionId, position })),
+    });
+  }, TRANSACTION_OPTIONS);
 }
 
 export async function getTestForUser(testId: string, user: CurrentUser) {
@@ -70,6 +112,7 @@ export async function startAttempt(testId: string, user: CurrentUser): Promise<S
   const now = new Date();
   const window = canStartAttempt(test, now);
   if (!window.ok) return window;
+  await ensureTestDrawn(testId, now);
   if (!canEnterTest(await loadViewerAccess(user), test.subjectId, now)) {
     return { ok: false, reason: "NOT_SUBSCRIBED" };
   }
