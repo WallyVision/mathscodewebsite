@@ -25,7 +25,9 @@ export async function createAwards(
     return { ok: false, message: "Prizes for this month were already created." };
 
   const winners = data.standings.filter((s) => s.eligible).slice(0, data.amounts.length);
-  if (winners.length === 0) return { ok: false, message: "No student sat every test this month." };
+  if (winners.length === 0) {
+    return { ok: false, message: "No student sat enough tests this month to be eligible." };
+  }
 
   await db.prizeAward.createMany({
     data: winners.map((w, i) => ({

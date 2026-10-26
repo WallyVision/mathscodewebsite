@@ -131,7 +131,7 @@ describe("monthly prizes", () => {
     expect(await subjectIncome(subjectId, start, end)).toEqual({ gross: 4000, online: 2000 });
   });
 
-  it("ranks students who sat every test closed in the month", async () => {
+  it("ranks students by their best tests closed in the month", async () => {
     const data = await loadMonthlyPrizes(PERIOD, subjectId);
     expect(data?.tests.map((t) => t.title)).toEqual(["Week 1", "Week 2"]);
     expect(data?.monthEnded).toBe(true);
