@@ -6,7 +6,14 @@ import { ADMIN_ONLY, requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { levelSlug } from "@/lib/domain/levels";
 import { LEVEL_LABEL } from "@/lib/domain/pricing";
-import { AddTopicForm, EditSubjectForm, TopicRow } from "../subject-forms";
+import { DEFAULT_REVENUE_POLICY } from "@/lib/domain/revenue";
+import {
+  AddTeamMemberForm,
+  AddTopicForm,
+  EditSubjectForm,
+  TeamMemberRow,
+  TopicRow,
+} from "../subject-forms";
 
 export const metadata: Metadata = { title: "Subject" };
 
@@ -22,6 +29,10 @@ export default async function SubjectPage({
   const subject = await db.subject.findUnique({
     where: { id },
     include: {
+      team: {
+        orderBy: { createdAt: "asc" },
+        select: { id: true, weight: true, user: { select: { name: true, phone: true } } },
+      },
       topics: {
         orderBy: { position: "asc" },
         select: {
@@ -35,6 +46,7 @@ export default async function SubjectPage({
   });
   if (!subject) notFound();
   const title = `${LEVEL_LABEL[subject.level]} ${subject.name}`;
+  const totalWeight = subject.team.reduce((sum, m) => sum + m.weight, 0) || 1;
 
   return (
     <div className="max-w-3xl space-y-8">
@@ -49,6 +61,30 @@ export default async function SubjectPage({
       <section className="rounded-lg border border-slate-200 bg-white p-5">
         <h2 className="mb-4 font-semibold">Details</h2>
         <EditSubjectForm subject={subject} />
+      </section>
+
+      <section className="rounded-lg border border-slate-200 bg-white p-5">
+        <h2 className="mb-1 font-semibold">Team</h2>
+        <p className="mb-4 text-sm text-slate-600">
+          The authors responsible for this subject. Only they (and admins) can edit its notes,
+          questions and papers, and they share the team&apos;s{" "}
+          {Math.round(DEFAULT_REVENUE_POLICY.teamShare * 100)}% of the subject&apos;s income in
+          proportion to their weights.
+        </p>
+        {subject.team.length === 0 ? (
+          <p className="mb-4 text-sm text-slate-600">No team yet.</p>
+        ) : (
+          <div className="mb-6 divide-y divide-slate-100">
+            {subject.team.map((m) => (
+              <TeamMemberRow
+                key={m.id}
+                member={{ id: m.id, name: m.user.name, phone: m.user.phone, weight: m.weight }}
+                percent={Math.round((m.weight / totalWeight) * 100)}
+              />
+            ))}
+          </div>
+        )}
+        <AddTeamMemberForm subjectId={subject.id} />
       </section>
 
       <section className="rounded-lg border border-slate-200 bg-white p-5">

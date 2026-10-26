@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/admin";
+import { contentScope, subjectIdFilter } from "@/lib/admin/scope";
 import { requireRole, STAFF_ROLES } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { formatDateTime } from "@/lib/format";
@@ -7,6 +8,7 @@ import { formatDateTime } from "@/lib/format";
 export default async function AdminHome() {
   const user = await requireRole(STAFF_ROLES);
   const now = new Date();
+  const inSubjects = { subjectId: subjectIdFilter(await contentScope(user)) };
 
   const [students, subscribers, draftQuestions, publishedQuestions, draftNotes, upcoming] =
     await Promise.all([
@@ -14,9 +16,9 @@ export default async function AdminHome() {
       db.user.count({
         where: { subscriptions: { some: { startsAt: { lte: now }, endsAt: { gt: now } } } },
       }),
-      db.question.count({ where: { status: "DRAFT" } }),
-      db.question.count({ where: { status: "PUBLISHED" } }),
-      db.note.count({ where: { status: "DRAFT" } }),
+      db.question.count({ where: { status: "DRAFT", ...inSubjects } }),
+      db.question.count({ where: { status: "PUBLISHED", ...inSubjects } }),
+      db.note.count({ where: { status: "DRAFT", topic: inSubjects } }),
       db.test.findMany({
         where: { closesAt: { gt: now } },
         orderBy: { opensAt: "asc" },

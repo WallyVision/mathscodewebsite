@@ -2,6 +2,7 @@
 
 import { createImportedQuestions, resolveImportTarget } from "@/lib/admin/import-questions";
 import { parseQuestionImport } from "@/lib/admin/question-import";
+import { contentScope, inScope, NOT_YOUR_SUBJECT } from "@/lib/admin/scope";
 import { requireRole, STAFF_ROLES } from "@/lib/auth/session";
 
 // Stays under the 1 MB request limit for server actions.
@@ -21,7 +22,7 @@ export async function importQuestions(
   _prev: ImportState,
   formData: FormData,
 ): Promise<ImportState> {
-  await requireRole(STAFF_ROLES);
+  const user = await requireRole(STAFF_ROLES);
   const subjectId = String(formData.get("subjectId") ?? "");
   const topicId = String(formData.get("topicId") ?? "");
   const file = formData.get("file");
@@ -37,6 +38,7 @@ export async function importQuestions(
   }
   const values = { subjectId, topicId, text };
 
+  if (!inScope(await contentScope(user), subjectId)) return { message: NOT_YOUR_SUBJECT, values };
   const target = await resolveImportTarget(subjectId, topicId || null);
   if (!target.ok) return { message: target.message, values };
 

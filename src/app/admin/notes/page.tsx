@@ -8,6 +8,7 @@ import {
   tdClass,
   thClass,
 } from "@/components/admin";
+import { contentScope, subjectIdFilter } from "@/lib/admin/scope";
 import { requireRole, STAFF_ROLES } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { LEVEL_LABEL } from "@/lib/domain/pricing";
@@ -16,8 +17,10 @@ import { formatDateTime } from "@/lib/format";
 export const metadata: Metadata = { title: "Notes" };
 
 export default async function NotesPage() {
-  await requireRole(STAFF_ROLES);
+  const user = await requireRole(STAFF_ROLES);
+  const scope = await contentScope(user);
   const notes = await db.note.findMany({
+    where: { topic: { subjectId: subjectIdFilter(scope) } },
     orderBy: { updatedAt: "desc" },
     select: {
       id: true,

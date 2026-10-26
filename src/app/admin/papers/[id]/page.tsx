@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { PageHeader, SavedBanner, StatusBadge } from "@/components/admin";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { loadContentOptions } from "@/lib/admin/options";
+import { contentScope, inScope } from "@/lib/admin/scope";
 import { requireRole, STAFF_ROLES } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { PaperForm } from "../paper-form";
@@ -16,7 +17,8 @@ interface Props {
 }
 
 export default async function EditPaperPage({ params, searchParams }: Props) {
-  await requireRole(STAFF_ROLES);
+  const user = await requireRole(STAFF_ROLES);
+  const scope = await contentScope(user);
   const [{ id }, { saved }] = await Promise.all([params, searchParams]);
   const [paper, subjects] = await Promise.all([
     db.pastPaper.findUnique({
@@ -28,9 +30,9 @@ export default async function EditPaperPage({ params, searchParams }: Props) {
         },
       },
     }),
-    loadContentOptions(),
+    loadContentOptions(scope),
   ]);
-  if (!paper) notFound();
+  if (!paper || !inScope(scope, paper.subjectId)) notFound();
 
   return (
     <div className="grid gap-8 lg:grid-cols-2">

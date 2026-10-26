@@ -4,6 +4,7 @@ import { PageHeader, SavedBanner } from "@/components/admin";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { QuestionCard } from "@/components/question-card";
 import { loadContentOptions } from "@/lib/admin/options";
+import { contentScope, inScope } from "@/lib/admin/scope";
 import { requireRole, STAFF_ROLES } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { QuestionForm } from "../question-form";
@@ -16,7 +17,8 @@ interface Props {
 }
 
 export default async function EditQuestionPage({ params, searchParams }: Props) {
-  await requireRole(STAFF_ROLES);
+  const user = await requireRole(STAFF_ROLES);
+  const scope = await contentScope(user);
   const [{ id }, { saved }] = await Promise.all([params, searchParams]);
   const [question, subjects] = await Promise.all([
     db.question.findUnique({
@@ -27,9 +29,9 @@ export default async function EditQuestionPage({ params, searchParams }: Props) 
         _count: { select: { answers: true } },
       },
     }),
-    loadContentOptions(),
+    loadContentOptions(scope),
   ]);
-  if (!question) notFound();
+  if (!question || !inScope(scope, question.subjectId)) notFound();
 
   const optionText = Object.fromEntries(question.options.map((o) => [`option${o.label}`, o.text]));
   const initial: Record<string, string> = {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { PageHeader } from "@/components/admin";
 import { loadContentOptions } from "@/lib/admin/options";
+import { contentScope } from "@/lib/admin/scope";
 import { requireRole, STAFF_ROLES } from "@/lib/auth/session";
 import { QuestionForm } from "../question-form";
 
@@ -12,9 +13,9 @@ export default async function NewQuestionPage({
 }: {
   searchParams: Promise<{ subject?: string; paper?: string }>;
 }) {
-  await requireRole(STAFF_ROLES);
+  const user = await requireRole(STAFF_ROLES);
   const { subject, paper } = await searchParams;
-  const subjects = await loadContentOptions();
+  const subjects = await loadContentOptions(await contentScope(user));
   return (
     <div className="max-w-3xl">
       <Breadcrumbs items={[{ label: "Questions", href: "/admin/questions" }, { label: "New" }]} />
