@@ -10,6 +10,7 @@ import {
   thClass,
 } from "@/components/admin";
 import { loadContentOptions } from "@/lib/admin/options";
+import { contentScope, subjectIdFilter } from "@/lib/admin/scope";
 import { requireRole, STAFF_ROLES } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 
@@ -22,18 +23,19 @@ interface Props {
 }
 
 export default async function QuestionsPage({ searchParams }: Props) {
-  await requireRole(STAFF_ROLES);
+  const user = await requireRole(STAFF_ROLES);
+  const scope = await contentScope(user);
   const { subject = "", status = "", q = "", page = "1" } = await searchParams;
   const pageNumber = Math.max(1, Number.parseInt(page, 10) || 1);
 
   const where: Prisma.QuestionWhereInput = {
-    ...(subject ? { subjectId: subject } : {}),
+    AND: [{ subjectId: subjectIdFilter(scope) }, subject ? { subjectId: subject } : {}],
     ...(status === "DRAFT" || status === "PUBLISHED" ? { status } : {}),
     ...(q ? { stem: { contains: q, mode: "insensitive" } } : {}),
   };
 
   const [subjects, questions, total] = await Promise.all([
-    loadContentOptions(),
+    loadContentOptions(scope),
     db.question.findMany({
       where,
       orderBy: { updatedAt: "desc" },

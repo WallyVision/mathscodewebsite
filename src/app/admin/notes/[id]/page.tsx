@@ -5,6 +5,7 @@ import { PageHeader, SavedBanner } from "@/components/admin";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Markdown } from "@/components/markdown";
 import { loadContentOptions } from "@/lib/admin/options";
+import { contentScope, inScope } from "@/lib/admin/scope";
 import { requireRole, STAFF_ROLES } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { levelSlug } from "@/lib/domain/levels";
@@ -18,16 +19,17 @@ interface Props {
 }
 
 export default async function EditNotePage({ params, searchParams }: Props) {
-  await requireRole(STAFF_ROLES);
+  const user = await requireRole(STAFF_ROLES);
+  const scope = await contentScope(user);
   const [{ id }, { saved }] = await Promise.all([params, searchParams]);
   const [note, subjects] = await Promise.all([
     db.note.findUnique({
       where: { id },
       include: { topic: { include: { subject: true } } },
     }),
-    loadContentOptions(),
+    loadContentOptions(scope),
   ]);
-  if (!note) notFound();
+  if (!note || !inScope(scope, note.topic.subjectId)) notFound();
   const { topic } = note;
   const publicUrl = `/learn/${levelSlug(topic.subject.level)}/${topic.subject.slug}/${topic.slug}/${note.slug}`;
 

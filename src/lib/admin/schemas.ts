@@ -207,3 +207,16 @@ export const topicUpdateSchema = z.object({
   name: z.string().trim().min(2, "Enter the topic name").max(80),
   position: int(0, 999),
 });
+
+export const teamMemberSchema = z.object({
+  subjectId: id,
+  identifier: z.string().trim().min(3, "Enter the author's phone number or email").max(120),
+  weight: int(1, 10),
+});
+
+export const teamWeightSchema = z.object({ id, weight: int(1, 10) });
+
+export const payoutPaidSchema = z.object({
+  id,
+  reference: z.string().trim().min(2, "Enter the Mobile Money transaction ID or 'cash'").max(120),
+});

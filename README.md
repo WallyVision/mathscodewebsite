@@ -102,10 +102,15 @@ numbers or emails, comma-separated; applied each time the production server star
 npm run admin:grant -- 677123456
 ```
 
-After that, admins change roles from **/admin/students** → a person → Role. Give helpers the
-**Author** role: they can write and publish content but never see students, payments, tests or
-prizes (those pages return "not found" for them). Authors can import many questions at once
-from **/admin/questions/import**.
+After that, admins manage people from **/admin/students** and subject teams from
+**/admin/subjects** → a subject → Team. Adding someone to a team makes them an **Author** for
+that subject: they can write and publish its notes, questions and papers (others' subjects
+are hidden from them), Opportunities posts and images, but never see students, payments,
+tests or prizes. Authors can import many questions at once from **/admin/questions/import**.
+
+**Earnings** (`/admin/earnings`): authors see their live share of their subjects' income for
+the month and their past payouts; the admin sees every subject's split and, after a month
+ends, fixes the team payouts and marks each paid with its Mobile Money reference.
 
 Diagrams and pictures are uploaded from any content form or **/admin/media** (Authors too).
 They are stored in the database (300 KB each at most) and served from `/media/<id>` with a

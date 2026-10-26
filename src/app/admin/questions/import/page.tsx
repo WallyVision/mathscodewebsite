@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/admin";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { loadContentOptions } from "@/lib/admin/options";
+import { contentScope } from "@/lib/admin/scope";
 import { requireRole, STAFF_ROLES } from "@/lib/auth/session";
 import { ImportForm } from "./import-form";
 
@@ -29,8 +30,8 @@ Add 7 to both sides: $3x = 18$. Divide by 3: $x = 6$.
 ---`;
 
 export default async function ImportQuestionsPage() {
-  await requireRole(STAFF_ROLES);
-  const subjects = await loadContentOptions();
+  const user = await requireRole(STAFF_ROLES);
+  const subjects = await loadContentOptions(await contentScope(user));
   return (
     <div className="max-w-3xl">
       <Breadcrumbs

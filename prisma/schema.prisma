@@ -44,6 +44,8 @@ model User {
   unlocks       SolutionUnlock[]
   prizes        PrizeAward[]
   resetTokens   PasswordResetToken[]
+  teams         SubjectTeamMember[]
+  teamPayouts   TeamPayout[]
 }
 
 model Session {
@@ -99,6 +101,8 @@ model Subject {
 
   topics      Topic[]
   entries     CompetitionEntry[]
+  team        SubjectTeamMember[]
+  teamPayouts TeamPayout[]
   pastPapers  PastPaper[]
   questions   Question[]
   tests       Test[]
@@ -480,4 +484,47 @@ model Media {
   createdAt   DateTime @default(now())
 
   @@index([createdAt])
+}
+
+// ─── Subject teams ───────────────────────────────────────────────────────────
+
+// An author responsible for a subject's notes, questions and papers. The subject's team
+// share is divided between its members in proportion to their weights (1 and 1 = half each).
+model SubjectTeamMember {
+  id        String   @id @default(cuid())
+  subjectId String
+  userId    String
+  weight    Int      @default(1)
+  createdAt DateTime @default(now())
+
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([subjectId, userId])
+  @@index([userId])
+}
+
+enum PayoutStatus {
+  PENDING
+  PAID
+}
+
+// A team member's final earnings for one subject and month, fixed when the month has ended.
+model TeamPayout {
+  id        String       @id @default(cuid())
+  period    String // "2026-11"
+  subjectId String
+  userId    String
+  amount    Int // XAF
+  status    PayoutStatus @default(PENDING)
+  paidAt    DateTime?
+  // Mobile Money transaction ID or other proof of payment
+  reference String?
+  createdAt DateTime     @default(now())
+
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([period, subjectId, userId])
+  @@index([userId, period])
 }

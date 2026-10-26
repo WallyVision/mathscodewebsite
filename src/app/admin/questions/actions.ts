@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { formValues, invalid, type AdminFormState } from "@/lib/admin/form";
 import { questionSchema } from "@/lib/admin/schemas";
+import { contentScope, inScope, NOT_YOUR_SUBJECT, topicSubjectId } from "@/lib/admin/scope";
 import { requireRole, STAFF_ROLES } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 
@@ -10,22 +11,30 @@ export async function saveQuestion(
   _prev: AdminFormState,
   formData: FormData,
 ): Promise<AdminFormState> {
-  await requireRole(STAFF_ROLES);
+  const user = await requireRole(STAFF_ROLES);
   const values = formValues(formData);
   const parsed = questionSchema.safeParse(values);
   if (!parsed.success) return invalid(parsed.error, values);
   const { options, correct, ...data } = parsed.data;
   const questionId = values.id || null;
 
+  const scope = await contentScope(user);
+  if (!inScope(scope, data.subjectId)) return { message: NOT_YOUR_SUBJECT, values };
+  if (data.topicId && (await topicSubjectId(data.topicId)) !== data.subjectId) {
+    return { fieldErrors: { topicId: ["This topic belongs to another subject"] }, values };
+  }
+
   if (questionId) {
     const existing = await db.question.findUnique({
       where: { id: questionId },
       select: {
+        subjectId: true,
         options: { select: { label: true, isCorrect: true } },
         _count: { select: { answers: true } },
       },
     });
     if (!existing) return { message: "This question no longer exists.", values };
+    if (!inScope(scope, existing.subjectId)) return { message: NOT_YOUR_SUBJECT, values };
     const currentCorrect = existing.options.find((o) => o.isCorrect)?.label;
     // Changing the answer key after students answered would make their marks wrong.
     if (existing._count.answers > 0 && currentCorrect !== correct) {

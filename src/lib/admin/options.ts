@@ -1,10 +1,12 @@
 import "server-only";
 import { db } from "@/lib/db";
 import { LEVEL_LABEL } from "@/lib/domain/pricing";
+import { subjectIdFilter, type ContentScope } from "./scope";
 
-/** Subjects, topics and past papers for content form dropdowns. */
-export async function loadContentOptions() {
+/** Subjects, topics and past papers for content form dropdowns, limited to the editor's subjects. */
+export async function loadContentOptions(scope: ContentScope) {
   const subjects = await db.subject.findMany({
+    where: { id: subjectIdFilter(scope) },
     orderBy: [{ level: "asc" }, { name: "asc" }],
     select: {
       id: true,

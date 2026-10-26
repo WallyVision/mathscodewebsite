@@ -54,7 +54,11 @@ subject). Each month, per subject (`src/lib/domain/revenue.ts`):
 1. Payment fees are taken off online payments (estimate set in `DEFAULT_REVENUE_POLICY`).
 2. The rest is split **40% platform, 40% subject team, 20% subject prize pool**.
 3. The prize pool is at least 10,000 FCFA in any month with entrants; the platform tops it up.
-4. The team share is divided between the subject's team members by weight (next release).
+4. The team share is divided between the subject's team members by weight (1 and 1 is half
+   each). Authors see their live estimate in **Earnings**; after the month ends the admin
+   fixes the payouts (`TeamPayout`) and pays them by the 15th.
+5. A subject with no team keeps its team share with the platform. Staff and a subject's own
+   team cannot appear in that subject's prize standings.
 
 ## What each kind of student can do
 
@@ -159,9 +163,11 @@ Implemented in `src/lib/domain/prizes.ts`. All values below are decided.
 8. **Competition subjects (done):** `/admin/subjects` to create subjects and topics and open
    or close them for competition; membership includes a chosen subject; extra subjects;
    tests and prize pools per subject; cash payments recorded with their subject.
-9. **Subject teams and earnings (next):** authors assigned to subjects, a live "My earnings"
-   page, monthly payouts by the 15th; random test drawing from a larger bank.
-10. **Growth:** SMS or WhatsApp reminders before tests, referral rewards, streaks,
+9. **Subject teams and earnings (done):** authors assigned to subjects edit only those
+   subjects; live "My earnings" page; monthly team payouts with paid status and reference.
+10. **Random test drawing (next):** tests drawn from a larger question bank so teams cannot
+    predict them.
+11. **Growth:** SMS or WhatsApp reminders before tests, referral rewards, streaks,
     topic-level progress reports, schools plan.
 
 ## Open decisions

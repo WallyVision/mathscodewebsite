@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/admin/papers", label: "Past papers", adminOnly: false },
   { href: "/admin/posts", label: "Opportunities", adminOnly: false },
   { href: "/admin/media", label: "Images", adminOnly: false },
+  { href: "/admin/earnings", label: "Earnings", adminOnly: false },
   { href: "/admin/subjects", label: "Subjects", adminOnly: true },
   { href: "/admin/tests", label: "Tests", adminOnly: true },
   { href: "/admin/students", label: "Students", adminOnly: true },

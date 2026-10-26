@@ -32,6 +32,8 @@ export async function loadMonthlyPrizes(period: string, subjectId: string) {
         testId: { in: testIds },
         status: { in: ["SUBMITTED", "EXPIRED"] },
         score: { not: null },
+        // Staff and the subject's own team cannot win its prizes.
+        user: { role: "STUDENT", teams: { none: { subjectId } } },
       },
       select: {
         userId: true,

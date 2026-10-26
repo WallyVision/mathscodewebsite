@@ -8,11 +8,14 @@ import {
   slugify,
   subjectSchema,
   subjectUpdateSchema,
+  teamMemberSchema,
+  teamWeightSchema,
   topicSchema,
   topicUpdateSchema,
 } from "@/lib/admin/schemas";
 import { ADMIN_ONLY, requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
+import { normalizeCameroonPhone } from "@/lib/domain/phone";
 
 const isDuplicate = (err: unknown) =>
   err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002";
@@ -87,4 +90,72 @@ export async function updateTopic(
   const topic = await db.topic.update({ where: { id }, data, select: { subjectId: true } });
   revalidatePath(`/admin/subjects/${topic.subjectId}`);
   return { message: "Saved." };
+}
+
+/**
+ * Adds a registered person to a subject's team. A student becomes an author;
+ * an admin keeps admin access.
+ */
+export async function addTeamMember(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireRole(ADMIN_ONLY);
+  const values = formValues(formData);
+  const parsed = teamMemberSchema.safeParse(values);
+  if (!parsed.success) return invalid(parsed.error, values);
+  const { subjectId, identifier, weight } = parsed.data;
+  const phone = identifier.includes("@") ? null : normalizeCameroonPhone(identifier);
+  const user = await db.user.findUnique({
+    where: phone ? { phone } : { email: identifier.toLowerCase() },
+    select: { id: true, name: true, role: true },
+  });
+  if (!user) {
+    return {
+      fieldErrors: {
+        identifier: ["No account with that phone or email. They must register first."],
+      },
+      values,
+    };
+  }
+  try {
+    await db.$transaction([
+      db.subjectTeamMember.create({ data: { subjectId, userId: user.id, weight } }),
+      ...(user.role === "STUDENT"
+        ? [db.user.update({ where: { id: user.id }, data: { role: "AUTHOR" } })]
+        : []),
+    ]);
+  } catch (err) {
+    if (!isDuplicate(err)) throw err;
+    return { fieldErrors: { identifier: [`${user.name} is already in this team.`] }, values };
+  }
+  revalidatePath(`/admin/subjects/${subjectId}`);
+  return { message: `${user.name} added to the team.` };
+}
+
+export async function updateTeamWeight(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireRole(ADMIN_ONLY);
+  const values = formValues(formData);
+  const parsed = teamWeightSchema.safeParse(values);
+  if (!parsed.success) return invalid(parsed.error, values);
+  const member = await db.subjectTeamMember.update({
+    where: { id: parsed.data.id },
+    data: { weight: parsed.data.weight },
+    select: { subjectId: true },
+  });
+  revalidatePath(`/admin/subjects/${member.subjectId}`);
+  return { message: "Saved." };
+}
+
+/** Removes someone from a team. Their role stays as it is; change it from Students if needed. */
+export async function removeTeamMember(memberId: string): Promise<void> {
+  await requireRole(ADMIN_ONLY);
+  const member = await db.subjectTeamMember.delete({
+    where: { id: memberId },
+    select: { subjectId: true },
+  });
+  revalidatePath(`/admin/subjects/${member.subjectId}`);
 }

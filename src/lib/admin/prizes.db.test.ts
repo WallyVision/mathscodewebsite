@@ -145,6 +145,18 @@ describe("monthly prizes", () => {
     expect(data?.amounts).toEqual([5000, 3000, 2000]);
   });
 
+  it("leaves the subject's own team out of the standings", async () => {
+    const member = await db.subjectTeamMember.create({
+      data: { subjectId, userId: userIds[1]! },
+    });
+    try {
+      const data = await loadMonthlyPrizes(PERIOD, subjectId);
+      expect(data?.standings.map((s) => s.user.name)).not.toContain("Second Student");
+    } finally {
+      await db.subjectTeamMember.delete({ where: { id: member.id } });
+    }
+  });
+
   it("leaves disqualified attempts out of the standings", async () => {
     await db.testAttempt.updateMany({
       where: { userId: userIds[0], test: { title: "Week 2", subjectId } },

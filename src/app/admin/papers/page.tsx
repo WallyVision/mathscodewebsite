@@ -8,6 +8,7 @@ import {
   tdClass,
   thClass,
 } from "@/components/admin";
+import { contentScope, subjectIdFilter } from "@/lib/admin/scope";
 import { requireRole, STAFF_ROLES } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { LEVEL_LABEL } from "@/lib/domain/pricing";
@@ -15,8 +16,10 @@ import { LEVEL_LABEL } from "@/lib/domain/pricing";
 export const metadata: Metadata = { title: "Past papers" };
 
 export default async function PapersPage() {
-  await requireRole(STAFF_ROLES);
+  const user = await requireRole(STAFF_ROLES);
+  const scope = await contentScope(user);
   const papers = await db.pastPaper.findMany({
+    where: { subjectId: subjectIdFilter(scope) },
     orderBy: [{ year: "desc" }, { paperNumber: "asc" }],
     select: {
       id: true,
