@@ -18,6 +18,7 @@ export const LIMITS = {
   checkoutPerPhone: { max: 5, windowSeconds: 60 * 60 },
   passwordResetPerIp: { max: 10, windowSeconds: 60 * 60 },
   passwordChangePerUser: { max: 5, windowSeconds: 15 * 60 },
+  askPerUser: { max: 5, windowSeconds: 24 * 60 * 60 },
 } satisfies Record<string, Limit>;
 
 export type RateResult = { allowed: true } | { allowed: false; retryAfterSeconds: number };

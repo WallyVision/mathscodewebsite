@@ -37,7 +37,7 @@ export default async function PrizesPage({ searchParams }: Props) {
   const period = params.period ?? previousPeriod(periodOf(new Date()));
   const subjectId = params.subject ?? subjects[0]?.id ?? "";
   const data = subjectId ? await loadMonthlyPrizes(period, subjectId) : null;
-  const { minimumPool, placeShares } = DEFAULT_PRIZE_POLICY;
+  const { minimumPool, placeShares, bestTests } = DEFAULT_PRIZE_POLICY;
   const { prizeShare } = DEFAULT_REVENUE_POLICY;
 
   return (
@@ -45,8 +45,8 @@ export default async function PrizesPage({ searchParams }: Props) {
       <PageHeader title="Monthly prizes">
         Pool per subject: {prizeShare * 100}% of the subject&apos;s income from competition entries
         after payment fees, at least {formatXaf(minimumPool)}. Split{" "}
-        {placeShares.map((s) => `${s * 100}%`).join(" / ")}. Students must sit every test of the
-        month.
+        {placeShares.map((s) => `${s * 100}%`).join(" / ")}. Each student&apos;s best {bestTests}{" "}
+        tests of the month count; students who sat fewer are not eligible.
       </PageHeader>
 
       <form className="flex flex-wrap items-end gap-2 text-sm">
@@ -196,7 +196,11 @@ export default async function PrizesPage({ searchParams }: Props) {
                         <Link href={`/admin/students/${s.userId}`} className="hover:underline">
                           {s.user.name}
                         </Link>
-                        {!s.eligible && <span className="block text-xs">Missed a test</span>}
+                        {!s.eligible && (
+                          <span className="block text-xs">
+                            Sat fewer than {s.testsCounted} tests
+                          </span>
+                        )}
                       </td>
                       <td className={`${tdClass} tabular-nums`}>{s.totalScore}</td>
                       <td className={`${tdClass} tabular-nums`}>{formatSeconds(s.totalTime)}</td>

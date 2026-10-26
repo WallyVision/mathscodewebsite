@@ -90,7 +90,7 @@ Ordered by **score (high first)**, then **time taken (fast first)**, then **subm
 (early first)**. Students equal on all three share a rank. Implemented in
 `src/lib/domain/ranking.ts`.
 
-Monthly ranking per subject is the sum of a student's test scores that month.
+Monthly ranking per subject is the sum of a student's best 2 test scores that month.
 
 ## Prizes
 
@@ -101,9 +101,13 @@ Implemented in `src/lib/domain/prizes.ts`. All values below are decided.
 - **Split per subject:** 1st 50%, 2nd 30%, 3rd 20%, rounded down to 500 FCFA.
 - **Month:** calendar month in Cameroon time; a test counts in the month it closes.
   Awards are created from `/admin/prizes` only after the month ends.
-- **Planned extra categories:** most improved, and most consistent (sat every test).
+- **Planned extra categories:** most improved, and most consistent (sat every test of the
+  month).
   These keep average students motivated, not only the top few.
-- **Eligibility:** entered in the subject, sat every test of the subject in the month, account
+- **Best 2 tests count:** a student's monthly total is the sum of their best 2 tests in the
+  subject (all tests if the month had fewer). Memberships run 30 days from payment, so a
+  student who joins mid-month or misses a week can still win.
+- **Eligibility:** entered in the subject, sat at least 2 of its tests in the month, account
   details match the Mobile Money name.
 - **Verification before payout:** results are reviewed for integrity signals (focus loss,
   impossible speed, identical answer patterns). Winners may be asked to explain answers on
@@ -169,7 +173,12 @@ Implemented in `src/lib/domain/prizes.ts`. All values below are decided.
     test bank at the moment it opens (cryptographic randomness, once, safe under concurrent
     starts), preferring questions never used before. Test-bank questions stay out of practice
     until a test using them has closed; which questions a test used is shown to admins only.
-11. **Growth:** SMS or WhatsApp reminders before tests, referral rewards, streaks,
+11. **Ask a question and Tools (done):** members send a question (text and/or a photo, shrunk
+    in the browser to under 300 KB) to a subject; the subject's team and the admin answer in
+    **Admin → Student questions** (count shown in the menu) and the student reads the reply on
+    `/ask`. Five questions a day per member. `/tools` lists calculator links the admin manages
+    in **Admin → Tools** (https only, optional subject, order, shown or hidden).
+12. **Growth:** SMS or WhatsApp reminders before tests, referral rewards, streaks,
     topic-level progress reports, schools plan.
 
 ## Open decisions

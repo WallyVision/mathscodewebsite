@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { checkoutPath } from "@/lib/domain/checkout";
 import { EXTRA_SUBJECT_PRICE, formatXaf } from "@/lib/domain/pricing";
+import { DEFAULT_PRIZE_POLICY } from "@/lib/domain/prizes";
 import { hasActiveEntry, hasActiveSubscription } from "@/lib/domain/subscription";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { listTestsForUser } from "@/lib/tests";
@@ -36,8 +37,9 @@ export default async function TestsPage() {
       <div>
         <h1 className="text-2xl font-bold">Tests</h1>
         <p className="text-slate-600">
-          Timed MCQ tests in each competition subject. One attempt each. Top scorers in each subject
-          win its monthly prizes.
+          Timed MCQ tests in each competition subject. One attempt each. Your best{" "}
+          {DEFAULT_PRIZE_POLICY.bestTests} tests in a subject each month count for its monthly
+          prizes.
         </p>
       </div>
       {user.role === "STUDENT" && subjects.length > 0 && (

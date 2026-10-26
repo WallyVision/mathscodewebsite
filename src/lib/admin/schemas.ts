@@ -241,3 +241,33 @@ export const payoutPaidSchema = z.object({
   id,
   reference: z.string().trim().min(2, "Enter the Mobile Money transaction ID or 'cash'").max(120),
 });
+
+export const replySchema = z.object({
+  questionId: id,
+  body: z.string().trim().min(2, "Write a reply").max(20_000, "The reply is too long"),
+});
+
+export const toolSchema = z.object({
+  title: z.string().trim().min(2, "Enter a name").max(80),
+  description: z.string().trim().min(2, "Say what the tool does").max(300),
+  url: z
+    .string()
+    .trim()
+    .max(500)
+    .refine((v) => {
+      try {
+        return new URL(v).protocol === "https:";
+      } catch {
+        return false;
+      }
+    }, "Enter the full web address, starting with https://"),
+  subjectId: z
+    .string()
+    .trim()
+    .transform((v) => (v === "" ? null : v)),
+  position: int(0, 999),
+  published: z
+    .string()
+    .optional()
+    .transform((v) => v === "on"),
+});

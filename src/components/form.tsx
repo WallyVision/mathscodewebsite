@@ -8,15 +8,16 @@ interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
   errors?: string[];
 }
 
-export function Field({ label, name, hint, errors, ...input }: FieldProps) {
-  const errorId = errors?.length ? `${name}-error` : undefined;
+export function Field({ label, name, hint, errors, id, ...input }: FieldProps) {
+  const fieldId = id ?? name;
+  const errorId = errors?.length ? `${fieldId}-error` : undefined;
   return (
     <div className="space-y-1">
-      <label htmlFor={name} className="block text-sm font-medium text-slate-700">
+      <label htmlFor={fieldId} className="block text-sm font-medium text-slate-700">
         {label}
       </label>
       <input
-        id={name}
+        id={fieldId}
         name={name}
         aria-invalid={errorId ? true : undefined}
         aria-describedby={errorId}
@@ -64,15 +65,16 @@ interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
   errors?: string[];
 }
 
-export function TextArea({ label, name, hint, errors, className, ...rest }: TextAreaProps) {
-  const errorId = errors?.length ? `${name}-error` : undefined;
+export function TextArea({ label, name, hint, errors, className, id, ...rest }: TextAreaProps) {
+  const fieldId = id ?? name;
+  const errorId = errors?.length ? `${fieldId}-error` : undefined;
   return (
     <div className="space-y-1">
-      <label htmlFor={name} className="block text-sm font-medium text-slate-700">
+      <label htmlFor={fieldId} className="block text-sm font-medium text-slate-700">
         {label}
       </label>
       <textarea
-        id={name}
+        id={fieldId}
         name={name}
         aria-invalid={errorId ? true : undefined}
         aria-describedby={errorId}
@@ -96,15 +98,16 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   errors?: string[];
 }
 
-export function Select({ label, name, options, errors, ...rest }: SelectProps) {
-  const errorId = errors?.length ? `${name}-error` : undefined;
+export function Select({ label, name, options, errors, id, ...rest }: SelectProps) {
+  const fieldId = id ?? name;
+  const errorId = errors?.length ? `${fieldId}-error` : undefined;
   return (
     <div className="space-y-1">
-      <label htmlFor={name} className="block text-sm font-medium text-slate-700">
+      <label htmlFor={fieldId} className="block text-sm font-medium text-slate-700">
         {label}
       </label>
       <select
-        id={name}
+        id={fieldId}
         name={name}
         aria-invalid={errorId ? true : undefined}
         aria-describedby={errorId}

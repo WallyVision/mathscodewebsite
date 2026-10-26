@@ -8,6 +8,8 @@ const LINKS = [
   { href: "/gce", label: "Home", match: (p: string) => p === "/gce" },
   { href: "/learn", label: "Revise", match: (p: string) => p.startsWith("/learn") },
   { href: "/tests", label: "Tests", match: (p: string) => p.startsWith("/tests") },
+  { href: "/tools", label: "Tools", match: (p: string) => p.startsWith("/tools") },
+  { href: "/ask", label: "Ask", match: (p: string) => p.startsWith("/ask") },
 ];
 
 /** Sub-navigation shown on every GCEPrep237 page. */

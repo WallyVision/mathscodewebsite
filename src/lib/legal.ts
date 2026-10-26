@@ -101,11 +101,13 @@ Prizes reward skill. There is no chance involved and no extra payment to take pa
 - **Places:** ${split.join(", ")} of the subject's pool, rounded down to the nearest
   ${formatXaf(p.roundTo)}.
 - **Month:** a calendar month in Cameroon time. A test counts in the month it closes.
-- **Ranking:** total score across the month's tests in that subject, then the shortest total
-  time, then the earliest final submission. Students still equal share the prizes for the
-  places they occupy equally.
-- **Who can win:** students entered in the subject who sat **every** test of that subject in
-  the month. Our staff, content writers and members of their households cannot win.
+- **Ranking:** each student's **best ${p.bestTests} tests** of the month in that subject count
+  (all of them in a month with fewer tests). Students are ranked by the total score of those
+  tests, then the shortest total time on them, then the earliest submission. Students still
+  equal share the prizes for the places they occupy equally.
+- **Who can win:** students entered in the subject who sat at least ${p.bestTests} of its tests
+  in the month, so a student who joins during the month or misses a week can still win. Our
+  staff, content writers and members of their households cannot win.
 - **Checks before payment:** we review winning attempts. Winners may be asked to show ID and
   to explain some answers on a short call. The name on the account must match the name on
   the Mobile Money account that receives the prize.
@@ -182,6 +184,7 @@ you have. The site is run by ${operatorLine()}.
 | Test answers, scores, times taken, and how often you left the test page | To mark tests, rank students and check prize results are fair |
 | Payments: Mobile Money number, amount, status, CamPay reference | To confirm payments, give access and keep accounting records |
 | Prize winners: ID details and Mobile Money name | To verify winners and pay prizes |
+| Questions you send to teachers, including any photo | So the subject's teachers and our staff can answer you |
 | Messages you send us | To answer you |
 
 We do **not** receive your Mobile Money PIN.
