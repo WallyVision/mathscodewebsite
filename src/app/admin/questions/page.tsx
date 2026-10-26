@@ -45,6 +45,7 @@ export default async function QuestionsPage({ searchParams }: Props) {
         id: true,
         stem: true,
         status: true,
+        forTests: true,
         number: true,
         subject: { select: { name: true, level: true } },
         topic: { select: { name: true } },
@@ -134,7 +135,11 @@ export default async function QuestionsPage({ searchParams }: Props) {
                   {question.pastPaper
                     ? `${question.pastPaper.year} P${question.pastPaper.paperNumber} Q${question.number}`
                     : "Original"}
-                  {question._count.testQuestions > 0 && (
+                  {question.forTests && (
+                    <span className="block text-xs font-medium text-violet-700">Test bank</span>
+                  )}
+                  {/* Which questions a test uses is for admins only, so authors cannot tell. */}
+                  {user.role === "ADMIN" && question._count.testQuestions > 0 && (
                     <span className="block text-xs text-slate-500">
                       In {question._count.testQuestions}{" "}
                       {question._count.testQuestions === 1 ? "test" : "tests"}

@@ -91,6 +91,14 @@ export function ImportForm({ subjects }: { subjects: ContentOptions }) {
         />
       </div>
 
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" name="forTests" className="mt-1" />
+        <span>
+          <strong>Add to the test bank</strong>: keep these questions for competitive tests (hidden
+          from practice until used in a closed test).
+        </span>
+      </label>
+
       <div className="flex flex-wrap gap-3">
         <button
           type="submit"

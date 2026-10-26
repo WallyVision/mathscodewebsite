@@ -15,7 +15,7 @@ import { loadTestFormOptions } from "@/lib/admin/tests";
 import { ADMIN_ONLY, requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { formatDateTime, formatSeconds, toDoualaInput } from "@/lib/format";
-import { finalizeExpiredAttempts } from "@/lib/tests";
+import { ensureTestDrawn, finalizeExpiredAttempts } from "@/lib/tests";
 import { TestForm } from "../test-form";
 import { DisqualifyButton } from "./attempt-actions";
 
@@ -39,6 +39,7 @@ function isSuspiciouslyFast(
 export default async function EditTestPage({ params, searchParams }: Props) {
   await requireRole(ADMIN_ONLY);
   const [{ id }, { saved }] = await Promise.all([params, searchParams]);
+  await ensureTestDrawn(id);
   await finalizeExpiredAttempts(id);
   const [test, options] = await Promise.all([
     db.test.findUnique({
@@ -69,7 +70,9 @@ export default async function EditTestPage({ params, searchParams }: Props) {
           key={`${test.title}-${test.status}-${test.opensAt.getTime()}-${test.closesAt.getTime()}`}
           subjects={options.subjects}
           questions={options.questions}
-          locked={test.attempts.length > 0}
+          unusedBank={options.unusedBank}
+          locked={test.attempts.length > 0 || test.drawnAt !== null}
+          drawnQuestions={test.drawnAt ? test.questions.map((q) => q.questionId) : undefined}
           initial={{
             id: test.id,
             subjectId: test.subjectId,
@@ -80,6 +83,8 @@ export default async function EditTestPage({ params, searchParams }: Props) {
             closesAt: toDoualaInput(test.closesAt),
             durationMinutes: String(test.durationMinutes),
             questionIds: test.questions.map((q) => q.questionId).join(","),
+            questionMode: test.drawCount ? "DRAW" : "PICK",
+            drawCount: test.drawCount ? String(test.drawCount) : "",
           }}
         />
       </div>

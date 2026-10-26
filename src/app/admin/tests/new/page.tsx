@@ -9,12 +9,18 @@ export const metadata: Metadata = { title: "New test" };
 
 export default async function NewTestPage() {
   await requireRole(ADMIN_ONLY);
-  const { subjects, questions } = await loadTestFormOptions();
+  const { subjects, questions, unusedBank } = await loadTestFormOptions();
   return (
     <div className="max-w-3xl">
       <Breadcrumbs items={[{ label: "Tests", href: "/admin/tests" }, { label: "New" }]} />
       <PageHeader title="New test" />
-      <TestForm subjects={subjects} questions={questions} initial={{}} locked={false} />
+      <TestForm
+        subjects={subjects}
+        questions={questions}
+        unusedBank={unusedBank}
+        initial={{ questionMode: "DRAW" }}
+        locked={false}
+      />
     </div>
   );
 }
