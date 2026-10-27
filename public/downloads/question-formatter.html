@@ -1,0 +1,1091 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Question Formatter</title>
+    <meta
+      name="description"
+      content="Turn a GCE past paper into the StudentLife237 import format."
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css"
+    />
+    <style>
+      /* Layout: a working desk — a narrow column of steps; each question is an index card with fields and a live preview. */
+      :root {
+        --paper: #f6f8fb;
+        --card: #ffffff;
+        --ink: #16233b;
+        --soft: #55657e;
+        --line: #d8e0ec;
+        --blue: #1f5fbf;
+        --blue-wash: #e8f0fc;
+        --red: #c8463d;
+        --red-wash: #fdf0ee;
+        --green: #1f7a4d;
+        --code: #eef2f8;
+        --font: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+        --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --paper: #0f1626;
+          --card: #162036;
+          --ink: #e6ecf6;
+          --soft: #a3b0c6;
+          --line: #2a3651;
+          --blue: #7fb0ff;
+          --blue-wash: #1b2a45;
+          --red: #ef7a70;
+          --red-wash: #2c1b1d;
+          --green: #5fcf96;
+          --code: #1c2740;
+          color-scheme: dark;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--font);
+        font-size: 16px;
+        line-height: 1.5;
+      }
+      .wrap {
+        max-width: 56rem;
+        margin: 0 auto;
+        padding: 1.5rem max(16px, env(safe-area-inset-left)) 4rem;
+        display: grid;
+        gap: 1.5rem;
+      }
+      header p.brand {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--soft);
+      }
+      h1 {
+        margin: 0.2rem 0 0.4rem;
+        font-size: 1.9rem;
+        line-height: 1.15;
+      }
+      h2 {
+        margin: 0;
+        font-size: 1.15rem;
+      }
+      p {
+        margin: 0;
+      }
+      .lede {
+        color: var(--soft);
+        max-width: 44rem;
+      }
+      .panel {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1.1rem 1.2rem;
+        display: grid;
+        gap: 0.85rem;
+      }
+      .step {
+        display: flex;
+        gap: 0.6rem;
+        align-items: baseline;
+      }
+      .step b {
+        color: var(--red);
+        font-size: 1.1rem;
+      }
+      label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: grid;
+        gap: 0.3rem;
+      }
+      .hint {
+        font-weight: 400;
+        color: var(--soft);
+        font-size: 0.85rem;
+      }
+      input[type="text"],
+      input[type="number"],
+      textarea,
+      select {
+        width: 100%;
+        font: inherit;
+        color: var(--ink);
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0.5rem 0.65rem;
+      }
+      textarea {
+        font-family: var(--mono);
+        font-size: 0.88rem;
+        min-height: 5rem;
+        resize: vertical;
+      }
+      input:focus-visible,
+      textarea:focus-visible,
+      select:focus-visible,
+      button:focus-visible {
+        outline: 3px solid var(--blue);
+        outline-offset: 1px;
+      }
+      .row {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+      }
+      .row > * {
+        min-width: 0;
+      }
+      button {
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: 8px;
+        padding: 0.5rem 0.95rem;
+        border: 1px solid var(--blue);
+        background: var(--card);
+        color: var(--blue);
+      }
+      button.primary {
+        background: var(--blue);
+        color: #fff;
+      }
+      button.danger {
+        border-color: transparent;
+        color: var(--red);
+        background: none;
+        padding-inline: 0.4rem;
+      }
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        align-items: center;
+      }
+      .status {
+        font-size: 0.9rem;
+        color: var(--soft);
+      }
+      .status.ok {
+        color: var(--green);
+      }
+      .status.bad {
+        color: var(--red);
+      }
+      .cards {
+        display: grid;
+        gap: 1rem;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1rem 1.1rem;
+        display: grid;
+        gap: 0.7rem;
+      }
+      .card.problem {
+        border-color: var(--red);
+      }
+      .card-head {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        align-items: end;
+      }
+      .card-head .num {
+        width: 5.5rem;
+      }
+      .card-head .diff {
+        width: 9rem;
+      }
+      .card-head .spacer {
+        flex: 1;
+      }
+      .opts {
+        display: grid;
+        gap: 0.45rem;
+      }
+      .opt {
+        display: grid;
+        grid-template-columns: 2.4rem 1fr;
+        gap: 0.5rem;
+        align-items: center;
+      }
+      .opt label.pick {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-weight: 700;
+      }
+      .problems {
+        margin: 0;
+        padding: 0.6rem 0.9rem 0.6rem 2rem;
+        background: var(--red-wash);
+        border-radius: 8px;
+        color: var(--red);
+        font-size: 0.88rem;
+      }
+      .preview {
+        border-top: 1px dashed var(--line);
+        padding-top: 0.6rem;
+        display: grid;
+        gap: 0.4rem;
+        font-size: 0.95rem;
+      }
+      .preview .label {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--soft);
+      }
+      .preview .chosen {
+        color: var(--green);
+        font-weight: 700;
+      }
+      .preview .stem,
+      .preview .sol {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      .preview .katex-display {
+        overflow-x: auto;
+        overflow-y: hidden;
+      }
+      details summary {
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .tips {
+        display: grid;
+        gap: 0.4rem;
+        font-size: 0.92rem;
+      }
+      .tips code,
+      .mono {
+        font-family: var(--mono);
+        background: var(--code);
+        padding: 0 0.3em;
+        border-radius: 4px;
+        font-size: 0.86em;
+      }
+      .counter {
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+      }
+      footer {
+        color: var(--soft);
+        font-size: 0.85rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <p class="brand">StudentLife237 · GCEPrep237 · for authors</p>
+        <h1>Question Formatter</h1>
+        <p class="lede">
+          Turn a past paper into the file our site imports. Upload the paper or paste its text,
+          check each question, choose the answers, add solutions, then download the file and import
+          it in Admin → Questions → Import many at once.
+        </p>
+      </header>
+
+      <section class="panel" aria-labelledby="s1">
+        <div class="step">
+          <b>1</b>
+          <h2 id="s1">Get the questions in</h2>
+        </div>
+        <label
+          >Upload a PDF of the paper
+          <input type="file" id="pdf" accept="application/pdf,.pdf" />
+          <span class="hint"
+            >Works with PDFs that contain text. For a scanned paper (photos of pages), copy the text
+            with Google Lens on your phone and paste it below.</span
+          >
+        </label>
+        <label
+          >Or paste the text of the paper
+          <textarea
+            id="source"
+            rows="8"
+            placeholder="1. Simplify 2x + 3x.&#10;A. 5x   B. 6x   C. 5x²   D. 6x²&#10;2. ..."
+          ></textarea>
+        </label>
+        <label
+          >Answer key (optional)
+          <input type="text" id="key" placeholder="1 A, 2 C, 3 B, 4 D …" />
+          <span class="hint"
+            >Any layout works: "1A 2C", "1. A", "1-A". Answers fill in the correct option for each
+            question number.</span
+          >
+        </label>
+        <div class="actions">
+          <button class="primary" id="split" type="button">Split into questions</button>
+          <span class="status" id="split-status" role="status"></span>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="s2">
+        <div class="step">
+          <b>2</b>
+          <h2 id="s2">Paper details</h2>
+        </div>
+        <div class="row">
+          <label
+            >Subject <input type="text" id="subject" placeholder="O Level Mathematics"
+          /></label>
+          <label
+            >Year <input type="number" id="year" placeholder="2024" min="1990" max="2100"
+          /></label>
+          <label>Paper <input type="number" id="paper" placeholder="1" min="1" max="9" /></label>
+        </div>
+        <p class="hint">
+          Used only to name the downloaded file. On the site, choose the same past paper when
+          importing.
+        </p>
+      </section>
+
+      <section class="panel" aria-labelledby="s3">
+        <div class="step">
+          <b>3</b>
+          <h2 id="s3">Check every question</h2>
+        </div>
+        <p class="status">
+          <span class="counter" id="count">0</span> questions ·
+          <span id="problem-count">no problems</span>
+        </p>
+        <details>
+          <summary>Writing tips</summary>
+          <div class="tips">
+            <p>
+              Write maths between dollar signs: <code>$x^2 + 3x - 4 = 0$</code>,
+              <code>$\frac{3}{4}$</code>, <code>$\sqrt{2}$</code>, <code>$30^\circ$</code>,
+              <code>$3\,\text{m s}^{-1}$</code>.
+            </p>
+            <p>
+              Text copied from PDFs loses formatting: <span class="mono">x2</span> may mean
+              <code>$x^2$</code>, and fractions may come out on two lines. Fix them here and check
+              the preview.
+            </p>
+            <p>
+              Copy past-paper wording exactly. Describe diagrams in words in the question, and add
+              the picture later on the site.
+            </p>
+            <p>
+              A good solution starts from what is given, names the rule, shows each step and says
+              why the tempting wrong answer is wrong.
+            </p>
+          </div>
+        </details>
+        <div class="cards" id="cards"></div>
+        <div class="actions">
+          <button type="button" id="add">Add a question</button>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="s4">
+        <div class="step">
+          <b>4</b>
+          <h2 id="s4">Download</h2>
+        </div>
+        <div class="actions">
+          <button class="primary" type="button" id="download">Download file for import</button>
+          <button type="button" id="copy">Copy to clipboard</button>
+          <button type="button" class="danger" id="clear">Start again</button>
+        </div>
+        <p class="status" id="out-status" role="status"></p>
+        <p class="hint">
+          Your work is saved in this browser as you type, so you can close the page and continue
+          later on the same computer.
+        </p>
+      </section>
+
+      <footer>
+        Maths preview and PDF reading need an internet connection; everything else works offline.
+        Nothing you type leaves your computer.
+      </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js" defer></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+      defer
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+    <script>
+      (function () {
+        "use strict";
+        var LABELS = ["A", "B", "C", "D"];
+        var STORE = "studentlife237-question-formatter";
+        var state = { questions: [], subject: "", year: "", paper: "" };
+        var $ = function (id) {
+          return document.getElementById(id);
+        };
+
+        // ─── Saving ────────────────────────────────────────────────────────────────
+        function save() {
+          try {
+            localStorage.setItem(STORE, JSON.stringify(state));
+          } catch (e) {
+            /* storage blocked: work stays in the page */
+          }
+        }
+        function load() {
+          try {
+            var raw = localStorage.getItem(STORE);
+            if (raw) {
+              var saved = JSON.parse(raw);
+              if (saved && Array.isArray(saved.questions)) state = saved;
+            }
+          } catch (e) {
+            /* ignore */
+          }
+        }
+
+        function blank(number) {
+          return {
+            number: number,
+            difficulty: 2,
+            stem: "",
+            options: { A: "", B: "", C: "", D: "" },
+            correct: "",
+            solution: "",
+          };
+        }
+
+        // ─── Splitting pasted text into questions ──────────────────────────────────
+        var Q_START = /^\s*(?:Q(?:uestion)?\.?\s*)?(\d{1,3})\s*[\.\):]\s*(.*)$/i;
+
+        /** Splits "A. 5x  B. 6x  C. ..." into option pieces when the letters come in order from `next`. Sets `lead` to any text before them. */
+        function optionPieces(line, next, allowLead) {
+          var re = /(^|\s)\(?([A-Da-d])\s*[\.\)]\s+/g;
+          var marks = [];
+          var m;
+          var expect = next;
+          while ((m = re.exec(line)) !== null) {
+            var letter = m[2].toUpperCase();
+            if (LABELS.indexOf(letter) === expect) {
+              marks.push({ letter: letter, start: m.index + m[1].length, textStart: re.lastIndex });
+              expect++;
+            }
+          }
+          if (marks.length === 0) return null;
+          var lead = line.slice(0, marks[0].start).trim();
+          // Text before the options is allowed only when all four follow it ("Solve 3x = 6. A. 1 B. 2 C. 3 D. 4").
+          if (lead !== "" && !(allowLead && marks.length === 4)) return null;
+          var pieces = marks.map(function (mark, i) {
+            var end = i + 1 < marks.length ? marks[i + 1].start : line.length;
+            return { letter: mark.letter, text: line.slice(mark.textStart, end).trim() };
+          });
+          pieces.lead = lead;
+          return pieces;
+        }
+
+        function splitQuestions(text) {
+          var lines = text.replace(/\r/g, "").split("\n");
+          var out = [];
+          var cur = null;
+          var lastLetter = null;
+          lines.forEach(function (raw) {
+            var line = raw.replace(/\s+$/, "");
+            var q = Q_START.exec(line);
+            var expectedNumber = cur ? cur.number + 1 : null;
+            if (q && (cur === null || Number(q[1]) === expectedNumber)) {
+              cur = blank(Number(q[1]));
+              out.push(cur);
+              lastLetter = null;
+              var rest = q[2];
+              var inline = optionPieces(rest, 0, true);
+              if (inline) {
+                cur.stem = inline.lead;
+                inline.forEach(function (p) {
+                  cur.options[p.letter] = p.text;
+                  lastLetter = p.letter;
+                });
+              } else {
+                cur.stem = rest;
+              }
+              return;
+            }
+            if (!cur) return;
+            var nextIndex = lastLetter === null ? 0 : LABELS.indexOf(lastLetter) + 1;
+            var pieces = nextIndex < 4 ? optionPieces(line, nextIndex, nextIndex === 0) : null;
+            if (pieces) {
+              if (pieces.lead) cur.stem = cur.stem ? cur.stem + "\n" + pieces.lead : pieces.lead;
+              pieces.forEach(function (p) {
+                cur.options[p.letter] = p.text;
+                lastLetter = p.letter;
+              });
+            } else if (lastLetter) {
+              if (line.trim())
+                cur.options[lastLetter] = (cur.options[lastLetter] + " " + line.trim()).trim();
+            } else {
+              cur.stem = cur.stem ? cur.stem + "\n" + line : line;
+            }
+          });
+          out.forEach(function (question) {
+            question.stem = question.stem.replace(/^\n+|\s+$/g, "");
+          });
+          return out;
+        }
+
+        function parseKey(text) {
+          var key = {};
+          var re = /(\d{1,3})\s*[\.\):\-]?\s*([A-Da-d])(?![A-Za-z])/g;
+          var m;
+          while ((m = re.exec(text)) !== null) key[Number(m[1])] = m[2].toUpperCase();
+          return key;
+        }
+
+        // ─── Reading a PDF ─────────────────────────────────────────────────────────
+        async function pdfText(file) {
+          if (!window.pdfjsLib)
+            throw new Error(
+              "Reading PDFs needs an internet connection. Connect and reload this page, or paste the text instead.",
+            );
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+          var pdf = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+          var pages = [];
+          for (var n = 1; n <= pdf.numPages; n++) {
+            var content = await (await pdf.getPage(n)).getTextContent();
+            // Group text pieces into lines by their height on the page, then order left to right.
+            var rows = [];
+            content.items.forEach(function (item) {
+              if (!item.str) return;
+              var y = item.transform[5];
+              var x = item.transform[4];
+              var row = rows.find(function (r) {
+                return Math.abs(r.y - y) < 3;
+              });
+              if (!row) {
+                row = { y: y, parts: [] };
+                rows.push(row);
+              }
+              row.parts.push({ x: x, s: item.str });
+            });
+            rows.sort(function (a, b) {
+              return b.y - a.y;
+            });
+            pages.push(
+              rows
+                .map(function (r) {
+                  return r.parts
+                    .sort(function (a, b) {
+                      return a.x - b.x;
+                    })
+                    .map(function (p) {
+                      return p.s;
+                    })
+                    .join(" ")
+                    .replace(/\s{2,}/g, " ")
+                    .trim();
+                })
+                .filter(Boolean)
+                .join("\n"),
+            );
+          }
+          return pages.join("\n");
+        }
+
+        // ─── Checking and exporting ────────────────────────────────────────────────
+        function problemsOf(q) {
+          var list = [];
+          if (!String(q.number).match(/^\d+$/)) list.push("Give the question number.");
+          if (!q.stem.trim()) list.push("The question text is empty.");
+          LABELS.forEach(function (l) {
+            if (!q.options[l].trim()) list.push("Option " + l + " is empty.");
+          });
+          if (LABELS.indexOf(q.correct) < 0) list.push("Choose the correct option.");
+          return list;
+        }
+
+        function oneLine(s) {
+          return s.replace(/\s*\n\s*/g, " ").trim();
+        }
+        function safeBlock(s) {
+          // Lines our importer reads as section markers are indented so they stay plain text.
+          return s
+            .trim()
+            .split("\n")
+            .map(function (l) {
+              return /^(##\s|\*\*(Stem|Options|Solution|Correct|Difficulty)\b)/i.test(l)
+                ? " " + l
+                : l;
+            })
+            .join("\n");
+        }
+
+        function toMarkdown() {
+          var title = [state.subject, state.year, state.paper ? "Paper " + state.paper : ""]
+            .filter(Boolean)
+            .join(" ");
+          var parts = [
+            "# " + (title || "Past paper questions"),
+            "",
+            "Made with the StudentLife237 Question Formatter.",
+            "",
+          ];
+          state.questions.forEach(function (q) {
+            parts.push(
+              "## Q" + q.number + " · difficulty " + q.difficulty,
+              "",
+              "**Stem**",
+              "",
+              safeBlock(q.stem),
+              "",
+              "**Options**",
+              "",
+            );
+            LABELS.forEach(function (l) {
+              parts.push("- " + l + ". " + oneLine(q.options[l]));
+            });
+            parts.push("", "**Correct:** " + q.correct, "");
+            if (q.solution.trim()) parts.push("**Solution**", "", safeBlock(q.solution), "");
+            parts.push("---", "");
+          });
+          return parts.join("\n");
+        }
+
+        function fileName() {
+          var base =
+            [state.subject, state.year, state.paper ? "paper-" + state.paper : ""]
+              .filter(Boolean)
+              .join("-") || "questions";
+          return (
+            base
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-|-$/g, "") + ".md"
+          );
+        }
+
+        // ─── Drawing the question cards ────────────────────────────────────────────
+        function renderMath(el) {
+          if (window.renderMathInElement) {
+            try {
+              window.renderMathInElement(el, {
+                delimiters: [
+                  { left: "$$", right: "$$", display: true },
+                  { left: "$", right: "$", display: false },
+                ],
+                throwOnError: false,
+              });
+            } catch (e) {
+              /* leave the raw text */
+            }
+          }
+        }
+
+        function updatePreview(card, q) {
+          var pv = card.querySelector(".preview");
+          pv.innerHTML = "";
+          var add = function (cls, text) {
+            var d = document.createElement("div");
+            d.className = cls;
+            d.textContent = text;
+            pv.appendChild(d);
+            return d;
+          };
+          add("label", "Preview");
+          add("stem", q.stem || "(no question text)");
+          LABELS.forEach(function (l) {
+            add(
+              q.correct === l ? "chosen" : "",
+              l + ". " + (q.options[l] || "—") + (q.correct === l ? "  ✓" : ""),
+            );
+          });
+          if (q.solution.trim()) {
+            add("label", "Solution");
+            add("sol", q.solution);
+          }
+          renderMath(pv);
+          var problems = problemsOf(q);
+          var list = card.querySelector(".problems");
+          list.innerHTML = "";
+          list.hidden = problems.length === 0;
+          problems.forEach(function (p) {
+            var li = document.createElement("li");
+            li.textContent = p;
+            list.appendChild(li);
+          });
+          card.classList.toggle("problem", problems.length > 0);
+        }
+
+        function field(tag, attrs) {
+          var el = document.createElement(tag);
+          Object.keys(attrs).forEach(function (k) {
+            if (k === "text") el.textContent = attrs[k];
+            else el.setAttribute(k, attrs[k]);
+          });
+          return el;
+        }
+
+        function cardFor(q, index) {
+          var card = field("article", { class: "card", id: "q-" + index });
+          var head = field("div", { class: "card-head" });
+          var numLabel = field("label", { class: "num", text: "Number" });
+          var num = field("input", { type: "number", min: "1", max: "200", id: "num-" + index });
+          num.value = q.number;
+          num.addEventListener("input", function () {
+            q.number = num.value;
+            changed(card, q);
+          });
+          numLabel.appendChild(num);
+          var diffLabel = field("label", { class: "diff", text: "Difficulty" });
+          var diff = field("select", { id: "diff-" + index });
+          [
+            ["1", "Easy"],
+            ["2", "Medium"],
+            ["3", "Hard"],
+          ].forEach(function (o) {
+            var opt = field("option", { value: o[0], text: o[1] });
+            if (String(q.difficulty) === o[0]) opt.selected = true;
+            diff.appendChild(opt);
+          });
+          diff.addEventListener("change", function () {
+            q.difficulty = Number(diff.value);
+            changed(card, q);
+          });
+          diffLabel.appendChild(diff);
+          var del = field("button", { type: "button", class: "danger", text: "Remove" });
+          del.addEventListener("click", function () {
+            state.questions.splice(state.questions.indexOf(q), 1);
+            save();
+            renderAll();
+          });
+          head.append(numLabel, diffLabel, field("span", { class: "spacer" }), del);
+
+          var stemLabel = field("label", { text: "Question" });
+          var stem = field("textarea", { rows: "3", id: "stem-" + index });
+          stem.value = q.stem;
+          stem.addEventListener("input", function () {
+            q.stem = stem.value;
+            changed(card, q);
+          });
+          stemLabel.appendChild(stem);
+
+          var opts = field("div", {
+            class: "opts",
+            role: "radiogroup",
+            "aria-label": "Options, choose the correct one",
+          });
+          LABELS.forEach(function (l) {
+            var row = field("div", { class: "opt" });
+            var pick = field("label", { class: "pick", title: "Correct answer" });
+            var radio = field("input", {
+              type: "radio",
+              name: "correct-" + index,
+              value: l,
+              "aria-label": "Option " + l + " is correct",
+            });
+            radio.checked = q.correct === l;
+            radio.addEventListener("change", function () {
+              q.correct = l;
+              changed(card, q);
+            });
+            pick.append(radio, document.createTextNode(l));
+            var input = field("input", {
+              type: "text",
+              id: "opt-" + index + "-" + l,
+              "aria-label": "Option " + l,
+            });
+            input.value = q.options[l];
+            input.addEventListener("input", function () {
+              q.options[l] = input.value;
+              changed(card, q);
+            });
+            row.append(pick, input);
+            opts.appendChild(row);
+          });
+
+          var solLabel = field("label", { text: "Worked solution" });
+          var sol = field("textarea", {
+            rows: "3",
+            id: "sol-" + index,
+            placeholder: "Start from what is given, name the rule, show each step.",
+          });
+          sol.value = q.solution;
+          sol.addEventListener("input", function () {
+            q.solution = sol.value;
+            changed(card, q);
+          });
+          solLabel.appendChild(sol);
+
+          var problems = field("ul", { class: "problems" });
+          card.append(
+            head,
+            stemLabel,
+            opts,
+            solLabel,
+            problems,
+            field("div", { class: "preview", "aria-live": "polite" }),
+          );
+          updatePreview(card, q);
+          return card;
+        }
+
+        var previewTimers = new WeakMap();
+        function changed(card, q) {
+          save();
+          clearTimeout(previewTimers.get(card));
+          previewTimers.set(
+            card,
+            setTimeout(function () {
+              updatePreview(card, q);
+              updateCounts();
+            }, 250),
+          );
+        }
+
+        function updateCounts() {
+          $("count").textContent = state.questions.length;
+          var bad = state.questions.filter(function (q) {
+            return problemsOf(q).length > 0;
+          }).length;
+          var pc = $("problem-count");
+          pc.textContent =
+            bad === 0
+              ? "no problems"
+              : bad + (bad === 1 ? " question needs" : " questions need") + " attention";
+          pc.className = bad === 0 ? "status ok" : "status bad";
+        }
+
+        function renderAll() {
+          var cards = $("cards");
+          cards.innerHTML = "";
+          state.questions.forEach(function (q, i) {
+            cards.appendChild(cardFor(q, i));
+          });
+          updateCounts();
+        }
+
+        // ─── Wiring ────────────────────────────────────────────────────────────────
+        function setStatus(id, text, kind) {
+          var el = $(id);
+          el.textContent = text;
+          el.className = "status" + (kind ? " " + kind : "");
+        }
+
+        $("pdf").addEventListener("change", async function (e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+          setStatus("split-status", "Reading the PDF…");
+          try {
+            var text = await pdfText(file);
+            if (text.replace(/\s/g, "").length < 20) {
+              setStatus(
+                "split-status",
+                "No text found: this PDF is probably a scan. Copy the text with Google Lens and paste it above.",
+                "bad",
+              );
+              return;
+            }
+            $("source").value = text;
+            setStatus(
+              "split-status",
+              "Text read from " + file.name + ". Check it, then press Split into questions.",
+              "ok",
+            );
+          } catch (err) {
+            setStatus("split-status", err.message || "Could not read this PDF.", "bad");
+          }
+        });
+
+        $("split").addEventListener("click", function () {
+          var found = splitQuestions($("source").value);
+          if (found.length === 0) {
+            setStatus(
+              "split-status",
+              'No numbered questions found. Each question should start with its number, e.g. "1." or "1)".',
+              "bad",
+            );
+            return;
+          }
+          var key = parseKey($("key").value);
+          found.forEach(function (q) {
+            if (key[q.number]) q.correct = key[q.number];
+          });
+          if (state.questions.length > 0 && !confirmReplace()) return;
+          state.questions = found;
+          save();
+          renderAll();
+          setStatus("split-status", found.length + " questions found. Check each one below.", "ok");
+        });
+
+        var replaceArmed = false;
+        function confirmReplace() {
+          if (replaceArmed) {
+            replaceArmed = false;
+            return true;
+          }
+          replaceArmed = true;
+          setStatus(
+            "split-status",
+            "This replaces the " +
+              state.questions.length +
+              " questions below. Press Split into questions again to confirm.",
+            "bad",
+          );
+          return false;
+        }
+
+        $("add").addEventListener("click", function () {
+          var last = state.questions[state.questions.length - 1];
+          state.questions.push(blank(last ? Number(last.number) + 1 : 1));
+          save();
+          renderAll();
+          var cards = $("cards").lastElementChild;
+          if (cards) cards.querySelector("textarea").focus();
+        });
+
+        ["subject", "year", "paper"].forEach(function (id) {
+          $(id).addEventListener("input", function () {
+            state[id] = $(id).value.trim();
+            save();
+          });
+        });
+
+        function readyToExport() {
+          if (state.questions.length === 0) {
+            setStatus("out-status", "There are no questions yet.", "bad");
+            return false;
+          }
+          var firstBad = state.questions.findIndex(function (q) {
+            return problemsOf(q).length > 0;
+          });
+          if (firstBad >= 0) {
+            setStatus(
+              "out-status",
+              "Question " +
+                state.questions[firstBad].number +
+                " needs attention first (it is outlined in red).",
+              "bad",
+            );
+            var card = $("q-" + firstBad);
+            if (card) card.scrollIntoView({ behavior: "smooth", block: "center" });
+            return false;
+          }
+          var numbers = state.questions.map(function (q) {
+            return String(q.number);
+          });
+          var dup = numbers.find(function (n, i) {
+            return numbers.indexOf(n) !== i;
+          });
+          if (dup) {
+            setStatus("out-status", "Question number " + dup + " is used twice.", "bad");
+            return false;
+          }
+          return true;
+        }
+
+        $("download").addEventListener("click", function () {
+          if (!readyToExport()) return;
+          var blob = new Blob([toMarkdown()], { type: "text/markdown;charset=utf-8" });
+          var a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = fileName();
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function () {
+            URL.revokeObjectURL(a.href);
+            a.remove();
+          }, 1000);
+          setStatus(
+            "out-status",
+            "Downloaded " + fileName() + ". Import it in Admin → Questions → Import many at once.",
+            "ok",
+          );
+        });
+
+        $("copy").addEventListener("click", function () {
+          if (!readyToExport()) return;
+          var text = toMarkdown();
+          var fallback = function () {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+              document.execCommand("copy");
+              setStatus("out-status", "Copied. Paste it into the import page.", "ok");
+            } catch (e) {
+              setStatus("out-status", "Copying is blocked here. Use Download instead.", "bad");
+            }
+            ta.remove();
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function () {
+              setStatus("out-status", "Copied. Paste it into the import page.", "ok");
+            }, fallback);
+          } else {
+            fallback();
+          }
+        });
+
+        var clearArmed = false;
+        $("clear").addEventListener("click", function () {
+          if (!clearArmed) {
+            clearArmed = true;
+            setStatus(
+              "out-status",
+              "Press Start again once more to delete all " + state.questions.length + " questions.",
+              "bad",
+            );
+            setTimeout(function () {
+              clearArmed = false;
+            }, 5000);
+            return;
+          }
+          clearArmed = false;
+          state = { questions: [], subject: "", year: "", paper: "" };
+          ["subject", "year", "paper", "source", "key"].forEach(function (id) {
+            $(id).value = "";
+          });
+          save();
+          renderAll();
+          setStatus("out-status", "Cleared.", "ok");
+        });
+
+        load();
+        $("subject").value = state.subject || "";
+        $("year").value = state.year || "";
+        $("paper").value = state.paper || "";
+        renderAll();
+        // Maths preview arrives with the KaTeX script; redraw once it has loaded.
+        window.addEventListener("load", function () {
+          if (state.questions.length) renderAll();
+        });
+
+        // For automated checks.
+        window.__formatter = {
+          splitQuestions: splitQuestions,
+          parseKey: parseKey,
+          toMarkdown: toMarkdown,
+          state: function () {
+            return state;
+          },
+        };
+      })();
+    </script>
+  </body>
+</html>

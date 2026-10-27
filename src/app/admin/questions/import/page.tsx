@@ -29,7 +29,12 @@ Add 7 to both sides: $3x = 18$. Divide by 3: $x = 6$.
 
 ---`;
 
-export default async function ImportQuestionsPage() {
+export default async function ImportQuestionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ subject?: string; paper?: string }>;
+}) {
+  const { subject, paper } = await searchParams;
   const user = await requireRole(STAFF_ROLES);
   const subjects = await loadContentOptions(await contentScope(user));
   return (
@@ -41,7 +46,19 @@ export default async function ImportQuestionsPage() {
         Add a whole set of MCQs at once. They are saved as drafts, so you can review each one before
         publishing.
       </PageHeader>
-      <ImportForm subjects={subjects} />
+      <p className="mb-6 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-slate-700">
+        Typing up a past paper? Use the{" "}
+        <a
+          href="/downloads/question-formatter.html"
+          download
+          className="font-medium text-blue-700 underline"
+        >
+          Question Formatter
+        </a>
+        : a page you save on your computer. Upload the paper or paste its text, check each question,
+        then download the file and import it here.
+      </p>
+      <ImportForm subjects={subjects} initial={{ subjectId: subject, pastPaperId: paper }} />
       <details className="mt-8 rounded-md border border-slate-200 bg-white p-4 text-sm">
         <summary className="cursor-pointer font-medium">Format guide</summary>
         <ul className="mt-3 list-disc space-y-1 pl-5 text-slate-700">

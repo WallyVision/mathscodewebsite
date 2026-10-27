@@ -27,6 +27,8 @@ const MAX_SOLUTION = 20_000;
 export interface ImportedQuestion {
   /** The heading, e.g. "Q1 · difficulty 1", used in messages. */
   title: string;
+  /** The first number in the heading ("Q12" → 12): the question number in a past paper. */
+  number: number | null;
   stem: string;
   options: { label: Label; text: string }[];
   correct: Label;
@@ -109,8 +111,10 @@ function parseBlock(title: string, lines: string[]): ImportedQuestion | string[]
   if (solutionText.length > MAX_SOLUTION) errors.push("The solution is too long.");
 
   if (errors.length > 0) return errors;
+  const numberMatch = /\d+/.exec(title);
   return {
     title,
+    number: numberMatch ? Number(numberMatch[0]) : null,
     stem: stemText,
     options: LABELS.map((label) => ({ label, text: options.get(label)! })),
     correct: correct!,

@@ -15,7 +15,7 @@ export interface ImportState {
   preview?: { title: string; stem: string; correct: string; difficulty: number }[];
   created?: number;
   skipped?: string[];
-  values?: { subjectId: string; topicId: string; text: string };
+  values?: { subjectId: string; topicId: string; pastPaperId: string; text: string };
 }
 
 export async function importQuestions(
@@ -25,21 +25,22 @@ export async function importQuestions(
   const user = await requireRole(STAFF_ROLES);
   const subjectId = String(formData.get("subjectId") ?? "");
   const topicId = String(formData.get("topicId") ?? "");
+  const pastPaperId = String(formData.get("pastPaperId") ?? "");
   const file = formData.get("file");
   let text = String(formData.get("text") ?? "");
   if (file instanceof File && file.size > 0) {
     if (file.size > MAX_FILE_BYTES) {
       return {
         message: "That file is too large (500 KB at most).",
-        values: { subjectId, topicId, text },
+        values: { subjectId, topicId, pastPaperId, text },
       };
     }
     text = await file.text();
   }
-  const values = { subjectId, topicId, text };
+  const values = { subjectId, topicId, pastPaperId, text };
 
   if (!inScope(await contentScope(user), subjectId)) return { message: NOT_YOUR_SUBJECT, values };
-  const target = await resolveImportTarget(subjectId, topicId || null);
+  const target = await resolveImportTarget(subjectId, topicId || null, pastPaperId || null);
   if (!target.ok) return { message: target.message, values };
 
   const { questions, errors } = parseQuestionImport(text);
@@ -66,5 +67,5 @@ export async function importQuestions(
   const result = await createImportedQuestions(target, questions, {
     forTests: formData.get("forTests") === "on",
   });
-  return { ...result, values: { subjectId, topicId, text: "" } };
+  return { ...result, values: { subjectId, topicId, pastPaperId, text: "" } };
 }
