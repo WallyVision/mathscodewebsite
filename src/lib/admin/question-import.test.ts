@@ -36,6 +36,7 @@ describe("parseQuestionImport", () => {
     expect(questions).toEqual([
       {
         title: "Q1 · difficulty 3",
+        number: 1,
         stem: "Solve $3x - 7 = 11$.",
         options: [
           { label: "A", text: "$x = 4$" },

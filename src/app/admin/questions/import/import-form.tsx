@@ -11,10 +11,21 @@ const DIFFICULTY = ["", "Easy", "Medium", "Hard"];
 const buttonClass =
   "rounded-md px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60";
 
-export function ImportForm({ subjects }: { subjects: ContentOptions }) {
+export function ImportForm({
+  subjects,
+  initial,
+}: {
+  subjects: ContentOptions;
+  /** Preselected subject and past paper, e.g. from a paper's "Import many" link. */
+  initial?: { subjectId?: string; pastPaperId?: string };
+}) {
   const [state, action, pending] = useActionState<ImportState, FormData>(importQuestions, {});
   const values = state.values;
-  const [subjectId, setSubjectId] = useState(values?.subjectId ?? subjects[0]?.id ?? "");
+  const [subjectId, setSubjectId] = useState(
+    values?.subjectId ??
+      (subjects.some((s) => s.id === initial?.subjectId) ? initial!.subjectId! : subjects[0]?.id) ??
+      "",
+  );
   const subject = subjects.find((s) => s.id === subjectId);
 
   return (
@@ -67,6 +78,20 @@ export function ImportForm({ subjects }: { subjects: ContentOptions }) {
           ]}
         />
       </div>
+      <Select
+        key={`paper-${subjectId}`}
+        label="Past paper (optional)"
+        name="pastPaperId"
+        defaultValue={values?.pastPaperId ?? initial?.pastPaperId ?? ""}
+        options={[
+          { value: "", label: "— Not from a past paper —" },
+          ...(subject?.papers ?? []).map((p) => ({ value: p.id, label: p.name })),
+        ]}
+      />
+      <p className="-mt-3 text-xs text-slate-500">
+        Choose a paper to add these questions to it. Each question takes the number in its heading
+        (&quot;## Q12&quot; becomes question 12). Create the paper first in Past papers.
+      </p>
 
       <TextArea
         label="Questions"

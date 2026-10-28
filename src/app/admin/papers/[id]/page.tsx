@@ -58,12 +58,20 @@ export default async function EditPaperPage({ params, searchParams }: Props) {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-semibold">Questions ({paper.questions.length})</h2>
-          <Link
-            href={`/admin/questions/new?subject=${paper.subjectId}&paper=${paper.id}`}
-            className="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-700"
-          >
-            Add question
-          </Link>
+          <span className="flex flex-wrap gap-2">
+            <Link
+              href={`/admin/questions/import?subject=${paper.subjectId}&paper=${paper.id}`}
+              className="rounded-md border border-brand-600 px-3 py-1.5 text-sm font-semibold text-brand-700 hover:bg-brand-50"
+            >
+              Import many
+            </Link>
+            <Link
+              href={`/admin/questions/new?subject=${paper.subjectId}&paper=${paper.id}`}
+              className="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-700"
+            >
+              Add question
+            </Link>
+          </span>
         </div>
         {paper.questions.length === 0 ? (
           <p className="text-sm text-slate-600">No questions yet.</p>
