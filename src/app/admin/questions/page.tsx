@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import {
   EmptyRow,
   PageHeader,
+  SavedBanner,
   StatusBadge,
   tableClass,
   tdClass,
@@ -13,19 +14,26 @@ import { loadContentOptions } from "@/lib/admin/options";
 import { contentScope, subjectIdFilter } from "@/lib/admin/scope";
 import { requireRole, STAFF_ROLES } from "@/lib/auth/session";
 import { db } from "@/lib/db";
+import { publishDraftQuestions } from "./actions";
 
 export const metadata: Metadata = { title: "Questions" };
 
 const PAGE_SIZE = 50;
 
 interface Props {
-  searchParams: Promise<{ subject?: string; status?: string; q?: string; page?: string }>;
+  searchParams: Promise<{
+    subject?: string;
+    status?: string;
+    q?: string;
+    page?: string;
+    published?: string;
+  }>;
 }
 
 export default async function QuestionsPage({ searchParams }: Props) {
   const user = await requireRole(STAFF_ROLES);
   const scope = await contentScope(user);
-  const { subject = "", status = "", q = "", page = "1" } = await searchParams;
+  const { subject = "", status = "", q = "", page = "1", published } = await searchParams;
   const pageNumber = Math.max(1, Number.parseInt(page, 10) || 1);
 
   const where: Prisma.QuestionWhereInput = {
@@ -102,6 +110,29 @@ export default async function QuestionsPage({ searchParams }: Props) {
           Filter
         </button>
       </form>
+
+      <SavedBanner show={published !== undefined}>
+        {published === "1" ? "1 question" : `${published} questions`} published.
+      </SavedBanner>
+      {status === "DRAFT" && total > 0 && (
+        <form
+          action={publishDraftQuestions}
+          className="mb-4 flex flex-wrap items-center gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm"
+        >
+          <input type="hidden" name="subject" value={subject} />
+          <input type="hidden" name="q" value={q} />
+          <p className="min-w-0 flex-1 text-amber-900">
+            Students cannot see draft questions. Checked them all? Publish every draft that matches
+            this filter at once.
+          </p>
+          <button
+            type="submit"
+            className="rounded-md bg-brand-600 px-3 py-1.5 font-semibold text-white hover:bg-brand-700"
+          >
+            Publish all {total} {total === 1 ? "draft" : "drafts"}
+          </button>
+        </form>
+      )}
 
       <div className="overflow-x-auto">
         <table className={tableClass}>

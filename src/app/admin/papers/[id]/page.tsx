@@ -7,19 +7,20 @@ import { loadContentOptions } from "@/lib/admin/options";
 import { contentScope, inScope } from "@/lib/admin/scope";
 import { requireRole, STAFF_ROLES } from "@/lib/auth/session";
 import { db } from "@/lib/db";
+import { publishDraftQuestions } from "../../questions/actions";
 import { PaperForm } from "../paper-form";
 
 export const metadata: Metadata = { title: "Edit past paper" };
 
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; published?: string }>;
 }
 
 export default async function EditPaperPage({ params, searchParams }: Props) {
   const user = await requireRole(STAFF_ROLES);
   const scope = await contentScope(user);
-  const [{ id }, { saved }] = await Promise.all([params, searchParams]);
+  const [{ id }, { saved, published }] = await Promise.all([params, searchParams]);
   const [paper, subjects] = await Promise.all([
     db.pastPaper.findUnique({
       where: { id },
@@ -33,6 +34,7 @@ export default async function EditPaperPage({ params, searchParams }: Props) {
     loadContentOptions(scope),
   ]);
   if (!paper || !inScope(scope, paper.subjectId)) notFound();
+  const drafts = paper.questions.filter((q) => q.status === "DRAFT").length;
 
   return (
     <div className="grid gap-8 lg:grid-cols-2">
@@ -73,6 +75,28 @@ export default async function EditPaperPage({ params, searchParams }: Props) {
             </Link>
           </span>
         </div>
+        <SavedBanner show={published !== undefined}>
+          {published === "1" ? "1 question" : `${published} questions`} published.
+        </SavedBanner>
+        {drafts > 0 && (
+          <form
+            action={publishDraftQuestions}
+            className="mb-3 flex flex-wrap items-center gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm"
+          >
+            <input type="hidden" name="pastPaperId" value={paper.id} />
+            <p className="min-w-0 flex-1 text-amber-900">
+              {drafts} {drafts === 1 ? "question is" : "questions are"} still a draft, so students
+              cannot see {drafts === 1 ? "it" : "them"}. Publishing the paper does not publish its
+              questions.
+            </p>
+            <button
+              type="submit"
+              className="rounded-md bg-brand-600 px-3 py-1.5 font-semibold text-white hover:bg-brand-700"
+            >
+              Publish all {drafts} {drafts === 1 ? "draft" : "drafts"}
+            </button>
+          </form>
+        )}
         {paper.questions.length === 0 ? (
           <p className="text-sm text-slate-600">No questions yet.</p>
         ) : (

@@ -43,6 +43,13 @@ export async function importQuestions(
   const target = await resolveImportTarget(subjectId, topicId || null, pastPaperId || null);
   if (!target.ok) return { message: target.message, values };
 
+  if (!text.trim()) {
+    return {
+      message: "The Questions box is empty. Paste the questions into it, or choose a file.",
+      values,
+    };
+  }
+
   const { questions, errors } = parseQuestionImport(text);
   if (errors.length > 0) {
     return {

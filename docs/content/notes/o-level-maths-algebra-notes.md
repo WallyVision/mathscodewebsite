@@ -3,9 +3,9 @@
 Five notes for the topic **Algebra** (O Level Mathematics), one idea per note, matching the
 20-question Algebra set.
 
-To add each note: **Admin → Notes → New note**, choose O Level Mathematics → Algebra, copy the
-**Title** and **URL name**, and paste everything under **Body** into the body box. Save it as
-**Draft**, preview it, then publish.
+To add all five: **Admin → Notes → Import many at once**, choose O Level Mathematics → Algebra,
+choose this file (or paste it) and press **Check**, then **Import notes**. Importing twice is safe:
+notes the topic already has are skipped.
 
 ---
 
