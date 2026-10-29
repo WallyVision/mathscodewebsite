@@ -272,6 +272,8 @@ model Test {
   resultsPublishedAt DateTime?
   // When students were sent the "test is open" notification
   openNotifiedAt     DateTime?
+  // When students who sat it were told the results are out (at closing)
+  resultsNotifiedAt  DateTime?
   createdAt          DateTime   @default(now())
 
   subject   Subject        @relation(fields: [subjectId], references: [id], onDelete: Restrict)
@@ -506,6 +508,8 @@ model Post {
   deadline     DateTime?
   status       ContentStatus @default(DRAFT)
   publishedAt  DateTime?
+  // When students were notified about this post
+  notifiedAt   DateTime?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 

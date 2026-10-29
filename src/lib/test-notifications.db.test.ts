@@ -13,7 +13,8 @@ vi.mock("web-push", () => ({
 process.env.VAPID_PUBLIC_KEY = "pub";
 process.env.VAPID_PRIVATE_KEY = "priv";
 
-const { notifyOpenedTests } = await import("./test-notifications");
+const { notifyNewPosts, notifyOpenedTests, notifyTestResults } =
+  await import("./test-notifications");
 
 const run = randomUUID().slice(0, 8);
 const now = new Date("2030-03-02T15:00:00Z");
@@ -71,7 +72,18 @@ beforeAll(async () => {
   await makeTest("closed", "SCHEDULED", -120, -1);
 });
 
+const endpointsCalled = () =>
+  sendNotification.mock.calls
+    .map((c) => (c as unknown as [{ endpoint: string }, string])[0].endpoint)
+    .filter((e) => e.includes(run))
+    .map((e) => e.split("/").pop());
+const payloadsSent = () =>
+  sendNotification.mock.calls
+    .filter((c) => (c as unknown as [{ endpoint: string }])[0].endpoint.includes(run))
+    .map((c) => JSON.parse((c as unknown as [unknown, string])[1]));
+
 afterAll(async () => {
+  await db.post.deleteMany({ where: { slug: { contains: run } } });
   delete process.env.VAPID_PUBLIC_KEY;
   delete process.env.VAPID_PRIVATE_KEY;
   await db.notificationLog.deleteMany({ where: { title: { contains: run } } });
@@ -117,5 +129,87 @@ describe("notifyOpenedTests", () => {
   it("announces a test when its opening time comes", async () => {
     await notifyOpenedTests(minutes(11));
     expect((await notified()).sort()).toEqual(["justOpened", "notYet"]);
+  });
+});
+
+describe("notifyTestResults", () => {
+  it("tells only the students who sat the test, once, when it closes", async () => {
+    const closing = (
+      await db.test.create({
+        data: {
+          subjectId,
+          title: `Results ${run}`,
+          kind: "WEEKLY",
+          status: "SCHEDULED",
+          opensAt: minutes(-90),
+          closesAt: minutes(-1),
+          durationMinutes: 30,
+          attempts: {
+            create: {
+              userId: userIds[0]!,
+              status: "SUBMITTED",
+              startedAt: minutes(-60),
+              deadlineAt: minutes(-30),
+              seed: 1,
+            },
+          },
+        },
+      })
+    ).id;
+    sendNotification.mockClear();
+    await notifyTestResults(now);
+    expect(endpointsCalled()).toEqual(["o"]);
+    expect(payloadsSent()[0]).toMatchObject({
+      title: `🏁 Results are out: Results ${run}`,
+      url: `/tests/${closing}/results`,
+    });
+    sendNotification.mockClear();
+    await notifyTestResults(minutes(5));
+    expect(endpointsCalled()).toEqual([]);
+  });
+});
+
+describe("notifyNewPosts", () => {
+  const post = (slug: string, publishedMinutesAgo: number, deadline: Date | null = null) =>
+    db.post.create({
+      data: {
+        category: "SCHOLARSHIP",
+        slug: `${slug}-${run}`,
+        title: `Scholarship ${slug}`,
+        summary: `Summary of ${slug}.`,
+        body: "Body",
+        status: "PUBLISHED",
+        publishedAt: minutes(-publishedMinutesAgo),
+        deadline,
+      },
+    });
+
+  it("announces one new post to everyone, with its link", async () => {
+    await post("solo", 1);
+    sendNotification.mockClear();
+    await notifyNewPosts(now);
+    expect(endpointsCalled().sort()).toEqual(["a", "o"]);
+    expect(payloadsSent()[0]).toMatchObject({
+      title: "🎓 New in Scholarships: Scholarship solo",
+      body: "Summary of solo.",
+      url: `/opportunities/scholarships/solo-${run}`,
+    });
+    sendNotification.mockClear();
+    await notifyNewPosts(minutes(1));
+    expect(endpointsCalled()).toEqual([]);
+  });
+
+  it("groups posts published together and skips closed or old ones", async () => {
+    await post("first", 1);
+    await post("second", 2);
+    await post("expired", 1, minutes(-60 * 24));
+    await post("old", 60 * 24 * 3);
+    sendNotification.mockClear();
+    await notifyNewPosts(minutes(2));
+    const sent = payloadsSent();
+    expect(sent).toHaveLength(2);
+    expect(sent[0]).toMatchObject({ title: "✨ 2 new opportunities", url: "/opportunities" });
+    expect(sent[0].body).toContain("Scholarship first");
+    expect(sent[0].body).not.toContain("expired");
   });
 });

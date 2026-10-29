@@ -39,6 +39,7 @@ export default async function NotifyPage({
         devices: true,
         delivered: true,
         createdAt: true,
+        createdById: true,
       },
     }),
   ]);
@@ -87,7 +88,12 @@ export default async function NotifyPage({
                     </span>
                   </td>
                   <td className={`${tdClass} text-xs`}>
-                    {isAudience(n.audience) ? AUDIENCES[n.audience] : n.audience}
+                    {isAudience(n.audience)
+                      ? AUDIENCES[n.audience]
+                      : n.audience === "TEST_TAKERS"
+                        ? "Students who sat the test"
+                        : n.audience}
+                    {!n.createdById && <span className="block text-slate-400">Automatic</span>}
                   </td>
                   <td className={`${tdClass} whitespace-nowrap`}>
                     {n.delivered} / {n.devices}

@@ -11,18 +11,22 @@ export async function register() {
   startTestOpenNotifier();
 }
 
-/** Every minute, tells students when a test has just opened. */
+/** Every minute, tells students when a test opens, results are out or an opportunity is posted. */
 function startTestOpenNotifier() {
   let running = false;
   const tick = async () => {
     if (running) return;
     running = true;
     try {
-      const { notifyOpenedTests } = await import("./lib/test-notifications");
-      const announced = await notifyOpenedTests();
-      if (announced > 0) console.log(`[notify] announced ${announced} newly opened test(s)`);
+      const { runAutoNotifications } = await import("./lib/test-notifications");
+      const { opened, results, posts } = await runAutoNotifications();
+      if (opened + results + posts > 0) {
+        console.log(
+          `[notify] tests opened: ${opened}, results out: ${results}, new posts: ${posts}`,
+        );
+      }
     } catch (err) {
-      console.error("[notify] could not send test notifications", err);
+      console.error("[notify] could not send notifications", err);
     } finally {
       running = false;
     }
