@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { AuthShell } from "@/components/auth-shell";
 import { getCurrentUser } from "@/lib/auth/session";
 import { safeReturnPath } from "@/lib/domain/checkout";
 import { site } from "@/lib/site";
@@ -19,8 +20,7 @@ export default async function LoginPage({
   if (await getCurrentUser()) redirect(next ?? "/dashboard");
   const support = supportWhatsApp();
   return (
-    <div className="mx-auto max-w-sm px-4 py-10">
-      <h1 className="mb-6 text-2xl font-bold">Log in</h1>
+    <AuthShell title="Welcome back" subtitle="Log in to continue revising.">
       {reset === "1" && (
         <p
           role="status"
@@ -57,6 +57,6 @@ export default async function LoginPage({
           Create an account
         </Link>
       </p>
-    </div>
+    </AuthShell>
   );
 }

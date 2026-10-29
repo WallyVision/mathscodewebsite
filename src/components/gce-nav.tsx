@@ -19,7 +19,7 @@ export function GceNav() {
     <div className="border-b border-brand-100 bg-brand-50">
       <nav
         aria-label={site.gcePrep.name}
-        className="mx-auto flex max-w-5xl items-center gap-4 overflow-x-auto px-4 py-2 text-sm"
+        className="mx-auto flex max-w-5xl items-center gap-2 overflow-x-auto px-4 py-2 text-sm"
       >
         <Link href="/gce" className="shrink-0 font-bold text-brand-700">
           📚 {site.gcePrep.name}
@@ -32,7 +32,7 @@ export function GceNav() {
               key={link.href}
               href={link.href}
               aria-current={active ? "page" : undefined}
-              className={`shrink-0 ${active ? "font-semibold text-brand-900 underline underline-offset-4" : "text-slate-700 hover:text-brand-700"}`}
+              className={`shrink-0 rounded-full px-3 py-1 font-medium transition ${active ? "bg-brand-600 text-white shadow-sm" : "text-slate-700 hover:bg-white hover:text-brand-700"}`}
             >
               {link.label}
             </Link>

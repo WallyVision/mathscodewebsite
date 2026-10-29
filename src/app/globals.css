@@ -7,6 +7,10 @@
   --color-brand-700: #184ea9;
   --color-brand-900: #10306a;
   --color-accent-500: #f2a900;
+  /* Cameroon flag */
+  --color-cm-green: #007a5e;
+  --color-cm-red: #ce1126;
+  --color-cm-yellow: #fcd116;
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
