@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { formValues, invalid, type AdminFormState } from "@/lib/admin/form";
+import { publishDrafts } from "@/lib/admin/publish";
 import { questionSchema } from "@/lib/admin/schemas";
 import { contentScope, inScope, NOT_YOUR_SUBJECT, topicSubjectId } from "@/lib/admin/scope";
 import { requireRole, STAFF_ROLES } from "@/lib/auth/session";
@@ -72,4 +73,19 @@ export async function saveQuestion(
     select: { id: true },
   });
   redirect(`/admin/questions/${created.id}?saved=1`);
+}
+
+/** "Publish all drafts" on a past paper page, or on the questions list filtered to drafts. */
+export async function publishDraftQuestions(formData: FormData): Promise<void> {
+  const user = await requireRole(STAFF_ROLES);
+  const field = (name: string) => String(formData.get(name) ?? "").trim();
+  const filter = { subjectId: field("subject"), pastPaperId: field("pastPaperId"), q: field("q") };
+  const count = await publishDrafts(await contentScope(user), filter);
+  if (filter.pastPaperId) redirect(`/admin/papers/${filter.pastPaperId}?published=${count}`);
+  const query = new URLSearchParams({
+    subject: filter.subjectId,
+    q: filter.q,
+    published: String(count),
+  });
+  redirect(`/admin/questions?${query}`);
 }
