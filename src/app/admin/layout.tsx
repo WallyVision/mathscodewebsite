@@ -20,6 +20,7 @@ const LINKS = [
   { href: "/admin/students", label: "Students", adminOnly: true },
   { href: "/admin/prizes", label: "Prizes", adminOnly: true },
   { href: "/admin/tools", label: "Tools", adminOnly: true },
+  { href: "/admin/notify", label: "Notify", adminOnly: true },
 ];
 
 // Access is also checked on every admin page and action; this layout only hides the menu.

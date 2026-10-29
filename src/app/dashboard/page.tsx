@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { NotificationsToggle } from "@/components/notifications-toggle";
 import { CategoryButtons } from "@/components/opportunities";
 import { SectionTile } from "@/components/sections";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { LEVEL_LABEL } from "@/lib/domain/pricing";
 import { formatDateTime } from "@/lib/format";
+import { vapidKeys } from "@/lib/push";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Home" };
@@ -14,7 +16,7 @@ export default async function DashboardPage() {
   const user = await requireUser();
   const now = new Date();
 
-  const [subscription, nextTest] = await Promise.all([
+  const [subscription, nextTest, keys] = await Promise.all([
     // Renewals start when the current period ends, so the latest end date is when access stops.
     db.subscription.findFirst({
       where: { userId: user.id, endsAt: { gt: now } },
@@ -26,6 +28,7 @@ export default async function DashboardPage() {
       orderBy: { opensAt: "asc" },
       select: { title: true, opensAt: true, closesAt: true },
     }),
+    vapidKeys(),
   ]);
 
   return (
@@ -43,6 +46,8 @@ export default async function DashboardPage() {
           )}
         </p>
       </div>
+
+      <NotificationsToggle publicKey={keys.publicKey} variant="banner" />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <SectionTile

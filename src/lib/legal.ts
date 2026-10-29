@@ -186,6 +186,7 @@ you have. The site is run by ${operatorLine()}.
 | Prize winners: ID details and Mobile Money name | To verify winners and pay prizes |
 | Questions you send to teachers, including any photo | So the subject's teachers and our staff can answer you |
 | Messages you send us | To answer you |
+| Notification settings for your phone or computer, if you turn notifications on | To send you the alerts you asked for (tests, results, opportunities). Turn them off any time in Account |
 
 We do **not** receive your Mobile Money PIN.
 

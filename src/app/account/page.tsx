@@ -3,9 +3,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { logout } from "@/app/(auth)/actions";
 import { requireUser } from "@/lib/auth/session";
+import { NotificationsToggle } from "@/components/notifications-toggle";
 import { db } from "@/lib/db";
 import { formatXaf, LEVEL_LABEL } from "@/lib/domain/pricing";
 import { formatDate, formatDateTime } from "@/lib/format";
+import { vapidKeys } from "@/lib/push";
 import { PasswordForm } from "./password-form";
 
 export const metadata: Metadata = { title: "Account" };
@@ -20,7 +22,7 @@ const PURPOSE_LABEL: Record<PaymentPurpose, string> = {
 export default async function AccountPage() {
   const user = await requireUser();
   const now = new Date();
-  const [periods, entryPeriods, payments] = await Promise.all([
+  const [periods, entryPeriods, payments, keys] = await Promise.all([
     db.subscription.findMany({
       where: { userId: user.id, endsAt: { gt: now } },
       orderBy: { endsAt: "asc" },
@@ -37,6 +39,7 @@ export default async function AccountPage() {
       take: 10,
       select: { id: true, amount: true, status: true, purpose: true, createdAt: true },
     }),
+    vapidKeys(),
   ]);
 
   // Early renewals create back-to-back periods; show each level once, with its final end date.
@@ -58,6 +61,15 @@ export default async function AccountPage() {
           </button>
         </form>
       </div>
+
+      <section className="rounded-lg border border-slate-200 bg-white p-5">
+        <h2 className="font-semibold">Notifications</h2>
+        <p className="mt-1 mb-3 text-sm text-slate-600">
+          Get a notification on this phone or computer when a test opens, results are out or a new
+          opportunity is posted.
+        </p>
+        <NotificationsToggle publicKey={keys.publicKey} variant="settings" />
+      </section>
 
       <section className="rounded-lg border border-slate-200 bg-white p-5">
         <h2 className="font-semibold">Membership</h2>
