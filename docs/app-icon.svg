@@ -30,6 +30,20 @@
   <rect x="192.00" y="42" width="128.00" height="54" fill="#ce1126"/>
   <rect x="320.00" y="42" width="128.00" height="54" fill="#fcd116"/>
   <polygon points="256.00,49.00 260.49,62.82 275.02,62.82 263.27,71.36 267.76,85.18 256.00,76.64 244.24,85.18 248.73,71.36 236.98,62.82 251.51,62.82" fill="#fcd116"/>
-  <!-- 237 under the book -->
-  <text x="256" y="470" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="62" letter-spacing="10" fill="#fcd116">237</text>
+  <!-- 237 on a gold banner under the book, as wide as the flag -->
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe08a"/>
+      <stop offset="0.45" stop-color="#e8b730"/>
+      <stop offset="1" stop-color="#b8860b"/>
+    </linearGradient>
+  </defs>
+  <rect x="61" y="413" width="390" height="62" rx="7" fill="#0b2554" opacity="0.35"/>
+  <rect x="64" y="416" width="384" height="56" rx="5" fill="url(#gold)"/>
+  <rect x="64" y="416" width="384" height="56" rx="5" fill="none" stroke="#8a6508" stroke-width="2"/>
+  <g font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="62" text-anchor="middle" stroke="#10306a" stroke-width="7" stroke-linejoin="round" paint-order="stroke">
+    <text x="190" y="467" fill="#007a5e">2</text>
+    <text x="256" y="467" fill="#ce1126">3</text>
+    <text x="322" y="467" fill="#fcd116">7</text>
+  </g>
 </svg>
