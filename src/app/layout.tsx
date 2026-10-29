@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { BrandMark, FlagStripe } from "@/components/brand";
+import { InstallApp } from "@/components/install-app";
 import { LogoutButton, SiteNav } from "@/components/site-nav";
 import { getCurrentUser } from "@/lib/auth/session";
 import { site } from "@/lib/site";
@@ -10,6 +11,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: { default: site.name, template: `%s · ${site.name}` },
   description: `${site.slogan}. ${site.tagline}`,
+  applicationName: site.name,
+  appleWebApp: { capable: true, title: site.name, statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
@@ -36,6 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </header>
         <main className="flex-1">{children}</main>
         <footer className="border-t border-slate-200 bg-white px-4 py-6 text-center text-xs text-slate-500">
+          <InstallApp />
           <nav className="mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm">
             <Link href="/contact" className="hover:text-brand-700">
               Contact
