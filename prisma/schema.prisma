@@ -270,6 +270,8 @@ model Test {
   drawCount          Int?
   drawnAt            DateTime?
   resultsPublishedAt DateTime?
+  // When students were sent the "test is open" notification
+  openNotifiedAt     DateTime?
   createdAt          DateTime   @default(now())
 
   subject   Subject        @relation(fields: [subjectId], references: [id], onDelete: Restrict)

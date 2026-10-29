@@ -64,6 +64,13 @@ export default async function EditTestPage({ params, searchParams }: Props) {
           <Link href={`/tests/${test.id}`} className="text-brand-700 underline">
             View as a student
           </Link>
+          <span className="mt-1 block text-sm text-slate-600">
+            {test.openNotifiedAt
+              ? `🔔 Students were notified that it opened, ${formatDateTime(test.openNotifiedAt)}.`
+              : test.status === "SCHEDULED"
+                ? "🔔 Students who turned notifications on are notified automatically when it opens."
+                : "🔔 Set it to Scheduled: students are notified automatically when it opens."}
+          </span>
         </PageHeader>
         <SavedBanner show={saved === "1"} />
         <TestForm
