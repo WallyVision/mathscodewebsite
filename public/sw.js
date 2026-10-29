@@ -1,7 +1,7 @@
 // StudentLife237 service worker. Pages always come from the network, so students
 // never see stale or another account's content; only the app's static files are
 // cached, and a friendly page is shown when there is no connection.
-const STATIC = "static-v1";
+const STATIC = "static-v2";
 const OFFLINE_URL = "/offline.html";
 
 self.addEventListener("install", (event) => {
