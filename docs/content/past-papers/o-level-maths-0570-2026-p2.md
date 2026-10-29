@@ -3,6 +3,10 @@
 Subject: **O Level Mathematics**. Past paper: **2026, Paper 2** (GCE Board, 0570). Structured questions.
 Questions are copied as set. Worked solutions and the marking notes are our own.
 
+To add it: create the **2026 Paper 2** past paper, open it in **Admin → Past papers**, press
+**Import many** under **Written questions**, choose this file and press **Check**, then **Import
+questions**. Labels the paper already has are skipped, so importing twice is safe.
+
 Section A: answer all 10 questions. Section B: answer all four questions; each carries 15 marks.
 
 ---

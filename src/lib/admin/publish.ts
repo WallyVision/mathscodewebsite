@@ -23,11 +23,23 @@ export function draftWhere(scope: ContentScope, filter: DraftFilter): Prisma.Que
   };
 }
 
-/** Publishes every draft question the filter covers, within the staff member's subjects. */
+/**
+ * Publishes every draft question the filter covers, within the staff member's
+ * subjects. For a past paper this includes its written (structured) questions.
+ */
 export async function publishDrafts(scope: ContentScope, filter: DraftFilter): Promise<number> {
-  const { count } = await db.question.updateMany({
-    where: draftWhere(scope, filter),
-    data: { status: "PUBLISHED" },
-  });
-  return count;
+  const [mcq, written] = await Promise.all([
+    db.question.updateMany({ where: draftWhere(scope, filter), data: { status: "PUBLISHED" } }),
+    filter.pastPaperId
+      ? db.writtenQuestion.updateMany({
+          where: {
+            status: "DRAFT",
+            pastPaperId: filter.pastPaperId,
+            pastPaper: { subjectId: subjectIdFilter(scope) },
+          },
+          data: { status: "PUBLISHED" },
+        })
+      : { count: 0 },
+  ]);
+  return mcq.count + written.count;
 }

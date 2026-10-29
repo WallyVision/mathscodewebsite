@@ -122,9 +122,10 @@ model Topic {
   name      String
   position  Int    @default(0)
 
-  subject   Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  notes     Note[]
-  questions Question[]
+  subject          Subject           @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  notes            Note[]
+  questions        Question[]
+  writtenQuestions WrittenQuestion[]
 
   @@unique([subjectId, slug])
 }
@@ -153,11 +154,40 @@ model PastPaper {
   title       String
   status      ContentStatus @default(DRAFT)
 
-  subject   Subject          @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  questions Question[]
-  unlocks   SolutionUnlock[]
+  subject          Subject           @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  questions        Question[]
+  writtenQuestions WrittenQuestion[]
+  unlocks          SolutionUnlock[]
 
   @@unique([subjectId, year, paperNumber])
+}
+
+/// A structured (written-answer) question from a past paper, such as Paper 2,
+/// shown with its marks and a worked solution instead of options.
+model WrittenQuestion {
+  id          String        @id @default(cuid())
+  pastPaperId String
+  // The topic it tests, so revision notes can be planned from past questions
+  topicId     String?
+  // "A", "B"... when the paper has sections
+  section     String?
+  // As printed, e.g. "A1" or "B2"; unique within the paper
+  label       String
+  // Order on the paper
+  position    Int           @default(0)
+  marks       Int?
+  // Markdown with $...$ / $$...$$ LaTeX, including all parts (a), (b)...
+  body        String
+  solution    String?
+  status      ContentStatus @default(DRAFT)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  pastPaper PastPaper @relation(fields: [pastPaperId], references: [id], onDelete: Cascade)
+  topic     Topic?    @relation(fields: [topicId], references: [id], onDelete: SetNull)
+
+  @@unique([pastPaperId, label])
+  @@index([topicId])
 }
 
 enum QuestionSource {

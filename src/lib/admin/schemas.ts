@@ -76,6 +76,30 @@ export const questionSchema = z
     })),
   }));
 
+export const writtenQuestionSchema = z.object({
+  pastPaperId: id,
+  topicId: optionalId,
+  section: z
+    .string()
+    .trim()
+    .max(4, "Use a short section name such as A or B")
+    .transform((v) => (v === "" ? null : v.toUpperCase())),
+  label: z
+    .string()
+    .trim()
+    .min(1, "Enter the question label, such as A1")
+    .max(12)
+    .regex(/^[A-Za-z0-9.()-]+$/, "Use letters, numbers, dots, brackets or hyphens only"),
+  marks: optionalInt(1, 100),
+  body: markdown("question", 50_000),
+  solution: z
+    .string()
+    .trim()
+    .max(50_000, "The solution is too long")
+    .transform((v) => (v === "" ? null : v)),
+  status,
+});
+
 export const noteSchema = z.object({
   topicId: id,
   title: z.string().trim().min(2, "Enter a title").max(120),

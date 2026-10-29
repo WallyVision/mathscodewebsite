@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import type { CurrentUser } from "@/lib/auth/session";
 import { loadViewerAccess } from "@/lib/access";
+import type { WrittenQuestionView } from "@/components/written-question-card";
 import { db } from "@/lib/db";
 import { canViewSolution } from "@/lib/domain/entitlements";
 import { levelFromSlug } from "@/lib/domain/levels";
@@ -112,4 +113,48 @@ export async function getPaperQuestions(pastPaperId: string, level: Level, user:
     orderBy: [{ number: "asc" }, { createdAt: "asc" }],
   });
   return toPracticeQuestions(rows, level, user);
+}
+
+export interface PaperWrittenSection {
+  /** "A", "B"... or null for questions without a section. */
+  section: string | null;
+  questions: WrittenQuestionView[];
+}
+
+/**
+ * A paper's published written (structured) questions in paper order, grouped
+ * by section, with paid solution text removed for viewers not entitled to it.
+ */
+export async function getPaperWrittenQuestions(
+  pastPaperId: string,
+  level: Level,
+  user: CurrentUser,
+): Promise<PaperWrittenSection[]> {
+  const [rows, access] = await Promise.all([
+    db.writtenQuestion.findMany({
+      where: { pastPaperId, status: "PUBLISHED" },
+      orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+      select: { id: true, label: true, section: true, marks: true, body: true, solution: true },
+    }),
+    loadViewerAccess(user),
+  ]);
+  // Written questions are unlocked with their whole paper, never one by one.
+  const allowed = canViewSolution(access, { questionId: "", pastPaperId, level }, new Date());
+  const sections: PaperWrittenSection[] = [];
+  for (const row of rows) {
+    let group = sections.at(-1);
+    if (!group || group.section !== row.section) {
+      group = { section: row.section, questions: [] };
+      sections.push(group);
+    }
+    group.questions.push({
+      id: row.id,
+      label: row.label,
+      marks: row.marks,
+      body: row.body,
+      pastPaperId,
+      solution: row.solution === null ? null : allowed ? row.solution : "locked",
+    });
+  }
+  return sections;
 }
