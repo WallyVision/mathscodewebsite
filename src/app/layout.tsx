@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { BrandMark, FlagStripe } from "@/components/brand";
-import { SiteNav } from "@/components/site-nav";
+import { LogoutButton, SiteNav } from "@/components/site-nav";
 import { getCurrentUser } from "@/lib/auth/session";
 import { site } from "@/lib/site";
 import "katex/dist/katex.min.css";
@@ -26,10 +26,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="flex min-h-dvh flex-col">
         <header className="border-b border-slate-200 bg-white">
           <FlagStripe />
-          <nav className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-2.5">
+          <nav className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-2.5">
             <Link href={user ? "/dashboard" : "/"} className="shrink-0" aria-label={site.name}>
               <BrandMark />
             </Link>
+            {user && <LogoutButton className="sm:hidden" />}
             <SiteNav signedIn={!!user} staff={!!user && user.role !== "STUDENT"} />
           </nav>
         </header>

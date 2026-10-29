@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { logout } from "@/app/(auth)/actions";
 
 const pill = "rounded-full px-3 py-1.5 font-medium transition";
 const idle = `${pill} text-slate-700 hover:bg-brand-50 hover:text-brand-700`;
@@ -32,11 +33,12 @@ export function SiteNav({ signedIn, staff }: { signedIn: boolean; staff: boolean
 
   if (signedIn) {
     return (
-      <div className="flex flex-wrap items-center justify-end gap-x-1 gap-y-1 text-sm">
+      <div className="flex w-full items-center gap-1 overflow-x-auto text-sm whitespace-nowrap sm:w-auto sm:justify-end">
         {link("/gce", "GCE Prep")}
         {link("/opportunities", "Opportunities")}
         {staff && link("/admin", "Admin")}
         {link("/account", "Account")}
+        <LogoutButton className="hidden sm:block" />
       </div>
     );
   }
@@ -52,5 +54,19 @@ export function SiteNav({ signedIn, staff }: { signedIn: boolean; staff: boolean
         Sign up
       </Link>
     </div>
+  );
+}
+
+/** Ends the session. Shown in the menu on wide screens and beside the name on phones. */
+export function LogoutButton({ className = "" }: { className?: string }) {
+  return (
+    <form action={logout} className={className}>
+      <button
+        type="submit"
+        className="ml-1 rounded-full border border-slate-300 px-3 py-1.5 text-sm font-medium whitespace-nowrap text-slate-700 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+      >
+        Log out
+      </button>
+    </form>
   );
 }
