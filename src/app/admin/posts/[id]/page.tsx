@@ -7,6 +7,7 @@ import { Markdown } from "@/components/markdown";
 import { DeadlineBadge } from "@/components/opportunities";
 import { requireRole, STAFF_ROLES } from "@/lib/auth/session";
 import { db } from "@/lib/db";
+import { formatDateTime } from "@/lib/format";
 import { categoryInfo } from "@/lib/domain/posts";
 import { toDoualaInput } from "@/lib/format";
 import { PostForm } from "../post-form";
@@ -40,6 +41,13 @@ export default async function EditPostPage({ params, searchParams }: Props) {
               View on site
             </Link>
           )}
+          <span className="mt-1 block text-sm text-slate-600">
+            {post.notifiedAt
+              ? `🔔 Students were notified, ${formatDateTime(post.notifiedAt)}.`
+              : post.status === "PUBLISHED"
+                ? "🔔 Published before automatic notifications: students were not notified."
+                : "🔔 Students who turned notifications on are notified automatically when you publish it."}
+          </span>
         </PageHeader>
         <SavedBanner show={saved === "1"} />
         <PostForm

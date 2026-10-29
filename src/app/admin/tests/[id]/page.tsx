@@ -70,6 +70,10 @@ export default async function EditTestPage({ params, searchParams }: Props) {
               : test.status === "SCHEDULED"
                 ? "🔔 Students who turned notifications on are notified automatically when it opens."
                 : "🔔 Set it to Scheduled: students are notified automatically when it opens."}
+            {test.resultsNotifiedAt
+              ? ` Students who sat it were told the results are out, ${formatDateTime(test.resultsNotifiedAt)}.`
+              : test.status !== "DRAFT" &&
+                " Students who sit it are told when the results are out, at closing time."}
           </span>
         </PageHeader>
         <SavedBanner show={saved === "1"} />
