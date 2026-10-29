@@ -80,7 +80,11 @@ export async function saveTest(_prev: AdminFormState, formData: FormData): Promi
       };
     }
     await db.$transaction([
-      db.test.update({ where: { id: testId }, data }),
+      db.test.update({
+        where: { id: testId },
+        // Moved to open later: announce it again when it opens.
+        data: { ...data, ...(data.opensAt > new Date() && { openNotifiedAt: null }) },
+      }),
       ...(unchanged
         ? []
         : [
