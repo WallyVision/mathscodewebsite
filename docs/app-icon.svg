@@ -24,8 +24,10 @@
   <!-- letters -->
   <text x="172" y="318" text-anchor="middle" font-family="FreeSerif" font-style="italic" font-weight="700" font-size="190" fill="#184ea9">S</text>
   <text x="342" y="318" text-anchor="middle" font-family="FreeSerif" font-style="italic" font-weight="700" font-size="190" fill="#184ea9">L</text>
-  <!-- bookmark ribbon in the flag colours -->
-  <path d="M238,382 L250,382 L250,463 L238,474 Z" fill="#007a5e"/>
-  <path d="M250,382 L262,382 L262,463 L256,457 L250,463 Z" fill="#ce1126"/>
-  <path d="M262,382 L274,382 L274,474 L262,463 Z" fill="#fcd116"/>
+  <!-- Cameroon flag, lying flat under the book -->
+  <rect x="187" y="401" width="138" height="72" rx="6" fill="#0b2554" opacity="0.35"/>
+  <rect x="190" y="404" width="44.00" height="66" fill="#007a5e"/>
+  <rect x="234.00" y="404" width="44.00" height="66" fill="#ce1126"/>
+  <rect x="278.00" y="404" width="44.00" height="66" fill="#fcd116"/>
+  <polygon points="256.00,420.00 259.82,431.75 272.17,431.75 262.18,439.01 265.99,450.75 256.00,443.49 246.01,450.75 249.82,439.01 239.83,431.75 252.18,431.75" fill="#fcd116"/>
 </svg>
