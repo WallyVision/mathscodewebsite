@@ -24,10 +24,10 @@
   <!-- letters -->
   <text x="172" y="318" text-anchor="middle" font-family="FreeSerif" font-style="italic" font-weight="700" font-size="190" fill="#184ea9">S</text>
   <text x="342" y="318" text-anchor="middle" font-family="FreeSerif" font-style="italic" font-weight="700" font-size="190" fill="#184ea9">L</text>
-  <!-- Cameroon flag, lying flat under the book -->
-  <rect x="187" y="401" width="138" height="72" rx="6" fill="#0b2554" opacity="0.35"/>
-  <rect x="190" y="404" width="44.00" height="66" fill="#007a5e"/>
-  <rect x="234.00" y="404" width="44.00" height="66" fill="#ce1126"/>
-  <rect x="278.00" y="404" width="44.00" height="66" fill="#fcd116"/>
-  <polygon points="256.00,420.00 259.82,431.75 272.17,431.75 262.18,439.01 265.99,450.75 256.00,443.49 246.01,450.75 249.82,439.01 239.83,431.75 252.18,431.75" fill="#fcd116"/>
+  <!-- Cameroon flag, lying flat under the book, as wide as the book -->
+  <rect x="61" y="409" width="390" height="64" rx="6" fill="#0b2554" opacity="0.35"/>
+  <rect x="64" y="412" width="128.00" height="58" fill="#007a5e"/>
+  <rect x="192.00" y="412" width="128.00" height="58" fill="#ce1126"/>
+  <rect x="320.00" y="412" width="128.00" height="58" fill="#fcd116"/>
+  <polygon points="256.00,420.00 260.72,434.51 275.97,434.51 263.63,443.48 268.34,457.99 256.00,449.02 243.66,457.99 248.37,443.48 236.03,434.51 251.28,434.51" fill="#fcd116"/>
 </svg>
