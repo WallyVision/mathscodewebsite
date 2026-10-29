@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import { BrandMark, FlagStripe } from "@/components/brand";
+import { SiteNav } from "@/components/site-nav";
 import { getCurrentUser } from "@/lib/auth/session";
 import { site } from "@/lib/site";
 import "katex/dist/katex.min.css";
@@ -23,54 +25,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en">
       <body className="flex min-h-dvh flex-col">
         <header className="border-b border-slate-200 bg-white">
-          <nav className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
-            <Link
-              href={user ? "/dashboard" : "/"}
-              className="shrink-0 text-base font-bold text-brand-700 sm:text-lg"
-            >
-              {site.name}
+          <FlagStripe />
+          <nav className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-2.5">
+            <Link href={user ? "/dashboard" : "/"} className="shrink-0" aria-label={site.name}>
+              <BrandMark />
             </Link>
-            <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-sm sm:gap-x-4">
-              {user ? (
-                <>
-                  <Link href="/gce" className="font-medium hover:text-brand-700">
-                    GCE Prep
-                  </Link>
-                  <Link href="/opportunities" className="font-medium hover:text-brand-700">
-                    Opportunities
-                  </Link>
-                  {user.role !== "STUDENT" && (
-                    <Link href="/admin" className="font-medium text-brand-700 hover:underline">
-                      Admin
-                    </Link>
-                  )}
-                  <Link href="/account" className="font-medium hover:text-brand-700">
-                    Account
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link href="/gce" className="hidden font-medium hover:text-brand-700 sm:inline">
-                    GCE Prep
-                  </Link>
-                  <Link
-                    href="/opportunities"
-                    className="hidden font-medium hover:text-brand-700 sm:inline"
-                  >
-                    Opportunities
-                  </Link>
-                  <Link href="/login" className="font-medium hover:text-brand-700">
-                    Log in
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="rounded-md bg-brand-600 px-3 py-1.5 font-medium text-white hover:bg-brand-700"
-                  >
-                    Sign up
-                  </Link>
-                </>
-              )}
-            </div>
+            <SiteNav signedIn={!!user} staff={!!user && user.role !== "STUDENT"} />
           </nav>
         </header>
         <main className="flex-1">{children}</main>

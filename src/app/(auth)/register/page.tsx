@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { AuthShell } from "@/components/auth-shell";
 import { getCurrentUser } from "@/lib/auth/session";
 import { safeReturnPath } from "@/lib/domain/checkout";
 import { RegisterForm } from "./register-form";
@@ -15,12 +16,10 @@ export default async function RegisterPage({
   const next = safeReturnPath((await searchParams).next ?? "") ?? undefined;
   if (await getCurrentUser()) redirect(next ?? "/dashboard");
   return (
-    <div className="mx-auto max-w-sm px-4 py-10">
-      <h1 className="mb-1 text-2xl font-bold">Create your account</h1>
-      <p className="mb-6 text-sm text-slate-600">
-        Free notes and past questions. Become a member any time to compete in weekly tests and win
-        prizes.
-      </p>
+    <AuthShell
+      title="Create your account"
+      subtitle="Free notes and past questions. Become a member any time to compete in weekly tests and win prizes."
+    >
       <RegisterForm next={next} />
       <p className="mt-6 text-center text-sm text-slate-600">
         Already registered?{" "}
@@ -31,6 +30,6 @@ export default async function RegisterPage({
           Log in
         </Link>
       </p>
-    </div>
+    </AuthShell>
   );
 }

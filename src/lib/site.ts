@@ -1,7 +1,7 @@
 /** Brand settings in one place so names can change without a code hunt. */
 export const site = {
   name: "StudentLife237",
-  slogan: "Equal opportunities to all",
+  slogan: "Equal opportunities for all",
   tagline: "GCE revision, scholarships, jobs and guidance for Cameroonian students.",
   domain: "studentlife237.com",
   /**
