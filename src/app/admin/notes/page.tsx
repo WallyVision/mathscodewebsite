@@ -34,7 +34,10 @@ export default async function NotesPage() {
   return (
     <div>
       <PageHeader title="Notes" action={{ href: "/admin/notes/new", label: "New note" }}>
-        {notes.length} {notes.length === 1 ? "note" : "notes"}
+        {notes.length} {notes.length === 1 ? "note" : "notes"} ·{" "}
+        <Link href="/admin/notes/import" className="text-brand-700 hover:underline">
+          Import many at once
+        </Link>
       </PageHeader>
       <div className="overflow-x-auto">
         <table className={tableClass}>
