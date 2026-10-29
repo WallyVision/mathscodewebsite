@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { FormMessage, Select, TextArea } from "@/components/form";
 import { resultKey } from "@/lib/admin/form-key";
 import type { ContentOptions } from "@/lib/admin/options";
 import { importQuestions, type ImportState } from "./actions";
 
 const DIFFICULTY = ["", "Easy", "Medium", "Hard"];
+// Stays under the 1 MB request limit for server actions.
+const MAX_FILE_BYTES = 500_000;
 const buttonClass =
   "rounded-md px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60";
 
@@ -27,6 +29,26 @@ export function ImportForm({
       "",
   );
   const subject = subjects.find((s) => s.id === subjectId);
+  const textRef = useRef<HTMLTextAreaElement>(null);
+  const [fileNote, setFileNote] = useState<{ ok: boolean; text: string } | null>(null);
+
+  // A chosen file is read here and put in the box, so the author sees exactly what will be imported.
+  async function loadFile(input: HTMLInputElement) {
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file || !textRef.current) return;
+    if (file.size > MAX_FILE_BYTES) {
+      setFileNote({ ok: false, text: "That file is too large (500 KB at most)." });
+      return;
+    }
+    const text = await file.text();
+    if (!text.trim()) {
+      setFileNote({ ok: false, text: `${file.name} is empty. Download it again and choose it.` });
+      return;
+    }
+    textRef.current.value = text;
+    setFileNote({ ok: true, text: `Loaded ${file.name} into the box above. Press Check.` });
+  }
 
   return (
     <form key={resultKey(state)} action={action} className="space-y-5" noValidate>
@@ -96,6 +118,7 @@ export function ImportForm({
       <TextArea
         label="Questions"
         name="text"
+        ref={textRef}
         rows={18}
         defaultValue={values?.text ?? ""}
         placeholder={
@@ -109,11 +132,19 @@ export function ImportForm({
         </label>
         <input
           id="file"
-          name="file"
           type="file"
           accept=".md,.txt,text/markdown,text/plain"
           className="text-sm"
+          onChange={(e) => void loadFile(e.currentTarget)}
         />
+        {fileNote && (
+          <p
+            role="status"
+            className={`text-sm ${fileNote.ok ? "text-emerald-700" : "text-red-700"}`}
+          >
+            {fileNote.text}
+          </p>
+        )}
       </div>
 
       <label className="flex items-start gap-2 text-sm">
