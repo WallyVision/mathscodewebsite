@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2a6fe0"/>
+      <stop offset="1" stop-color="#10306a"/>
+    </linearGradient>
+    <linearGradient id="pageL" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e3ecfb"/>
+    </linearGradient>
+    <linearGradient id="pageR" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e3ecfb"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <!-- cover / page edges -->
+  <path d="M256,404 C204,378 132,374 64,394 L64,170 L86,166 L86,380 C150,362 214,368 256,392 C298,368 362,362 426,380 L426,166 L448,170 L448,394 C380,374 308,378 256,404 Z" fill="#0b2554" opacity="0.55"/>
+  <path d="M256,392 C214,368 150,362 86,380 L86,372 C150,354 214,360 256,384 C298,360 362,354 426,372 L426,380 C362,362 298,368 256,392 Z" fill="#c9d9f5"/>
+  <!-- pages -->
+  <path d="M256,150 C212,124 146,118 86,138 L86,372 C150,354 214,360 256,384 Z" fill="url(#pageL)"/>
+  <path d="M256,150 C300,124 366,118 426,138 L426,372 C362,354 298,360 256,384 Z" fill="url(#pageR)"/>
+  <path d="M256,150 L256,384" stroke="#b8cbef" stroke-width="3"/>
+  <!-- letters -->
+  <text x="172" y="318" text-anchor="middle" font-family="FreeSerif" font-style="italic" font-weight="700" font-size="190" fill="#184ea9">S</text>
+  <text x="342" y="318" text-anchor="middle" font-family="FreeSerif" font-style="italic" font-weight="700" font-size="190" fill="#184ea9">L</text>
+  <!-- bookmark ribbon in the flag colours -->
+  <path d="M238,382 L250,382 L250,463 L238,474 Z" fill="#007a5e"/>
+  <path d="M250,382 L262,382 L262,463 L256,457 L250,463 Z" fill="#ce1126"/>
+  <path d="M262,382 L274,382 L274,474 L262,463 Z" fill="#fcd116"/>
+</svg>
