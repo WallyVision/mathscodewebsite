@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 export interface AdminLink {
   href: string;
@@ -25,8 +26,19 @@ function activeHref(pathname: string, links: AdminLink[]): string | undefined {
 export function AdminNav({ links }: { links: AdminLink[] }) {
   const pathname = usePathname();
   const active = activeHref(pathname, links);
+  const nav = useRef<HTMLElement>(null);
+  // On narrow screens the menu scrolls sideways; bring the current item into view.
+  useEffect(() => {
+    nav.current
+      ?.querySelector('[aria-current="page"]')
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [active]);
   return (
-    <nav aria-label="Admin" className="-mx-4 mb-6 overflow-x-auto border-b border-slate-200 px-4">
+    <nav
+      ref={nav}
+      aria-label="Admin"
+      className="-mx-4 mb-6 overflow-x-auto border-b border-slate-200 px-4"
+    >
       <ul className="flex gap-1 py-2 text-sm whitespace-nowrap">
         {links.map((link) => {
           const current = link.href === active;

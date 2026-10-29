@@ -46,6 +46,8 @@ model User {
   resetTokens   PasswordResetToken[]
   teams         SubjectTeamMember[]
   teamPayouts   TeamPayout[]
+  pushDevices   PushSubscription[]
+  notifications NotificationLog[]
   asked         StudentQuestion[]
   replies       StudentQuestionReply[]
 }
@@ -630,4 +632,45 @@ model Tool {
   subject Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
 
   @@index([published, position])
+}
+
+// ─── Notifications ───────────────────────────────────────────────────────────
+
+/// A browser or installed app that agreed to receive push notifications for a user.
+model PushSubscription {
+  id         String    @id @default(cuid())
+  userId     String
+  endpoint   String    @unique
+  p256dh     String
+  auth       String
+  userAgent  String?
+  createdAt  DateTime  @default(now())
+  lastSentAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// A notification an admin sent, kept as a history.
+model NotificationLog {
+  id          String   @id @default(cuid())
+  title       String
+  body        String
+  url         String
+  // Who it was for: ALL, O_LEVEL, A_LEVEL, MEMBERS or FREE
+  audience    String
+  devices     Int
+  delivered   Int
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+}
+
+/// Small values the site generates and keeps, such as its push notification keys.
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }
