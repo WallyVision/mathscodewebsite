@@ -46,6 +46,7 @@ beforeAll(async () => {
     })
   ).id;
   await question(subjectId, "a paper q", paperId);
+  await db.writtenQuestion.create({ data: { pastPaperId: paperId, label: "A1", body: "written" } });
   await question(subjectId, "b loose q");
   await question(otherId, "c other subject");
 });
@@ -57,8 +58,11 @@ afterAll(async () => {
 });
 
 describe("publishDrafts", () => {
-  it("publishes only the paper's drafts", async () => {
-    expect(await publishDrafts({ all: true }, { pastPaperId: paperId })).toBe(1);
+  it("publishes only the paper's drafts, written questions included", async () => {
+    expect(await publishDrafts({ all: true }, { pastPaperId: paperId })).toBe(2);
+    expect(
+      (await db.writtenQuestion.findFirstOrThrow({ where: { pastPaperId: paperId } })).status,
+    ).toBe("PUBLISHED");
     expect(await statuses(subjectId)).toEqual(["a paper q:PUBLISHED", "b loose q:DRAFT"]);
   });
 
