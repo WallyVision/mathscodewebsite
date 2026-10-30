@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { NotificationsToggle } from "@/components/notifications-toggle";
 import { CategoryButtons } from "@/components/opportunities";
-import { SectionTile } from "@/components/sections";
+import { SectionArt, SectionTile } from "@/components/sections";
 import { requireUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { LEVEL_LABEL } from "@/lib/domain/pricing";
@@ -52,7 +52,7 @@ export default async function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         <SectionTile
           href="/gce"
-          icon="📚"
+          icon={<SectionArt kind="books" />}
           name={site.gcePrep.name}
           slogan={site.gcePrep.slogan}
           cta="Open"
@@ -67,7 +67,7 @@ export default async function DashboardPage() {
         </SectionTile>
         <SectionTile
           href="/opportunities"
-          icon="🌍"
+          icon={<SectionArt kind="world" />}
           name={site.opportunities.name}
           slogan="Scholarships · Jobs · Travel · Finance · Careers"
           cta="Explore"

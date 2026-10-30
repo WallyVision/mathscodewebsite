@@ -8,6 +8,41 @@ import {
 } from "@/lib/domain/pricing";
 import { site } from "@/lib/site";
 
+const ART = {
+  books: {
+    src: "/illustrations/open-books.svg",
+    alt: "Three open books in green, red and yellow, with a pen",
+    width: 260,
+    height: 120,
+    className: "h-28 sm:h-32",
+  },
+  world: {
+    src: "/illustrations/globe-to-the-world.svg",
+    alt: "Globe showing Africa with Cameroon in its flag colours, and arrows to the rest of the world",
+    width: 260,
+    height: 170,
+    className: "h-36 sm:h-40",
+  },
+} as const;
+
+/** The picture on a section tile: open books for GCE Prep, the globe with Cameroon for Opportunities. */
+export function SectionArt({ kind }: { kind: keyof typeof ART }) {
+  const art = ART[kind];
+  return (
+    // Both pictures get the same space, so the tiles' titles line up.
+    <div className="flex h-36 items-center justify-center sm:h-40">
+      {/* eslint-disable-next-line @next/next/no-img-element -- small static SVG with its own animation */}
+      <img
+        src={art.src}
+        alt={art.alt}
+        width={art.width}
+        height={art.height}
+        className={`w-auto ${art.className}`}
+      />
+    </div>
+  );
+}
+
 /** One of the platform's two big sections. */
 export function SectionTile({
   href,
@@ -19,7 +54,8 @@ export function SectionTile({
   tone,
 }: {
   href: string;
-  icon: string;
+  /** An emoji, or a picture such as <SectionArt />. */
+  icon: ReactNode;
   name: string;
   slogan: string;
   children?: ReactNode;
@@ -35,9 +71,13 @@ export function SectionTile({
       href={href}
       className={`group flex flex-col rounded-2xl bg-gradient-to-br p-6 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg ${styles}`}
     >
-      <span className="text-4xl" aria-hidden>
-        {icon}
-      </span>
+      {typeof icon === "string" ? (
+        <span className="text-4xl" aria-hidden>
+          {icon}
+        </span>
+      ) : (
+        icon
+      )}
       <span className="mt-3 text-2xl font-bold">{name}</span>
       <span className="mt-1 font-medium text-white/90">{slogan}</span>
       {children && <div className="mt-3 text-sm text-white/85">{children}</div>}
