@@ -17,15 +17,15 @@ const ART = {
     className: "h-28 sm:h-32",
   },
   world: {
-    src: "/illustrations/africa-to-the-world.svg",
-    alt: "Map of Africa with Cameroon in its flag colours and arrows to the rest of the world",
+    src: "/illustrations/globe-to-the-world.svg",
+    alt: "Globe showing Africa with Cameroon in its flag colours, and arrows to the rest of the world",
     width: 260,
     height: 170,
     className: "h-36 sm:h-40",
   },
 } as const;
 
-/** The picture on a section tile: open books for GCE Prep, Africa to the world for Opportunities. */
+/** The picture on a section tile: open books for GCE Prep, the globe with Cameroon for Opportunities. */
 export function SectionArt({ kind }: { kind: keyof typeof ART }) {
   const art = ART[kind];
   return (
