@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CategoryButtons } from "@/components/opportunities";
-import { GcePricing, GceSteps, SectionTile } from "@/components/sections";
+import { GcePricing, GceSteps, SectionArt, SectionTile } from "@/components/sections";
 import { site } from "@/lib/site";
 
 export default function HomePage() {
@@ -35,7 +35,7 @@ export default function HomePage() {
       <section className="mx-auto -mt-8 grid max-w-5xl gap-4 px-4 sm:grid-cols-2">
         <SectionTile
           href="/gce"
-          icon="📚"
+          icon={<SectionArt kind="books" />}
           name={site.gcePrep.name}
           slogan={site.gcePrep.slogan}
           cta="Open GCEPrep237"
@@ -45,7 +45,7 @@ export default function HomePage() {
         </SectionTile>
         <SectionTile
           href="/opportunities"
-          icon="🌍"
+          icon={<SectionArt kind="world" />}
           name={site.opportunities.name}
           slogan="Scholarships · Jobs · Travel · Finance · Careers"
           cta="Explore opportunities"
