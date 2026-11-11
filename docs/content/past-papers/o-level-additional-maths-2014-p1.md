@@ -3,7 +3,7 @@
 Subject: **O Level Additional Mathematics**. Past paper: **2014, Paper 1** (GCE Board). Source: **Past paper**.
 Questions are copied as set (obvious slips corrected). Worked solutions are our own.
 
-To add them: create the subject **O Level Additional Mathematics** if it does not exist yet, then
+To add them: create the subject **O Level Additional Mathematics** in **Admin → Subjects** if it does not exist yet, then
 **Admin → Past papers → New past paper** (O Level Additional Mathematics, 2014, Paper 1), then
 **Import many** on that paper, choose this file and press **Check**, then **Import as drafts**.
 
