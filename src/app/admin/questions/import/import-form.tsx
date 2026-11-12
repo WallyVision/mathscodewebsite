@@ -18,7 +18,7 @@ export function ImportForm({
   initial,
 }: {
   subjects: ContentOptions;
-  /** Preselected subject and past paper, e.g. from a paper's "Import many" link. */
+  /** Preselected subject and past paper, e.g. from a paper's "Import multiple-choice" link. */
   initial?: { subjectId?: string; pastPaperId?: string };
 }) {
   const [state, action, pending] = useActionState<ImportState, FormData>(importQuestions, {});

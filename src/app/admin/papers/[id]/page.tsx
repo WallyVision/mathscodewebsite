@@ -72,19 +72,19 @@ export default async function EditPaperPage({ params, searchParams }: Props) {
       </div>
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-semibold">Questions ({paper.questions.length})</h2>
+          <h2 className="font-semibold">Multiple-choice questions ({paper.questions.length})</h2>
           <span className="flex flex-wrap gap-2">
             <Link
               href={`/admin/questions/import?subject=${paper.subjectId}&paper=${paper.id}`}
               className="rounded-md border border-brand-600 px-3 py-1.5 text-sm font-semibold text-brand-700 hover:bg-brand-50"
             >
-              Import many
+              Import multiple-choice
             </Link>
             <Link
               href={`/admin/questions/new?subject=${paper.subjectId}&paper=${paper.id}`}
               className="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-700"
             >
-              Add question
+              Add multiple-choice
             </Link>
           </span>
         </div>
@@ -137,7 +137,7 @@ export default async function EditPaperPage({ params, searchParams }: Props) {
               href={`/admin/written/import?paper=${paper.id}`}
               className="rounded-md border border-brand-600 px-3 py-1.5 text-sm font-semibold text-brand-700 hover:bg-brand-50"
             >
-              Import many
+              Import written questions
             </Link>
             <Link
               href={`/admin/written/new?paper=${paper.id}`}

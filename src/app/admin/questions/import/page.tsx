@@ -6,7 +6,7 @@ import { contentScope } from "@/lib/admin/scope";
 import { requireRole, STAFF_ROLES } from "@/lib/auth/session";
 import { ImportForm } from "./import-form";
 
-export const metadata: Metadata = { title: "Import questions" };
+export const metadata: Metadata = { title: "Import multiple-choice questions" };
 
 const EXAMPLE = `## Q1 · difficulty 1
 
@@ -42,7 +42,7 @@ export default async function ImportQuestionsPage({
       <Breadcrumbs
         items={[{ label: "Questions", href: "/admin/questions" }, { label: "Import" }]}
       />
-      <PageHeader title="Import questions">
+      <PageHeader title="Import multiple-choice questions">
         Add a whole set of MCQs at once. They are saved as drafts, so you can review each one before
         publishing.
       </PageHeader>
