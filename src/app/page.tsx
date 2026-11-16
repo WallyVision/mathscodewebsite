@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { CategoryButtons } from "@/components/opportunities";
 import { GcePricing, GceSteps, SectionArt, SectionTile } from "@/components/sections";
+import { db } from "@/lib/db";
+import { FOUNDING, foundingProgress } from "@/lib/domain/founding";
+import { formatXaf } from "@/lib/domain/pricing";
 import { site } from "@/lib/site";
 
 export default function HomePage() {
@@ -55,6 +58,8 @@ export default function HomePage() {
         </SectionTile>
       </section>
 
+      <FoundingBanner />
+
       <section className="mx-auto max-w-5xl px-4 py-12">
         <h2 className="text-2xl font-bold">
           {site.gcePrep.name}: {site.gcePrep.slogan}
@@ -84,5 +89,30 @@ export default function HomePage() {
         </div>
       </section>
     </>
+  );
+}
+
+/** Invites students to the founding offer while places remain. */
+async function FoundingBanner() {
+  const progress = foundingProgress(await db.foundingMember.count());
+  if (progress.full) return null;
+  return (
+    <section className="mx-auto mt-6 max-w-5xl px-4">
+      <Link
+        href="/founding"
+        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-accent-500 bg-amber-50 px-5 py-4 hover:bg-amber-100"
+      >
+        <span>
+          <span className="block font-bold">Become a Founding Member</span>
+          <span className="block text-sm text-slate-700">
+            {formatXaf(FOUNDING.price)} once for {Math.round(FOUNDING.days / 30)} months of full
+            membership at launch. {progress.left} of {FOUNDING.places} places left.
+          </span>
+        </span>
+        <span className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white">
+          See the offer
+        </span>
+      </Link>
+    </section>
   );
 }

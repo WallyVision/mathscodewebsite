@@ -176,6 +176,13 @@ export const grantSchema = z.object({
   reference: z.string().trim().min(2, "Enter how it was paid, e.g. MoMo ref or 'cash'").max(120),
 });
 
+export const foundingSchema = z.object({
+  contact: z.string().trim().min(3, "Enter the phone number or email of the student's account"),
+  subjectId: z.string().trim().min(1, "Choose the competition subject"),
+  amount: int(0, 1_000_000),
+  reference: z.string().trim().min(2, "Enter how it was paid, e.g. MoMo ref or 'cash'").max(120),
+});
+
 export const roleSchema = z.object({
   userId: id,
   role: z.enum(["STUDENT", "AUTHOR", "ADMIN"]),

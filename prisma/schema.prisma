@@ -50,6 +50,7 @@ model User {
   notifications NotificationLog[]
   asked         StudentQuestion[]
   replies       StudentQuestionReply[]
+  founding      FoundingMember?
 }
 
 model Session {
@@ -113,6 +114,7 @@ model Subject {
   questions   Question[]
   tests       Test[]
   prizeAwards PrizeAward[]
+  founders    FoundingMember[]
 
   @@unique([level, slug])
 }
@@ -377,6 +379,7 @@ model Payment {
   subscriptions Subscription[]
   entries       CompetitionEntry[]
   unlocks       SolutionUnlock[]
+  founding      FoundingMember?
 
   @@index([userId, createdAt])
 }
@@ -404,6 +407,24 @@ enum EntrySource {
 // A student's right to sit one subject's competitive tests and compete for its prizes.
 // The money it brought in is that subject's income, shared between the platform, the
 // subject's team and the subject's prize pool.
+// A student who paid for a founding membership before launch. Their membership starts when
+// an admin opens founding memberships (activatedAt), not when they paid.
+model FoundingMember {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  // 1, 2, 3… in the order they joined
+  number      Int       @unique
+  // The competition subject included in their membership
+  subjectId   String
+  paymentId   String    @unique
+  createdAt   DateTime  @default(now())
+  activatedAt DateTime?
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+}
+
 model CompetitionEntry {
   id        String      @id @default(cuid())
   userId    String
