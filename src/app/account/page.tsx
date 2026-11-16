@@ -22,7 +22,7 @@ const PURPOSE_LABEL: Record<PaymentPurpose, string> = {
 export default async function AccountPage() {
   const user = await requireUser();
   const now = new Date();
-  const [periods, entryPeriods, payments, keys] = await Promise.all([
+  const [periods, entryPeriods, payments, keys, founding] = await Promise.all([
     db.subscription.findMany({
       where: { userId: user.id, endsAt: { gt: now } },
       orderBy: { endsAt: "asc" },
@@ -40,6 +40,10 @@ export default async function AccountPage() {
       select: { id: true, amount: true, status: true, purpose: true, createdAt: true },
     }),
     vapidKeys(),
+    db.foundingMember.findUnique({
+      where: { userId: user.id },
+      select: { number: true, activatedAt: true },
+    }),
   ]);
 
   // Early renewals create back-to-back periods; show each level once, with its final end date.
@@ -73,6 +77,19 @@ export default async function AccountPage() {
 
       <section className="rounded-lg border border-slate-200 bg-white p-5">
         <h2 className="font-semibold">Membership</h2>
+        {founding && (
+          <p className="mt-2 inline-block rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-900">
+            Founding Member #{founding.number}
+          </p>
+        )}
+        {founding && !founding.activatedAt && (
+          <p className="mt-2 text-sm text-slate-600">
+            Your founding membership starts on launch day.{" "}
+            <Link href="/founding" className="text-brand-700 underline">
+              See the details
+            </Link>
+          </p>
+        )}
         {subscriptions.length === 0 ? (
           <p className="mt-1 text-sm text-slate-600">
             No active membership.{" "}
