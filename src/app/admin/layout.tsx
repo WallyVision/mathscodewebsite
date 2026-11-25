@@ -18,6 +18,7 @@ const LINKS = [
   { href: "/admin/subjects", label: "Subjects", adminOnly: true },
   { href: "/admin/tests", label: "Tests", adminOnly: true },
   { href: "/admin/students", label: "Students", adminOnly: true },
+  { href: "/admin/founding", label: "Founding members", adminOnly: true },
   { href: "/admin/prizes", label: "Prizes", adminOnly: true },
   { href: "/admin/tools", label: "Tools", adminOnly: true },
   { href: "/admin/notify", label: "Notify", adminOnly: true },
